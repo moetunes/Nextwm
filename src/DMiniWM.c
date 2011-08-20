@@ -1,6 +1,6 @@
 /* DMiniWM.c [ 7 ]
 *
-*  I started this from catwm with many thanks!
+*  I started this from catwm 31/12/10 with many thanks!
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
 *  the Free Software Foundation, either version 3 of the License, or
