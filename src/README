@@ -12,7 +12,7 @@ Modes
 -----
 
 It allows the "normal" modes of tiling window managers(with the new window as the master)
-	and with the new window opened at the top of the stack(like dwm's attach_aside)
+	and with the new window opened at the bottom of the stack(like dwm's attach_aside)
     There's vertical tiling:
     --------------
     |        |___|
