@@ -29,6 +29,9 @@ It allows the "normal" modes of tiling window managers(with the new window as th
     |   |   |   |
     -------------
     fullscreen mode(which you'll know when you see it)
+    
+    the unique save_desktop function allows the window manager
+        to remember the tiling mode for each workspace for the session.
 
 
 Installation
