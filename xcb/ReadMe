@@ -1,0 +1,7 @@
+10/8/11
+have tiling working
+have border colours
+have update current giving the current window focus on window opening and with mouse movement
+next : border colours
+       make sure update_current gives current window focus
+       keyboard shortcuts
