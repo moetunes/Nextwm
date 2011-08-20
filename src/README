@@ -1,0 +1,48 @@
+I started this from catwm
+Summary
+-------
+
+DMiniWM is a very simple and lightweight tiling window manager.
+I will try to stay under 1000 SLOC.
+
+Status
+------
+
+Modes
+-----
+
+It allows the "normal" modes of tiling window managers(with the new window as the master)
+	and with the new window opened at the top of the stack(like dwm's attach_aside)
+    There's vertical tiling:
+    --------------
+    |        |___|
+    |        |___|
+    | Master |___|
+    |        |___|
+    |        |___|
+    --------------
+    horizontal tiling:
+    -------------
+    |           |
+    |  Master   |
+    |-----------|
+    |   |   |   |
+    -------------
+    fullscreen mode(which you'll know when you see it)
+
+
+Installation
+------------
+
+Need Xlib, then:
+    $ make
+    # make install
+    $ make clean
+
+Bugs
+----
+
+[ * No bugs for the moment ;) (I mean, no importants bugs ;)]
+
+Todo
+----
