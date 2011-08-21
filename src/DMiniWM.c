@@ -407,13 +407,13 @@ void tile() {
 
     // If only one window
     if(head != NULL && head->next == NULL) {
-        XMoveResizeWindow(dis,head->win,0,0,sw-4,sh-4);
+        XMoveResizeWindow(dis,head->win,0,0,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
     }
     else if(head != NULL) {
         switch(mode) {
             case 0: /* Horizontal */
                 // Master window
-                XMoveResizeWindow(dis,head->win,0,0,sw-4,master_size - BORDER_WIDTH);
+                XMoveResizeWindow(dis,head->win,0,0,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
