@@ -404,35 +404,41 @@ void tile() {
     client *c;
     int n = 0;
     int x = 0;
+    int y = 0;
+
+    // For a top panel
+    if(TOP_PANEL == 0)
+        y = PANEL_HEIGHT;
 
     // If only one window
     if(head != NULL && head->next == NULL) {
-        XMoveResizeWindow(dis,head->win,0,0,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
+        XMoveResizeWindow(dis,head->win,0,y,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
     }
     else if(head != NULL) {
         switch(mode) {
             case 0: /* Horizontal */
                 // Master window
-                XMoveResizeWindow(dis,head->win,0,0,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
+                XMoveResizeWindow(dis,head->win,0,y,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
                 for(c=head->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,x,master_size + BORDER_WIDTH,(sw/n) - BORDER_WIDTH,sh-master_size - (2 * BORDER_WIDTH));
+                    XMoveResizeWindow(dis,c->win,x,y+master_size + BORDER_WIDTH,(sw/n) - BORDER_WIDTH,sh-master_size - (2 * BORDER_WIDTH));
                     x += sw/n;
                 }
                 break;
             case 1: /* Fullscreen */
                 for(c=head;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,0,0,sw-2*BORDER_WIDTH,sh-2*BORDER_WIDTH);
+                    XMoveResizeWindow(dis,c->win,0,y,sw-2*BORDER_WIDTH,sh-2*BORDER_WIDTH);
                 }
                 break;
             case 2: /* Vertical */
             	// Master window
-                XMoveResizeWindow(dis,head->win,0,0,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
+                XMoveResizeWindow(dis,head->win,0,y,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
+                x = y;
                 for(c=head->next;c;c=c->next) {
                     XMoveResizeWindow(dis,c->win,master_size + BORDER_WIDTH,x,sw-master_size-(2*BORDER_WIDTH),(sh/n) - BORDER_WIDTH);
                     x += sh/n;
