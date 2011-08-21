@@ -172,7 +172,8 @@ void add_window(Window w) {
     current = c;
     save_desktop(current_desktop);
     // for folow mouse
-    XSelectInput(dis, c->win, EnterWindowMask);
+    if(FOLLOW_MOUSE == 0)
+        XSelectInput(dis, c->win, EnterWindowMask);
 }
 
 void remove_window(Window w) {
