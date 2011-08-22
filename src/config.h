@@ -1,6 +1,9 @@
  /* config.h for DMiniWM.c [ 7 ]
  *
- *  Started from catwm 31/12/10 with many thanks!
+ *  Started from catwm 31/12/10 with many thanks !
+ *  Bad window error checking and numlock checking taken from
+ *  2wm at http://hg.suckless.org/2wm/ with many thanks !
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +34,7 @@
 #define DEFAULT_MODE    2 /* 0 = Horizontal, 1 = Fullscreen, 2 = Vertical */
 #define FOLLOW_WINDOW   0 /* 1=Don't 0=Change desktops when moving window */
 #define FOLLOW_MOUSE    0 /* 1=Don't 0=Focus the window the mouse just entered */
-#define TOP_PANEL       0 /* 1=Don't 0=Have the panel at the top instead of the bottom */
+#define TOP_PANEL       1 /* 1=Don't 0=Have the panel at the top instead of the bottom */
 
 // Colors
 #define FOCUS           "#664422" // dkorange
