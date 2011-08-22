@@ -9,15 +9,6 @@ DMiniWM is a very minimal and lightweight dynamic tiling window manager.
     I will try to stay under 1000 SLOC.
     Currently well under 900 lines with the config file included.
 
-Status
-------
-
-There are more options in the config file than the original catwm.
-    Fixed the window manager crashing on a bad window error.
-    Fixed the keyboard shortcuts not working if numlock was on.
-    Added some functions.
-    Added an option to focus the window the mouse just moved to.
-
 Modes
 -----
 
@@ -43,11 +34,24 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
     Fullscreen mode(which you'll know when you see it)
 
-    all accessible with keyboard shortcuts defined in the config.h file.
-    changing a tiling mode on one workspace doesn't affect the other workspaces.
-    
-    the unique save_desktop function allows the window manager
+    All accessible with keyboard shortcuts defined in the config.h file.
+    Changing a tiling mode on one workspace doesn't affect the other workspaces.
+
+    The unique save_desktop function allows the window manager
         to remember the tiling mode for each workspace for the session.
+
+Recent Changes
+--------------
+
+
+Status
+------
+
+There are more options in the config file than the original catwm.
+    Fixed the window manager crashing on a bad window error.
+    Fixed the keyboard shortcuts not working if numlock was on.
+    Added some functions.
+    Added an option to focus the window the mouse just moved to.
 
 
 Installation
