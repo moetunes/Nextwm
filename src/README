@@ -5,7 +5,7 @@ See DMiniWM.c or config.h for thanks and licensing.
 Summary
 -------
 
-DMiniWM is a very simple and lightweight dynamic tiling window manager.
+DMiniWM is a very minimal and lightweight dynamic tiling window manager.
     I will try to stay under 1000 SLOC.
     Currently well under 900 lines with the config file included.
 
