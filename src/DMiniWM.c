@@ -1,7 +1,7 @@
 /* DMiniWM.c [ 7 ]
 *
 *  I started this from catwm 31/12/10 with many thanks!
-*  Bad window error checking and numlock checking taken from
+*  Bad window error checking and numlock checking used from
 *  2wm at http://hg.suckless.org/2wm/ with many thanks !
 *
 *  This program is free software: you can redistribute it and/or modify
