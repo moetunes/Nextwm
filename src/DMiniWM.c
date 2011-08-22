@@ -1,4 +1,4 @@
-/* DMiniWM.c [ 7 ]
+/* DMiniWM.c [ 8 ]
 *
 *  I started this from catwm 31/12/10 with many thanks!
 *  Bad window error checking and numlock checking used from
@@ -67,7 +67,6 @@ static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static void decrease();
 static void destroynotify(XEvent *e);
-static void die(const char* e);
 static void enternotify(XEvent *e);
 static void logger(const char* e);
 static unsigned long getcolor(const char* color);
@@ -137,8 +136,10 @@ static desktop desktops[5];
 void add_window(Window w) {
     client *c,*t;
 
-    if(!(c = (client *)calloc(1,sizeof(client))))
-           die("Error calloc!");
+    if(!(c = (client *)calloc(1,sizeof(client)))) {
+        logger("\033[0;31mError calloc!\033[0m");
+        exit(1);
+    }
 
     if(head == NULL) {
         c->next = NULL;
@@ -614,9 +615,10 @@ unsigned long getcolor(const char* color) {
     XColor c;
     Colormap map = DefaultColormap(dis,screen);
 
-    if(!XAllocNamedColor(dis,map,color,&c,&c))
-        die("Error parsing color!");
-
+    if(!XAllocNamedColor(dis,map,color,&c,&c)) {
+        logger("\033[0;31mError parsing color!\033[0m");
+        exit(1);
+    }
     return c.pixel;
 }
 
@@ -637,9 +639,9 @@ void quit() {
     if(bool_quit == 1) {
         XUngrabKey(dis, AnyKey, AnyModifier, root);
         XDestroySubwindows(dis, root);
-        logger(" Thanks for using!");
+        logger(" \033[0;33mThanks for using!\033[0m");
         XCloseDisplay(dis);
-        logger("forced shutdown");
+        logger("\033[0;31mforced shutdown\033[0m");
     }
 
     bool_quit = 1;
@@ -656,16 +658,11 @@ void quit() {
     }
 
     XUngrabKey(dis,AnyKey,AnyModifier,root);
-    logger("You Quit : Thanks for using!");
-}
-
-void die(const char* e) {
-    fprintf(stdout,"\n:: DMiniWM : %s\n\n",e);
-    exit(1);
+    logger("\033[0;34mYou Quit : Thanks for using!\033[0m");
 }
 
 void logger(const char* e) {
-    fprintf(stdout,"\n:: DMiniWM : %s\n\n",e);
+    fprintf(stdout,"\n\033[0;34m:: DMiniWM : %s\n\n",e);
 }
  
 void setup() {
@@ -732,13 +729,15 @@ void setup() {
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask);
     XSetErrorHandler(xerror);
-    logger("We're up and running!");
+    logger("\033[0;32mWe're up and running!\033[0m");
 }
 
 void sigchld(int unused) {
     // Again, thx to dwm ;)
-	if(signal(SIGCHLD, sigchld) == SIG_ERR)
-		die("Can't install SIGCHLD handler");
+	if(signal(SIGCHLD, sigchld) == SIG_ERR) {
+		logger("\033[0;31mCan't install SIGCHLD handler\033[0m");
+		exit(1);
+        }
 	while(0 < waitpid(-1, NULL, WNOHANG));
 }
 
@@ -759,7 +758,7 @@ void spawn(const Arg arg) {
 int xerror(Display *dis, XErrorEvent *ee) {
     if(ee->error_code == BadWindow)
         return 0;
-    logger("Bad Window Error!");
+    logger("\033[0;31mBad Window Error!\033[0m");
     return xerrorxlib(dis, ee); /* may call exit */
 }
 
@@ -776,8 +775,10 @@ void start() {
 
 int main(int argc, char **argv) {
     // Open display   
-    if(!(dis = XOpenDisplay(NULL)))
-        die("Cannot open display!");
+    if(!(dis = XOpenDisplay(NULL))) {
+        logger("\033[0;31mCannot open display!\033[0m");
+        exit(1);
+    }
 
     // Setup env
     setup();
