@@ -662,7 +662,7 @@ void quit() {
 }
 
 void logger(const char* e) {
-    fprintf(stdout,"\n\033[0;34m:: DMiniWM : %s\n\n",e);
+    fprintf(stdout,"\n\033[0;34m:: DMiniWM : "); fprintf(stdout, e);
 }
  
 void setup() {
@@ -756,7 +756,14 @@ void spawn(const Arg arg) {
 
 /* There's no way to check accesses to destroyed windows, thus those cases are ignored (especially on UnmapNotify's).  Other types of errors call Xlibs default error handler, which may call exit.  */
 int xerror(Display *dis, XErrorEvent *ee) {
-    if(ee->error_code == BadWindow)
+    if(ee->error_code == BadWindow
+	|| (ee->request_code == X_SetInputFocus && ee->error_code == BadMatch)
+	|| (ee->request_code == X_PolyText8 && ee->error_code == BadDrawable)
+	|| (ee->request_code == X_PolyFillRectangle && ee->error_code == BadDrawable)
+	|| (ee->request_code == X_PolySegment && ee->error_code == BadDrawable)
+	|| (ee->request_code == X_ConfigureWindow && ee->error_code == BadMatch)
+	|| (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
+	|| (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
         return 0;
     logger("\033[0;31mBad Window Error!\033[0m");
     return xerrorxlib(dis, ee); /* may call exit */
