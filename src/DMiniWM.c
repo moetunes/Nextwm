@@ -208,6 +208,8 @@ void remove_window(Window w) {
 
             free(c);
             save_desktop(current_desktop);
+            tile();
+            update_current();
             return;
         }
     }
@@ -377,7 +379,6 @@ void client_to_desktop(const Arg arg) {
     XUnmapWindow(dis,tmp->win);
     remove_window(current->win);
     save_desktop(tmp2);
-
     tile();
     update_current();
     
@@ -548,8 +549,6 @@ void destroynotify(XEvent *e) {
         return;
 
     remove_window(ev->window);
-    tile();
-    update_current();
 }
 
 void maprequest(XEvent *e) {
@@ -586,17 +585,18 @@ void enternotify(XEvent *e) {
    }
 }
 void kill_client() {
-	if(current != NULL) {
-		//send delete signal to window
-		XEvent ke;
-		ke.type = ClientMessage;
-		ke.xclient.window = current->win;
-		ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
-		ke.xclient.format = 32;
-		ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
-		ke.xclient.data.l[1] = CurrentTime;
-		XSendEvent(dis, current->win, False, NoEventMask, &ke);
-		send_kill_signal(current->win);
+    if(current != NULL) {
+        //send delete signal to window
+        XEvent ke;
+        ke.type = ClientMessage;
+        ke.xclient.window = current->win;
+        ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
+        ke.xclient.format = 32;
+        ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
+        ke.xclient.data.l[1] = CurrentTime;
+        XSendEvent(dis, current->win, False, NoEventMask, &ke);
+        send_kill_signal(current->win);
+        remove_window(current->win);
 	}
 }
 
