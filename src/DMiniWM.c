@@ -1,4 +1,4 @@
-/* DMiniWM.c [ 8 ]
+/* DMiniWM.c [ 9 ]
 *
 *  I started this from catwm 31/12/10 with many thanks!
 *  Bad window error checking and numlock checking used from
@@ -93,6 +93,7 @@ static void start();
 static void swap_master();
 static void tile();
 static void toggle_fullscreen();
+static void switch_grid();
 static void switch_horizontal();
 static void switch_vertical();
 static void update_current();
@@ -137,7 +138,7 @@ void add_window(Window w) {
     client *c,*t;
 
     if(!(c = (client *)calloc(1,sizeof(client)))) {
-        logger("\033[0;31mError calloc!\033[0m");
+        logger("\033[0;31mError calloc!\033[0m\n");
         exit(1);
     }
 
@@ -273,14 +274,21 @@ void prev_win() {
 void swap_master() {
     Window tmp;
 
-    if(head != NULL && current != NULL && current != head && mode != 1) {
-        tmp = head->win;
-        head->win = current->win;
-        current->win = tmp;
-        current = head;
-
+    if(head != NULL && current != NULL && mode != 1) {
+        if(current == head) {
+            tmp = head->next->win;
+            head->next->win = head->win;
+            head->win = tmp;
+            current = head;
+        } else {
+            tmp = head->win;
+            head->win = current->win;
+            current->win = tmp;
+            current = head;
+        }
         save_desktop(current_desktop);
         tile();
+        update_current();
     }
 }
 
@@ -377,7 +385,7 @@ void client_to_desktop(const Arg arg) {
     // Remove client from current desktop
     select_desktop(tmp2);
     XUnmapWindow(dis,tmp->win);
-    remove_window(current->win);
+    remove_window(tmp->win);
     save_desktop(tmp2);
     tile();
     update_current();
@@ -446,6 +454,62 @@ void tile() {
                     x += sh/n;
                 }
                 break;
+            case 3: { // Grid
+                int xpos = 0;
+                int wdt = 0;
+                int ht = 0;
+
+                for(c=head;c;c=c->next) {
+                    ++n;
+                    if((n == 1) || (n == 3) || (n == 5) || (n == 7))
+                        x += 1;
+                }
+                n = 0;
+                for(c=head;c;c=c->next) {
+                    ++n;
+                    if(x == 4) {
+                        wdt = (sw/3) - BORDER_WIDTH;
+                        ht  = (sh/3) - BORDER_WIDTH;
+                        if((n == 1) || (n == 4) || (n == 7))
+                            xpos = 0;
+                        if((n == 2) || (n == 5) || (n == 8))
+                            xpos = (sw/3) + BORDER_WIDTH;
+                        if((n == 3) || (n == 6) || (n == 9))
+                            xpos = (2*(sw/3)) + BORDER_WIDTH;
+                        if((n == 4) || (n == 7))
+                            y += (sh/3) + BORDER_WIDTH;
+                    } else 
+                    if(x == 3) {
+                        wdt = (sw/3) - BORDER_WIDTH;
+                        ht  = (sh/2) - BORDER_WIDTH;
+                        if((n == 1) || (n == 4))
+                            xpos = 0;
+                        if((n == 2) || (n == 5))
+                            xpos = (sw/3) + BORDER_WIDTH;
+                        if((n == 3) || (n == 6))
+                            xpos = (2*(sw/3)) + BORDER_WIDTH;
+                        if(n == 4)
+                            y = (sh/2) + BORDER_WIDTH;
+                    } else {
+                        if(n > 2)
+                            ht = (sh/x) - 2*BORDER_WIDTH;
+                        else
+                            ht = sh/x;
+                        if((n == 1) || (n == 3)) {
+                            xpos = 0;
+                            wdt = master_size - BORDER_WIDTH;
+                        }
+                        if((n == 2) || (n == 4)) {
+                            xpos = master_size+BORDER_WIDTH;
+                            wdt = (sw - master_size) - BORDER_WIDTH;
+                        }
+                        if(n == 3)
+                            y += (sh/x)+2*BORDER_WIDTH;
+                    }
+                    XMoveResizeWindow(dis,c->win,xpos,y,wdt,ht);
+                }
+            }
+            break;
             default:
                 break;
         }
@@ -481,6 +545,15 @@ void switch_horizontal() {
             tile();
 	    update_current();
 	}
+}
+
+void switch_grid() {
+    if(mode != 3) {
+        mode = 3;
+        master_size = sw * MASTER_SIZE;
+        tile();
+        update_current();
+    }
 }
 
 /* ********************** Keyboard Management ********************** */
@@ -616,7 +689,7 @@ unsigned long getcolor(const char* color) {
     Colormap map = DefaultColormap(dis,screen);
 
     if(!XAllocNamedColor(dis,map,color,&c,&c)) {
-        logger("\033[0;31mError parsing color!\033[0m");
+        logger("\033[0;31mError parsing color!\033[0m\n");
         exit(1);
     }
     return c.pixel;
@@ -639,9 +712,9 @@ void quit() {
     if(bool_quit == 1) {
         XUngrabKey(dis, AnyKey, AnyModifier, root);
         XDestroySubwindows(dis, root);
-        logger(" \033[0;33mThanks for using!\033[0m");
+        logger(" \033[0;33mThanks for using!\033[0m\n");
         XCloseDisplay(dis);
-        logger("\033[0;31mforced shutdown\033[0m");
+        logger("\033[0;31mforced shutdown\033[0m\n");
     }
 
     bool_quit = 1;
@@ -658,7 +731,7 @@ void quit() {
     }
 
     XUngrabKey(dis,AnyKey,AnyModifier,root);
-    logger("\033[0;34mYou Quit : Thanks for using!\033[0m");
+    logger("\033[0;34mYou Quit : Thanks for using!\033[0m\n");
 }
 
 void logger(const char* e) {
@@ -729,13 +802,13 @@ void setup() {
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask);
     XSetErrorHandler(xerror);
-    logger("\033[0;32mWe're up and running!\033[0m");
+    logger("\033[0;32mWe're up and running!\033[0m\n");
 }
 
 void sigchld(int unused) {
     // Again, thx to dwm ;)
 	if(signal(SIGCHLD, sigchld) == SIG_ERR) {
-		logger("\033[0;31mCan't install SIGCHLD handler\033[0m");
+		logger("\033[0;31mCan't install SIGCHLD handler\033[0m\n");
 		exit(1);
         }
 	while(0 < waitpid(-1, NULL, WNOHANG));
@@ -765,7 +838,7 @@ int xerror(Display *dis, XErrorEvent *ee) {
 	|| (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
 	|| (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
         return 0;
-    logger("\033[0;31mBad Window Error!\033[0m");
+    logger("\033[0;31mBad Window Error!\033[0m\n");
     return xerrorxlib(dis, ee); /* may call exit */
 }
 
@@ -783,7 +856,7 @@ void start() {
 int main(int argc, char **argv) {
     // Open display   
     if(!(dis = XOpenDisplay(NULL))) {
-        logger("\033[0;31mCannot open display!\033[0m");
+        logger("\033[0;31mCannot open display!\033[0m\n");
         exit(1);
     }
 

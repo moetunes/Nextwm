@@ -1,4 +1,4 @@
- /* config.h for DMiniWM.c [ 8 ]
+ /* config.h for DMiniWM.c [ 9 ]
  *
  *  Started from catwm 31/12/10 with many thanks !
  *  Bad window error checking and numlock checking used from
@@ -28,10 +28,10 @@
 #define MOD1            Mod1Mask
 #define MOD4		Mod4Mask
 #define MASTER_SIZE     0.6
-#define PANEL_HEIGHT	20 /* 0 for no space for a panel */
-#define BORDER_WIDTH    3
+#define PANEL_HEIGHT	18 /* 0 for no space for a panel */
+#define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 0=TRUE, 1=New window is master */
-#define DEFAULT_MODE    2  /* 0 = Horizontal, 1 = Fullscreen, 2 = Vertical */
+#define DEFAULT_MODE    2  /* 0 = Horizontal, 1 = Fullscreen, 2 = Vertical 3 = Grid */
 #define FOLLOW_WINDOW   0  /* 1=Don't 0=Change desktops when moving window */
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
 #define TOP_PANEL       1  /* 1=Don't 0=Have the panel at the top instead of the bottom */
@@ -47,8 +47,8 @@ const char* thunarcmd[]     = {"thunar",NULL};
 const char* firefoxcmd[]    = {"firefox",NULL};
 const char* conkerorcmd[]   = {"conkeror",NULL};
 const char* mailcmd[]       = {"thunderbird",NULL };
-const char* voldowncmd[]    = {"amixer","-c","0","set","speaker","5%-",NULL};
-const char* volupcmd[]      = {"amixer","-c","0","set","speaker","5%+",NULL};
+const char* voldowncmd[]    = {"/home/pnewm/bin/voldown",NULL};
+const char* volupcmd[]      = {"/home/pnewm/bin/volup",NULL};
 const char* vols_what[]     = {"/home/pnewm/bin/volumes_what",NULL};
 // for reboot and shutdown
 const char* rebootcmd[]     = {"sudo","reboot",NULL};
@@ -78,6 +78,7 @@ static key keys[] = {
     {  MOD1|ShiftMask,   XK_m,          toggle_fullscreen, {NULL}},
     {  MOD1|ShiftMask,   XK_v,          switch_vertical,   {NULL}},
     {  MOD1|ShiftMask,   XK_h,          switch_horizontal, {NULL}},
+    {  MOD1|ShiftMask,   XK_g,          switch_grid,       {NULL}},
 // Control + alt + shortcut
     {  MOD1|ControlMask, XK_q,          quit,              {NULL}},
     {  MOD1|ControlMask, XK_r,          spawn,             {.com = rebootcmd}},

@@ -31,6 +31,14 @@ It allows the "normal" method of tiling window managers(with the new window as t
     |-----------|
     |   |   |   |
     -------------
+    
+    Grid tiling mode:
+    -------------
+    |      |    |
+    |      |    |
+    |------|----|
+    |      |    |
+    -------------
 
     Fullscreen mode(which you'll know when you see it)
 
