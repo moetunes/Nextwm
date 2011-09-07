@@ -131,7 +131,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
 };
 
 // Desktop array
-static desktop desktops[5];
+static desktop desktops[6];
 
 /* ***************************** Window Management ******************************* */
 void add_window(Window w) {
@@ -305,8 +305,6 @@ void increase() {
 void update_current() {
     client *c;
 
-    if(head == NULL)
-        return;
     for(c=head;c;c=c->next)
         if(current == c) {
             // "Enable" current window
@@ -608,23 +606,6 @@ void configurerequest(XEvent *e) {
     XSync(dis, False);
 }
 
-/*void destroynotify(XEvent *e) {
-    int i=0;
-    client *c;
-    XDestroyWindowEvent *ev = &e->xdestroywindow;
-
-    // Uber (and ugly) hack ;)
-    for(c=head;c;c=c->next)
-        if(ev->window == c->win)
-            i++;
-    
-    // End of the hack
-    if(i == 0)
-        return;
-
-    remove_window(ev->window);
-}
-*/
 void destroynotify(XEvent *e) {
     int i=0;
     int j = 0;
@@ -637,16 +618,13 @@ void destroynotify(XEvent *e) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win)
                 i++;
-    
-        // End of the hack
-        if(i != 0) {
+
+        if(i != 0)
             remove_window(ev->window);
-            if(j != tmp)
-                select_desktop(tmp);
-        }
-        if(i != 0);
-            break;
+
+        i = 0;
     }
+    select_desktop(tmp);
 }
 
 void maprequest(XEvent *e) {
