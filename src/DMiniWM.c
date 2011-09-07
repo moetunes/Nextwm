@@ -1,4 +1,4 @@
-/* DMiniWM.c [ 9 ]
+/* DMiniWM.c [ 0.1.0 ]
 *
 *  I started this from catwm 31/12/10 with many thanks!
 *  Bad window error checking and numlock checking used from
@@ -189,6 +189,7 @@ void remove_window(Window w) {
                 free(head);
                 head = NULL;
                 current = NULL;
+                save_desktop(current_desktop);
                 return;
             }
 
@@ -279,7 +280,6 @@ void swap_master() {
             tmp = head->next->win;
             head->next->win = head->win;
             head->win = tmp;
-            current = head;
         } else {
             tmp = head->win;
             head->win = current->win;
@@ -305,12 +305,13 @@ void increase() {
 void update_current() {
     client *c;
 
+    if(head == NULL)
+        return;
     for(c=head;c;c=c->next)
         if(current == c) {
             // "Enable" current window
             XSetWindowBorderWidth(dis,c->win,BORDER_WIDTH);
-            if(!(XSetWindowBorder(dis,c->win,win_focus)))
-                printf("\n GGGGGGGGGGGGGGGGGGGGGGGG \n");
+            XSetWindowBorder(dis,c->win,win_focus);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
         }
@@ -350,7 +351,7 @@ void change_desktop(const Arg arg) {
 
 void next_desktop() {
     int tmp = current_desktop;
-    if(tmp == 5)
+    if(tmp == TABLENGTH(desktops))
         tmp = 0;
     else
         tmp++;
@@ -362,7 +363,7 @@ void next_desktop() {
 void prev_desktop() {
     int tmp = current_desktop;
     if(tmp == 0)
-        tmp = 5;
+        tmp = TABLENGTH(desktops);
     else
         tmp--;
 
@@ -439,7 +440,7 @@ void tile() {
                 break;
             case 1: /* Fullscreen */
                 for(c=head;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,0,y,sw-2*BORDER_WIDTH,sh-2*BORDER_WIDTH);
+                    XMoveResizeWindow(dis,c->win,0,y,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
                 }
                 break;
             case 2: /* Vertical */
@@ -607,7 +608,7 @@ void configurerequest(XEvent *e) {
     XSync(dis, False);
 }
 
-void destroynotify(XEvent *e) {
+/*void destroynotify(XEvent *e) {
     int i=0;
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
@@ -622,6 +623,30 @@ void destroynotify(XEvent *e) {
         return;
 
     remove_window(ev->window);
+}
+*/
+void destroynotify(XEvent *e) {
+    int i=0;
+    int j = 0;
+    int tmp = current_desktop;
+    client *c;
+    XDestroyWindowEvent *ev = &e->xdestroywindow;
+
+    for(j=0;j<TABLENGTH(desktops);++j) {
+        select_desktop(j);
+        for(c=head;c;c=c->next)
+            if(ev->window == c->win)
+                i++;
+    
+        // End of the hack
+        if(i != 0) {
+            remove_window(ev->window);
+            if(j != tmp)
+                select_desktop(tmp);
+        }
+        if(i != 0);
+            break;
+    }
 }
 
 void maprequest(XEvent *e) {
