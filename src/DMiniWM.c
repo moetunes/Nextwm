@@ -1,4 +1,4 @@
-/* DMiniWM.c [ 0.1.0 ]
+/* DMiniWM.c [ 0.1.1 ]
 *
 *  I started this from catwm 31/12/10 with many thanks!
 *  Bad window error checking and numlock checking used from
@@ -217,6 +217,22 @@ void remove_window(Window w) {
     }
 }
 
+void kill_client() {
+    if(current != NULL) {
+        //send delete signal to window
+        XEvent ke;
+        ke.type = ClientMessage;
+        ke.xclient.window = current->win;
+        ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
+        ke.xclient.format = 32;
+        ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
+        ke.xclient.data.l[1] = CurrentTime;
+        XSendEvent(dis, current->win, False, NoEventMask, &ke);
+        send_kill_signal(current->win);
+        remove_window(current->win);
+	}
+}
+
 void move_down() {
     Window tmp;
     if(current == NULL || current->next == NULL || current->win == head->win || current->prev == NULL)
@@ -254,6 +270,8 @@ void next_win() {
             c = current->next;
 
         current = c;
+        if(mode == 1)
+            tile();
         update_current();
     }
 }
@@ -268,6 +286,8 @@ void prev_win() {
             c = current->prev;
 
         current = c;
+        if(mode == 1)
+            tile();
         update_current();
     }
 }
@@ -302,23 +322,6 @@ void increase() {
         tile();
 }
 
-void update_current() {
-    client *c;
-
-    for(c=head;c;c=c->next)
-        if(current == c) {
-            // "Enable" current window
-            XSetWindowBorderWidth(dis,c->win,BORDER_WIDTH);
-            XSetWindowBorder(dis,c->win,win_focus);
-            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
-            XRaiseWindow(dis,c->win);
-        }
-        else
-            XSetWindowBorder(dis,c->win,win_unfocus);
-
-    XSync(dis, False);
-}
-
 /* **************************** Desktop Management ************************************* */
 void change_desktop(const Arg arg) {
     client *c;
@@ -349,7 +352,7 @@ void change_desktop(const Arg arg) {
 
 void next_desktop() {
     int tmp = current_desktop;
-    if(tmp == TABLENGTH(desktops))
+    if(tmp == TABLENGTH(desktops)-1)
         tmp = 0;
     else
         tmp++;
@@ -361,7 +364,7 @@ void next_desktop() {
 void prev_desktop() {
     int tmp = current_desktop;
     if(tmp == 0)
-        tmp = TABLENGTH(desktops);
+        tmp = TABLENGTH(desktops)-1;
     else
         tmp--;
 
@@ -515,6 +518,23 @@ void tile() {
     }
 }
 
+void update_current() {
+    client *c;
+
+    for(c=head;c;c=c->next)
+        if(current == c) {
+            // "Enable" current window
+            XSetWindowBorderWidth(dis,c->win,BORDER_WIDTH);
+            XSetWindowBorder(dis,c->win,win_focus);
+            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
+            XRaiseWindow(dis,c->win);
+        }
+        else
+            XSetWindowBorder(dis,c->win,win_unfocus);
+
+    XSync(dis, False);
+}
+
 void toggle_fullscreen() {
     if(mode != 1) {
         holder = mode;
@@ -529,21 +549,21 @@ void toggle_fullscreen() {
 }
 
 void switch_vertical() {
-	if(mode != 2) {
-            mode = 2;
-            master_size = sw * MASTER_SIZE;
-	    tile();
-            update_current();
-        }
+    if(mode != 2) {
+        mode = 2;
+        master_size = sw * MASTER_SIZE;
+	tile();
+        update_current();
+    }
 }
 
 void switch_horizontal() {
-	if(mode != 0) {
-	    mode = 0;
-            master_size = sh * MASTER_SIZE;
-            tile();
-	    update_current();
-	}
+    if(mode != 0) {
+        mode = 0;
+        master_size = sh * MASTER_SIZE;
+        tile();
+        update_current();
+    }
 }
 
 void switch_grid() {
@@ -606,36 +626,20 @@ void configurerequest(XEvent *e) {
     XSync(dis, False);
 }
 
-void destroynotify(XEvent *e) {
-    int i=0;
-    int j = 0;
-    int tmp = current_desktop;
-    client *c;
-    XDestroyWindowEvent *ev = &e->xdestroywindow;
-
-    for(j=0;j<TABLENGTH(desktops);++j) {
-        select_desktop(j);
-        for(c=head;c;c=c->next)
-            if(ev->window == c->win)
-                i++;
-
-        if(i != 0)
-            remove_window(ev->window);
-
-        i = 0;
-    }
-    select_desktop(tmp);
-}
-
 void maprequest(XEvent *e) {
     XMapRequestEvent *ev = &e->xmaprequest;
     
     // For fullscreen mplayer (and maybe some other program)
     client *c;
+    XWindowChanges wc;
+    
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
-            XMoveResizeWindow(dis,c->win,0,0,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
+            wc.x = 0; wc.y = 0; wc.width = sw; wc.height = sh; wc.border_width = 0;
+            XConfigureWindow(dis, ev->window, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
+            //XMoveResizeWindow(dis,c->win,0,0,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
+            //XSetWindowBorderWidth(dis,c->win,10);
             return;
         }
 
@@ -643,6 +647,31 @@ void maprequest(XEvent *e) {
     XMapWindow(dis,ev->window);
     tile();
     update_current();
+}
+
+void destroynotify(XEvent *e) {
+    int i=0;
+    int j = 0;
+    int tmp = current_desktop;
+    client *c;
+    XDestroyWindowEvent *ev = &e->xdestroywindow;
+
+    save_desktop(tmp);
+    for(j=0;j<TABLENGTH(desktops);++j) {
+        select_desktop(j);
+        for(c=head;c;c=c->next)
+            if(ev->window == c->win)
+                i++;
+
+        if(i != 0) {
+            remove_window(ev->window);
+            select_desktop(tmp);
+            return;
+        }
+
+        i = 0;
+    }
+    select_desktop(tmp);
 }
 
 void enternotify(XEvent *e) {
@@ -659,21 +688,6 @@ void enternotify(XEvent *e) {
                 return;
        }
    }
-}
-void kill_client() {
-    if(current != NULL) {
-        //send delete signal to window
-        XEvent ke;
-        ke.type = ClientMessage;
-        ke.xclient.window = current->win;
-        ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
-        ke.xclient.format = 32;
-        ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
-        ke.xclient.data.l[1] = CurrentTime;
-        XSendEvent(dis, current->win, False, NoEventMask, &ke);
-        send_kill_signal(current->win);
-        remove_window(current->win);
-	}
 }
 
 void send_kill_signal(Window w) { 

@@ -1,0 +1,6 @@
+9/9/11
+   Fine tuned the next/prev desktop and the destroy notify functions
+
+ 8/9/11
+    Have a proper destroy notify function now that removes destroyed windows from
+     the window manager stack for the desktop they were on.
