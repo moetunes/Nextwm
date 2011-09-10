@@ -1,4 +1,4 @@
-/* DMiniWM.c [ 0.1.1 ]
+/* DMiniWM.c [ 0.1.2 ]
 *
 *  I started this from catwm 31/12/10 with many thanks!
 *  Bad window error checking and numlock checking used from
@@ -138,7 +138,7 @@ void add_window(Window w) {
     client *c,*t;
 
     if(!(c = (client *)calloc(1,sizeof(client)))) {
-        logger("\033[0;31mError calloc!\033[0m\n");
+        logger("\033[0;31mError calloc!");
         exit(1);
     }
 
@@ -631,15 +631,12 @@ void maprequest(XEvent *e) {
     
     // For fullscreen mplayer (and maybe some other program)
     client *c;
-    XWindowChanges wc;
     
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
-            wc.x = 0; wc.y = 0; wc.width = sw; wc.height = sh; wc.border_width = 0;
-            XConfigureWindow(dis, ev->window, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
-            //XMoveResizeWindow(dis,c->win,0,0,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
-            //XSetWindowBorderWidth(dis,c->win,10);
+            XMoveResizeWindow(dis,c->win,0,0,sw-BORDER_WIDTH,sh-BORDER_WIDTH);
+            XSetWindowBorderWidth(dis,c->win,10);
             return;
         }
 
@@ -706,7 +703,7 @@ unsigned long getcolor(const char* color) {
     Colormap map = DefaultColormap(dis,screen);
 
     if(!XAllocNamedColor(dis,map,color,&c,&c)) {
-        logger("\033[0;31mError parsing color!\033[0m\n");
+        logger("\033[0;31mError parsing color!");
         exit(1);
     }
     return c.pixel;
@@ -729,9 +726,9 @@ void quit() {
     if(bool_quit == 1) {
         XUngrabKey(dis, AnyKey, AnyModifier, root);
         XDestroySubwindows(dis, root);
-        logger(" \033[0;33mThanks for using!\033[0m\n");
+        logger(" \033[0;33mThanks for using!");
         XCloseDisplay(dis);
-        logger("\033[0;31mforced shutdown\033[0m\n");
+        logger("\033[0;31mforced shutdown");
     }
 
     bool_quit = 1;
@@ -748,11 +745,11 @@ void quit() {
     }
 
     XUngrabKey(dis,AnyKey,AnyModifier,root);
-    logger("\033[0;34mYou Quit : Thanks for using!\033[0m\n");
+    logger("\033[0;34mYou Quit : Thanks for using!");
 }
 
 void logger(const char* e) {
-    fprintf(stdout,"\n\033[0;34m:: DMiniWM : "); fprintf(stdout, e);
+    fprintf(stdout,"\n\033[0;34m:: DMiniWM : %s \033[0;m\n", e);
 }
  
 void setup() {
@@ -819,13 +816,13 @@ void setup() {
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask);
     XSetErrorHandler(xerror);
-    logger("\033[0;32mWe're up and running!\033[0m\n");
+    logger("\033[0;32mWe're up and running!");
 }
 
 void sigchld(int unused) {
     // Again, thx to dwm ;)
 	if(signal(SIGCHLD, sigchld) == SIG_ERR) {
-		logger("\033[0;31mCan't install SIGCHLD handler\033[0m\n");
+		logger("\033[0;31mCan't install SIGCHLD handler");
 		exit(1);
         }
 	while(0 < waitpid(-1, NULL, WNOHANG));
@@ -855,7 +852,7 @@ int xerror(Display *dis, XErrorEvent *ee) {
 	|| (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
 	|| (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
         return 0;
-    logger("\033[0;31mBad Window Error!\033[0m\n");
+    logger("\033[0;31mBad Window Error!");
     return xerrorxlib(dis, ee); /* may call exit */
 }
 
@@ -873,7 +870,7 @@ void start() {
 int main(int argc, char **argv) {
     // Open display   
     if(!(dis = XOpenDisplay(NULL))) {
-        logger("\033[0;31mCannot open display!\033[0m\n");
+        logger("\033[0;31mCannot open display!");
         exit(1);
     }
 
