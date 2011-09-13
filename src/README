@@ -76,6 +76,7 @@ There are more options in the config file than the original catwm.
 ###------------
 
 Need Xlib, then:
+
     *$ make
     # make install
     $ make clean*
