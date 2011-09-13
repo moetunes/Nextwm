@@ -1,12 +1,12 @@
-####DMiniWM
+##DMiniWM
 ### it's minimal and dynamic
 
 I started this from catwm 31/12/10 ( https://bbs.archlinux.org/viewtopic.php?id=100215&p=1 )
 See DMiniWM.c or config.h for thanks and licensing.
 
 
-##Summary
-##-------
+###Summary
+###-------
 
 
 **DMiniWM** is a very minimal and lightweight dynamic tiling window manager.
@@ -14,8 +14,8 @@ See DMiniWM.c or config.h for thanks and licensing.
     Currently well under 900 lines with the config file included.
 
 
-##Modes
-##-----
+###Modes
+###-----
 
 It allows the "normal" method of tiling window managers(with the new window as the master)
     and with the new window opened at the bottom of the stack(like dwm's attach_aside)
@@ -54,15 +54,15 @@ It allows the "normal" method of tiling window managers(with the new window as t
         to remember the tiling mode for each workspace for the session.
 
 
-##Recent Changes
-##--------------
+###Recent Changes
+###--------------
 
 7/9/11
 Fixed ghost windows being created.
 
 
-##Status
-##------
+###Status
+###------
 
 There are more options in the config file than the original catwm.
     Fixed the window manager crashing on a bad window error.
@@ -72,8 +72,8 @@ There are more options in the config file than the original catwm.
     Fixed ghost windows being created.
 
 
-##Installation
-##------------
+###Installation
+###------------
 
 Need Xlib, then:
     $ make ( I stop at this step and run the wm from the dir I built it in )
@@ -84,11 +84,11 @@ Need Xlib, then:
     $ make clean
 
 
-##Bugs
-##----
+###Bugs
+###----
 
 [ * No bugs for the moment ;) (I mean, no importants bugs ;)]
 
 
-##Todo
-##----
+###Todo
+###----
