@@ -76,10 +76,7 @@ There are more options in the config file than the original catwm.
 ###------------
 
 Need Xlib, then:
-    $ make ( I stop at this step and run the wm from the dir I built it in )
-        {I use the command
-            cd build/DMiniWM/src && make clean && make && cd || cd }
-
+    $ make
     # make install
     $ make clean
 
