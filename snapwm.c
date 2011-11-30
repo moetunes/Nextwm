@@ -1,4 +1,4 @@
-/* woodywm.c [ 0.0.4 ]
+/* snapwm.c [ 0.0.1 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from

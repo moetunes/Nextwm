@@ -1,8 +1,8 @@
-##woodywm
+##snapwm
 ### it's minimal and dynamic
 
 I started this from catwm 31/12/10 ( https://bbs.archlinux.org/viewtopic.php?id=100215&p=1 )
-    See woodywm.c or config.h for thanks and licensing.
+    See snapwm.c or config.h for thanks and licensing.
 Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=126463
 
 
@@ -10,7 +10,7 @@ Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=
 -------
 
 
-**woodywm** is a very minimal and lightweight dynamic tiling window manager.
+**snapwm** is a very minimal and lightweight dynamic tiling window manager.
 
 
 ###Modes

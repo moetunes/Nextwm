@@ -1,7 +1,7 @@
 CFLAGS+= -Wall
 LDADD+= -lX11
 LDFLAGS=
-EXEC=woodywm
+EXEC=snapwm
 
 PREFIX?= /usr/local
 BINDIR?= $(PREFIX)/bin
@@ -10,12 +10,12 @@ CC=gcc
 
 all: $(EXEC)
 
-woodywm: woodywm.o
+snapwm: snapwm.o
 	$(CC) $(LDFLAGS) -s -Os -o $@ $+ $(LDADD)
 
 install: all
-	install -Dm 755 woodywm $(DESTDIR)$(BINDIR)/woodywm
+	install -Dm 755 snapwm $(DESTDIR)$(BINDIR)/snapwm
 
 clean:
-	rm -fv woodywm *.o
+	rm -fv snapwm *.o
 
