@@ -1,0 +1,5 @@
+woodywm
+config.h
+*.o
+*.swp
+*~
