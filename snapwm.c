@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.1 ]
+/* snapwm.c [ 0.0.2 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -692,14 +692,14 @@ void status_bar() {
     }
 	
 	sb_desks = (i*width)-((DESKTOPS/2)*BORDER_WIDTH);
-    sb_area = XCreateSimpleWindow(dis, root, sb_desks+2*BORDER_WIDTH, sh+PANEL_HEIGHT+BORDER_WIDTH,
+    sb_area = XCreateSimpleWindow(dis, root, sb_desks+(DESKTOPS/2)*BORDER_WIDTH, sh+PANEL_HEIGHT+BORDER_WIDTH,
              sw-(sb_desks+4*BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,border,normal);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
 
 	update_bar();
-	status_text("woodywm-------------------WOOT!!!!!*****!!!!!*****!!!!!##");
+	status_text("snapwm-------------------WOOT!!!!!*****!!!!!*****!!!!!##");
 }
 
 void toggle_bar() {
@@ -737,8 +737,8 @@ void getwindowname() {
 void status_text(const char *sb_text) {
 	int text_length, texty;
 
-	if(sb_text == NULL) sb_text = "woodywm";
-	if(head == NULL) sb_text = "woodywm";
+	if(sb_text == NULL) sb_text = "snapwm";
+	if(head == NULL) sb_text = "snapwm";
 	if(strlen(sb_text) >= 45)
 	    text_length = 45;
 	else
@@ -1060,7 +1060,7 @@ void quit() {
 }
 
 void logger(const char* e) {
-    fprintf(stdout,"\n\033[0;34m:: woodywm : %s \033[0;m\n", e);
+    fprintf(stdout,"\n\033[0;34m:: snapwm : %s \033[0;m\n", e);
 }
 
 void setup() {
@@ -1077,7 +1077,7 @@ void setup() {
 	    fontname = FONTNAME;
         font = XLoadQueryFont(dis, fontname);
         if (!font) {
-            fprintf(stderr,"\033[0;34m :: woodywm :\033[0;31m unable to load preferred font: %s using fixed", fontname);
+            fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred font: %s using fixed", fontname);
             font = XLoadQueryFont(dis, "fixed");
         }
         sb_height = font->ascent+8;
