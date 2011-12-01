@@ -1,12 +1,12 @@
-// win_focus . dkorange
+// win_focus . dkorange focused window/desktop
 colour1 "#664422"
-// win_unfocus . blueish
+// win_unfocus . blueish unfocused window/desktop and statusbar
 colour2 "#004050"
-// hilight . lighter blueish
+// hilight . lighter blueish mouseover desktop switcher
 colour3 "#006070"
-// bordercolor . mid grey
-colour4 "#666666"
-// fontcolor . white
+// bordercolor . mid grey bar border and switcher lines
+colour4 "#555555"
+// fontcolor . white statusbar font
 colour5 "#ffffff"
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
 // "-*-freesans-*-r-*"
