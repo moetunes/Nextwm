@@ -59,7 +59,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-26/11/11
+1/12/11
 	Colours and font are read from an rc file and can be updated with a keyboard shortcut.
 
 ###Status
