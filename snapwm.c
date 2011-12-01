@@ -815,15 +815,26 @@ void read_rcfile() {
                 sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
             }
         }
-        status_bar();
         fclose(rcfile);
         return;
     }
 }
 void update_config() {
+    int i;
+    XGCValues values;
+
     read_rcfile();
     update_current();
+    XSetWindowBorder(dis,sb_area,bordercolor);
+    XSetWindowBackground(dis, sb_area, win_unfocus);
+    values.foreground = fontcolor;
+    values.font = font->fid;
+    XChangeGC(dis, sb_b, GCForeground|GCFont, &values);
+    XClearWindow(dis, sb_area);
+    for(i=0;i<DESKTOPS;i++)
+        XSetWindowBorder(dis, sb_bar[i].sb_win, bordercolor);
     update_bar();
+    getwindowname();
 }
 
 /* ********************** Keyboard Management ********************** */
@@ -1139,6 +1150,7 @@ void setup() {
     // Read in RCFILE
     //printf("\t Reading RCFILE\n");
     read_rcfile();
+    status_bar();
 
     // numlock workaround
     int j, k;
