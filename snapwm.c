@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.2 ]
+/* snapwm.c [ 0.0.3 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -112,7 +112,6 @@ static void enternotify(XEvent *e);
 static unsigned long getcolor(const char* color);
 static void getwindowname();
 static void grabkeys();
-static unsigned long normal, hilight, curlight;
 static void keypress(XEvent *e);
 static void kill_client();
 static void last_desktop();
@@ -126,6 +125,7 @@ static void prev_win();
 static void propertynotify(XEvent *e);
 static void quit();
 static void remove_window(Window w);
+static void read_rcfile();
 static void resize_master(const Arg arg);
 static void resize_stack(const Arg arg);
 static void rotate_desktop(const Arg arg);
@@ -146,6 +146,7 @@ static void switch_grid();
 static void switch_horizontal();
 static void switch_vertical();
 static void update_bar();
+static void update_config();
 static void update_current();
 
 // Include configuration file (need struct key)
@@ -167,14 +168,13 @@ static int screen;
 static int show_bar;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
-static unsigned int win_focus;
-static unsigned int win_unfocus;
+static unsigned int win_focus, win_unfocus, hilight, bordercolor, fontcolor;
 unsigned int numlockmask;		/* dynamic key lock mask */
 static Window root;
 static Window sb_area;
 static client *head;
 static client *current;
-static char *fontname;
+static char fontname[80];
 static XFontStruct *font;
 static GC sb_b, sb_c;
 // Events array
@@ -656,7 +656,6 @@ void resize_stack(const Arg arg) {
 
 /* ************************** Status Bar *************************** */
 void status_bar() {
-	unsigned long border;
     int width = 20;
     int i;
    	XGCValues values;
@@ -664,27 +663,22 @@ void status_bar() {
     logger(" \033[0;33mStatus Bar called ...");
 
    	/* create the sb_b GC to draw the font */
-	values.foreground = getcolor(FONTCOLOR);
+	values.foreground = fontcolor;
 	values.line_width = 2;
 	values.line_style = LineSolid;
 	values.font = font->fid;
 	sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
    	/* create the sb_c GC to draw the  */
-	values.foreground = getcolor(BORDERCOLOR);
+	values.foreground = bordercolor;
 	values.line_width = 2;
 	values.line_style = LineSolid;
 	values.font = font->fid;
 	sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
-	normal = getcolor(UNFOCUS);
-	hilight = getcolor(HILIGHT);
-	curlight = getcolor(FOCUS);
-	border = getcolor(BORDERCOLOR);
-
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*width, sh+PANEL_HEIGHT+BORDER_WIDTH,
-                                            width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,border,normal);
+                                            width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_focus);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
 
@@ -693,7 +687,7 @@ void status_bar() {
 	
 	sb_desks = (i*width)-((DESKTOPS/2)*BORDER_WIDTH);
     sb_area = XCreateSimpleWindow(dis, root, sb_desks+(DESKTOPS/2)*BORDER_WIDTH, sh+PANEL_HEIGHT+BORDER_WIDTH,
-             sw-(sb_desks+4*BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,border,normal);
+             sw-(sb_desks+4*BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_unfocus);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
@@ -753,12 +747,83 @@ void update_bar() {
     int i;
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, normal);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, win_unfocus);
             XClearWindow(dis, sb_bar[i].sb_win);
         } else {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, curlight);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, win_focus);
             XClearWindow(dis, sb_bar[i].sb_win);
         }
+}
+
+/* *********************** Read Config File ************************ */
+void read_rcfile() {
+    FILE *rcfile ; 
+    char buffer[80]; /* Way bigger that neccessary */
+    char dummy[8];
+
+    show_bar = STATUS_BAR;
+    rcfile = fopen( RCFILE, "r" ) ; 
+    if ( rcfile == NULL ) { 
+        fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RCFILE);
+        return; 
+    } else { 
+        while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
+            /* Now look for info */ 
+            if(strstr(buffer, "colour1" ) != NULL) {
+                strncpy(dummy,strstr(buffer, " ")+2, 7);
+                dummy[7] = '\0';
+                win_focus = getcolor(dummy);
+            }
+            if(strstr(buffer, "colour2" ) != NULL) {
+                strncpy(dummy,strstr(buffer, " ")+2, 7);
+                dummy[7] = '\0';
+                win_unfocus = getcolor(dummy);
+            }
+            if(strstr(buffer, "colour3" ) != NULL) {
+                strncpy(dummy,strstr(buffer, " ")+2, 7);
+                dummy[7] = '\0';
+                hilight = getcolor(dummy);
+            }
+            if(strstr(buffer, "colour4" ) != NULL) {
+                strncpy(dummy,strstr(buffer, " ")+2, 7);
+                dummy[7] = '\0';
+                bordercolor = getcolor(dummy);
+            }
+            if(strstr(buffer, "colour5" ) != NULL) {
+                strncpy(dummy,strstr(buffer, " ")+2, 7);
+                dummy[7] = '\0';
+                fontcolor = getcolor(dummy);
+            }
+            if(STATUS_BAR == 0) {
+                if(strstr(buffer,"FONTNAME" ) != NULL) {
+                    strncpy(fontname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
+                    font = XLoadQueryFont(dis, fontname);
+                    if (!font) {
+                        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred font: %s using fixed", fontname);
+                        font = XLoadQueryFont(dis, "fixed");
+                    } else {
+                        logger("\033[0;32m Font Loaded");
+                    }
+                    sb_height = font->ascent+8;
+
+                    // Screen height
+                    sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
+                    sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+                }
+            } else {
+                sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
+                sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+            }
+        }
+        status_bar();
+        fclose(rcfile);
+        return;
+    }
+}
+void update_config() {
+    read_rcfile();
+    update_current();
+    update_bar();
 }
 
 /* ********************** Keyboard Management ********************** */
@@ -957,7 +1022,7 @@ void leavenotify(XEvent *e) {
         int i;
         for(i=0;i<sb_desks;i++)
             if(sb_bar[i].sb_win == ev->window) {
-                XSetWindowBackground(dis, sb_bar[i].sb_win, normal);
+                XSetWindowBackground(dis, sb_bar[i].sb_win, win_focus);
                 XClearWindow(dis, sb_bar[i].sb_win);
             }
     update_bar();
@@ -1060,7 +1125,7 @@ void quit() {
 }
 
 void logger(const char* e) {
-    fprintf(stdout,"\n\033[0;34m:: snapwm : %s \033[0;m\n", e);
+    fprintf(stderr,"\n\033[0;34m:: snapwm : %s \033[0;m\n", e);
 }
 
 void setup() {
@@ -1071,32 +1136,9 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
-    // Status Bar
-    show_bar = STATUS_BAR;
-    if(show_bar == 0) {
-	    fontname = FONTNAME;
-        font = XLoadQueryFont(dis, fontname);
-        if (!font) {
-            fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred font: %s using fixed", fontname);
-            font = XLoadQueryFont(dis, "fixed");
-        }
-        sb_height = font->ascent+8;
-
-        // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
-        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-        status_bar();
-    } else {
-        sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
-        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-    }
-
-    // Screen width
-    
-
-    // Colors
-    win_focus = getcolor(FOCUS);
-    win_unfocus = getcolor(UNFOCUS);
+    // Read in RCFILE
+    //printf("\t Reading RCFILE\n");
+    read_rcfile();
 
     // numlock workaround
     int j, k;

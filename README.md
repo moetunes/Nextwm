@@ -60,7 +60,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 --------------
 
 26/11/11
-	Added bar with desktop switcher and statusbar.
+	Colours and font are read from an rc file and can be updated with a keyboard shortcut.
 
 ###Status
 ------
@@ -77,6 +77,7 @@ There are more options in the config file than the original catwm.
   * Added a click to focus option
   * Added ability to change back to last opened desktop.
   * Added bar with desktop switcher and statusbar.
+  * Colours and font are read from an rc file and can be updated with a keyboard shortcut.
 
 
 ###Installation

@@ -1,3 +1,6 @@
+1/12/11
+  Colours and font are now read from a rc file and can be update with a keyboard shortcut
+
 30/11/11
   Added bar with desktop switcher and statusbar
 
