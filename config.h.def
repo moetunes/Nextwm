@@ -41,6 +41,12 @@
 #define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
+#define defaultcolor1 "#ff0000"
+#define defaultcolor2 "#00ff00"
+#define defaultcolor3 "#0000ff"
+#define defaultcolor4 "#000000"
+#define defaultcolor5 "#ffffff"
+
 // Applications to a specific desktop
 static const Convenience convenience[] = { \
     /*  class     desktop follow */

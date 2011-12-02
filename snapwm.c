@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <locale.h>
 #include <string.h>
 
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
@@ -698,24 +699,28 @@ void status_bar() {
 
 void toggle_bar() {
     int i;
-    if(show_bar == 1) {
-        show_bar = 0;
-        sh -= sb_height;
-        for(i=0;i<DESKTOPS;i++) {
-            XMapWindow(dis, sb_bar[i].sb_win);
-            XMapWindow(dis, sb_area);
-        }
-    } else {
-        show_bar = 1;
-        sh += sb_height;
-        for(i=0;i<DESKTOPS;i++) {
-            XUnmapWindow(dis,sb_bar[i].sb_win);
-            XUnmapWindow(dis, sb_area);
-        }
-    }
 
-    tile();
-    update_current();
+    if(STATUS_BAR == 0) {
+        if(show_bar == 1) {
+            show_bar = 0;
+            sh -= sb_height;
+            for(i=0;i<DESKTOPS;i++) {
+                XMapWindow(dis, sb_bar[i].sb_win);
+                XMapWindow(dis, sb_area);
+            }
+        } else {
+            show_bar = 1;
+            sh += sb_height;
+            for(i=0;i<DESKTOPS;i++) {
+                XUnmapWindow(dis,sb_bar[i].sb_win);
+                XUnmapWindow(dis, sb_area);
+            }
+        }
+
+        tile();
+        update_current();
+        getwindowname();
+    }
 }
 
 void getwindowname() {
@@ -772,27 +777,42 @@ void read_rcfile() {
             if(strstr(buffer, "colour1" ) != NULL) {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
-                win_focus = getcolor(dummy);
+                if(getcolor(dummy) == 1)
+                    win_focus = getcolor(defaultcolor1);
+                else
+                    win_focus = getcolor(dummy);
             }
             if(strstr(buffer, "colour2" ) != NULL) {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
-                win_unfocus = getcolor(dummy);
+                if(getcolor(dummy) == 1)
+                    win_focus = getcolor(defaultcolor1);
+                else
+                    win_unfocus = getcolor(dummy);
             }
             if(strstr(buffer, "colour3" ) != NULL) {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
-                hilight = getcolor(dummy);
+                if(getcolor(dummy) == 1)
+                    win_focus = getcolor(defaultcolor1);
+                else
+                    hilight = getcolor(dummy);
             }
             if(strstr(buffer, "colour4" ) != NULL) {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
-                bordercolor = getcolor(dummy);
+                if(getcolor(dummy) == 1)
+                    win_focus = getcolor(defaultcolor1);
+                else
+                    bordercolor = getcolor(dummy);
             }
             if(strstr(buffer, "colour5" ) != NULL) {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
-                fontcolor = getcolor(dummy);
+                if(getcolor(dummy) == 1)
+                    win_focus = getcolor(defaultcolor1);
+                else
+                    fontcolor = getcolor(dummy);
             }
             if(STATUS_BAR == 0) {
                 if(strstr(buffer,"FONTNAME" ) != NULL) {
@@ -1090,7 +1110,7 @@ unsigned long getcolor(const char* color) {
 
     if(!XAllocNamedColor(dis,map,color,&c,&c)) {
         logger("\033[0;31mError parsing color!");
-        exit(1);
+        return 1;
     }
     return c.pixel;
 }
@@ -1148,9 +1168,11 @@ void setup() {
     root = RootWindow(dis,screen);
 
     // Read in RCFILE
+    setlocale(LC_CTYPE, "");
     //printf("\t Reading RCFILE\n");
     read_rcfile();
-    status_bar();
+    if(STATUS_BAR == 0)
+        status_bar();
 
     // numlock workaround
     int j, k;
