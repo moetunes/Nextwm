@@ -734,7 +734,7 @@ void getwindowname() {
 }
 
 void status_text(const char *sb_text) {
-	int text_length, texty;
+	int text_length, texty, text_end, text_start;
 
 	if(sb_text == NULL) sb_text = "snapwm";
 	if(head == NULL) sb_text = "snapwm";
@@ -742,10 +742,12 @@ void status_text(const char *sb_text) {
 	    text_length = 45;
 	else
 	    text_length = strlen(sb_text);
+	text_end = XTextWidth(font, sb_text, 45);
+	text_start = (20+text_end)-(XTextWidth(font, sb_text, text_length));
 	texty = font->ascent;
 
 	XClearWindow(dis, sb_area);
-	XDrawString(dis, sb_area, sb_b, 20, texty, sb_text, text_length);
+	XDrawString(dis, sb_area, sb_b, text_start, texty, sb_text, text_length);
 }
 
 void update_bar() {
