@@ -750,10 +750,13 @@ void status_text(const char *sb_text) {
 
 void update_bar() {
     int i;
+
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
             XSetWindowBackground(dis, sb_bar[i].sb_win, win_unfocus);
             XClearWindow(dis, sb_bar[i].sb_win);
+            if(desktops[i].head != NULL)
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, 4, font->ascent, "#", 1);
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, win_focus);
             XClearWindow(dis, sb_bar[i].sb_win);

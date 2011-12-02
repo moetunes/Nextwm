@@ -85,8 +85,10 @@ There are more options in the config file than the original catwm.
 
 Need Xlib, then:
 
-    edit the config.h.def file to suit your needs
-        and save it as config.h.
+    Copy the rc file to $HOME and edit it to suit.
+    Edit the config.h.def file to suit your needs
+        and save it as config.h making sure to add
+        the correct path for the rc file.
 
     $ make
     # make install
