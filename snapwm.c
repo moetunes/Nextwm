@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.3 ]
+/* snapwm.c [ 0.0.5 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -73,6 +73,8 @@ typedef struct {
 
 typedef struct {
     Window sb_win;
+    const char *label;
+    int width;
 } Barwin;
 
 typedef enum {
@@ -161,8 +163,9 @@ static int previous_desktop;
 static int growth;
 static int master_size;
 static int mode;
-static int sb_desks;
+static int sb_desks;        // width of the desktop switcher
 static int sb_height;
+static int sb_width;
 static int sh;
 static int sw;
 static int screen;
@@ -657,7 +660,6 @@ void resize_stack(const Arg arg) {
 
 /* ************************** Status Bar *************************** */
 void status_bar() {
-    int width = 20;
     int i;
    	XGCValues values;
 
@@ -678,23 +680,31 @@ void status_bar() {
 	sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*width, sh+PANEL_HEIGHT+BORDER_WIDTH,
-                                            width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_focus);
+        sb_bar[i].label = desktop_label[i];
+        sb_bar[i].width = XTextWidth(font, sb_bar[i].label, strlen(sb_bar[i].label));
+        if(sb_bar[i].width > sb_width)
+            sb_width = sb_bar[i].width;
+    }
+    sb_width += 4;
+    if(sb_width < 20) sb_width = 20;
+    for(i=0;i<DESKTOPS;i++) {
+        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
+                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_focus);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
 
         XMapWindow(dis, sb_bar[i].sb_win);
     }
 	
-	sb_desks = (i*width)-((DESKTOPS/2)*BORDER_WIDTH);
-    sb_area = XCreateSimpleWindow(dis, root, sb_desks+(DESKTOPS/2)*BORDER_WIDTH, sh+PANEL_HEIGHT+BORDER_WIDTH,
-             sw-(sb_desks+4*BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_unfocus);
+	sb_desks = (i*sb_width)+BORDER_WIDTH;
+    sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
+             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_unfocus);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
 
+	status_text("");
 	update_bar();
-	status_text("snapwm-------------------WOOT!!!!!*****!!!!!*****!!!!!##");
 }
 
 void toggle_bar() {
@@ -719,6 +729,7 @@ void toggle_bar() {
 
         tile();
         update_current();
+        update_bar();
         getwindowname();
     }
 }
@@ -730,7 +741,7 @@ void getwindowname() {
         XFetchName(dis, current->win, &win_name);
         status_text(win_name);
         XFree(win_name);
-    } else status_text("");
+    }
 }
 
 void status_text(const char *sb_text) {
@@ -742,10 +753,10 @@ void status_text(const char *sb_text) {
 	    text_length = 45;
 	else
 	    text_length = strlen(sb_text);
-	text_start = (20+(XTextWidth(font, sb_text, 45)))-(XTextWidth(font, sb_text, text_length));
+	text_start = (sb_width+(XTextWidth(font, sb_text, 45)))-(XTextWidth(font, sb_text, text_length));
 
 	XClearWindow(dis, sb_area);
-	XDrawString(dis, sb_area, sb_b, text_start, font->ascent, sb_text, text_length);
+	XDrawString(dis, sb_area, sb_b, text_start, font->ascent+2, sb_text, text_length);
 }
 
 void update_bar() {
@@ -756,10 +767,13 @@ void update_bar() {
             XSetWindowBackground(dis, sb_bar[i].sb_win, win_unfocus);
             XClearWindow(dis, sb_bar[i].sb_win);
             if(desktops[i].head != NULL)
-                XDrawString(dis, sb_bar[i].sb_win, sb_b, 4, font->ascent, "#", 1);
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-XTextWidth(font, "#",1))/2, font->ascent+2, "#", 1);
+            else
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, sb_bar[i].width);
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, win_focus);
             XClearWindow(dis, sb_bar[i].sb_win);
+            XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, sb_bar[i].width);
         }
 }
 
@@ -789,7 +803,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor1);
+                    win_focus = getcolor(defaultcolor2);
                 else
                     win_unfocus = getcolor(dummy);
             }
@@ -797,7 +811,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor1);
+                    win_focus = getcolor(defaultcolor3);
                 else
                     hilight = getcolor(dummy);
             }
@@ -805,7 +819,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor1);
+                    win_focus = getcolor(defaultcolor4);
                 else
                     bordercolor = getcolor(dummy);
             }
@@ -813,7 +827,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor1);
+                    win_focus = getcolor(defaultcolor5);
                 else
                     fontcolor = getcolor(dummy);
             }
@@ -827,7 +841,7 @@ void read_rcfile() {
                     } else {
                         logger("\033[0;32m Font Loaded");
                     }
-                    sb_height = font->ascent+8;
+                    sb_height = font->ascent+10;
 
                     // Screen height
                     sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
@@ -1024,6 +1038,7 @@ void destroynotify(XEvent *e) {
         i = 0;
     }
     select_desktop(tmp);
+    update_bar();
 }
 
 void enternotify(XEvent *e) {
@@ -1042,10 +1057,11 @@ void enternotify(XEvent *e) {
    }
     if(STATUS_BAR == 0) {
         int i;
-        for(i=0;i<sb_desks;i++)
+        for(i=0;i<DESKTOPS;i++)
             if(sb_bar[i].sb_win == ev->window) {
                 XSetWindowBackground(dis, sb_bar[i].sb_win, hilight);
                 XClearWindow(dis, sb_bar[i].sb_win);
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent, sb_bar[i].label, sb_bar[i].width);
                 }
    }
 }
@@ -1054,12 +1070,9 @@ void leavenotify(XEvent *e) {
     if(STATUS_BAR == 0) {
         XCrossingEvent *ev = &e->xcrossing;
         int i;
-        for(i=0;i<sb_desks;i++)
-            if(sb_bar[i].sb_win == ev->window) {
-                XSetWindowBackground(dis, sb_bar[i].sb_win, win_focus);
-                XClearWindow(dis, sb_bar[i].sb_win);
-            }
-    update_bar();
+        for(i=0;i<DESKTOPS;i++)
+            if(sb_bar[i].sb_win == ev->window)
+                update_bar();
     }
 }
 
@@ -1078,7 +1091,7 @@ void buttonpressed(XEvent *e) {
 
     if(STATUS_BAR == 0) {
         int i;
-        for(i=0;i<sb_desks;i++)
+        for(i=0;i<DESKTOPS;i++)
             if(i != current_desktop && sb_bar[i].sb_win == ev->window) {
                 Arg a = {.i = i};
                 change_desktop(a);

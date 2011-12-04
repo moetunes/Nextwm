@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.0.3 ]
+ /* config.h for snapwm.c [ 0.0.5 ]
  *
  *  Started from catwm 31/12/10
  *  Bad window error checking and numlock checking used from
@@ -46,6 +46,9 @@
 #define defaultcolor3 "#0000ff"
 #define defaultcolor4 "#000000"
 #define defaultcolor5 "#ffffff"
+
+static const char *desktop_label[] = { ".", ":", ".:", "::", ".::", ":::", };
+// static const char *desktop_label[] = { "1", "2", "3", "4", "5", "6", };
 
 // Applications to a specific desktop
 static const Convenience convenience[] = { \
