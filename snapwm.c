@@ -1006,6 +1006,7 @@ void maprequest(XEvent *e) {
                     XFree(ch.res_class);
                 if(ch.res_name)
                     XFree(ch.res_name);
+                update_bar();
                 return;
             }
 

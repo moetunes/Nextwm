@@ -1,3 +1,6 @@
+5/12/11
+  If a window is opened or closed on an unfocused desktop the desktop switcher will be updated
+
 4/12/11
   Dessktops in the desktop switcher can be named from the config file
 
