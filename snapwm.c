@@ -795,7 +795,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor1);
+                    win_focus = getcolor(defaultcolor[0]);
                 else
                     win_focus = getcolor(dummy);
             }
@@ -803,7 +803,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor2);
+                    win_unfocus = getcolor(defaultcolor[1]);
                 else
                     win_unfocus = getcolor(dummy);
             }
@@ -811,7 +811,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor3);
+                    hilight = getcolor(defaultcolor[2]);
                 else
                     hilight = getcolor(dummy);
             }
@@ -819,7 +819,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor4);
+                    bordercolor = getcolor(defaultcolor[3]);
                 else
                     bordercolor = getcolor(dummy);
             }
@@ -827,7 +827,7 @@ void read_rcfile() {
                 strncpy(dummy,strstr(buffer, " ")+2, 7);
                 dummy[7] = '\0';
                 if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor5);
+                    fontcolor = getcolor(defaultcolor[4]);
                 else
                     fontcolor = getcolor(dummy);
             }

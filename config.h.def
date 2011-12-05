@@ -41,11 +41,7 @@
 #define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
-#define defaultcolor1 "#ff0000"
-#define defaultcolor2 "#00ff00"
-#define defaultcolor3 "#0000ff"
-#define defaultcolor4 "#000000"
-#define defaultcolor5 "#ffffff"
+static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", };
 
 static const char *desktop_label[] = { ".", ":", ".:", "::", ".::", ":::", };
 // static const char *desktop_label[] = { "1", "2", "3", "4", "5", "6", };
