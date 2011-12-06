@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.5 ]
+/* snapwm.c [ 0.0.7 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -76,6 +76,10 @@ typedef struct {
     const char *label;
     int width;
 } Barwin;
+
+typedef struct {
+    unsigned long color;
+} Theme;
 
 typedef enum {
     ATOM_NET_WM_WINDOW_TYPE,
@@ -172,7 +176,7 @@ static int screen;
 static int show_bar;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
-static unsigned int win_focus, win_unfocus, hilight, bordercolor, fontcolor;
+//static unsigned int colors[0].color, colors[1].color, colors[2].color, colors[3].color, colors[4].color;
 unsigned int numlockmask;		/* dynamic key lock mask */
 static Window root;
 static Window sb_area;
@@ -197,6 +201,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
 // Desktop array
 static desktop desktops[DESKTOPS];
 static Barwin sb_bar[DESKTOPS];
+static Theme colors[5];
 
 /* ***************************** Window Management ******************************* */
 void add_window(Window w) {
@@ -595,14 +600,14 @@ void update_current() {
 
         if(current == c) {
             // "Enable" current window
-            XSetWindowBorder(dis,c->win,win_focus);
+            XSetWindowBorder(dis,c->win,colors[0].color);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(CLICK_TO_FOCUS == 0)
                 XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
         else {
-            XSetWindowBorder(dis,c->win,win_unfocus);
+            XSetWindowBorder(dis,c->win,colors[1].color);
             if(CLICK_TO_FOCUS == 0)
                 XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
@@ -666,21 +671,21 @@ void status_bar() {
     logger(" \033[0;33mStatus Bar called ...");
 
    	/* create the sb_b GC to draw the font */
-	values.foreground = fontcolor;
+	values.foreground = colors[4].color;
 	values.line_width = 2;
 	values.line_style = LineSolid;
 	values.font = font->fid;
 	sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
    	/* create the sb_c GC to draw the  */
-	values.foreground = bordercolor;
+	values.foreground = colors[3].color;
 	values.line_width = 2;
 	values.line_style = LineSolid;
 	values.font = font->fid;
 	sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
+    sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].label = desktop_label[i];
         sb_bar[i].width = XTextWidth(font, sb_bar[i].label, strlen(sb_bar[i].label));
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
@@ -689,7 +694,7 @@ void status_bar() {
     if(sb_width < 20) sb_width = 20;
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
-                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_focus);
+                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[0].color);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
 
@@ -698,7 +703,7 @@ void status_bar() {
 	
 	sb_desks = (i*sb_width)+BORDER_WIDTH;
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
-             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,bordercolor,win_unfocus);
+             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[1].color);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
@@ -764,14 +769,14 @@ void update_bar() {
 
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, win_unfocus);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, colors[1].color);
             XClearWindow(dis, sb_bar[i].sb_win);
             if(desktops[i].head != NULL)
                 XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-XTextWidth(font, "#",1))/2, font->ascent+2, "#", 1);
             else
                 XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, sb_bar[i].width);
         } else {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, win_focus);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, colors[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
             XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, sb_bar[i].width);
         }
@@ -781,7 +786,10 @@ void update_bar() {
 void read_rcfile() {
     FILE *rcfile ; 
     char buffer[80]; /* Way bigger that neccessary */
-    char dummy[8];
+    char dummy[50];
+    char *dummy2;
+    char *dummy3;
+    int i;
 
     show_bar = STATUS_BAR;
     rcfile = fopen( RCFILE, "r" ) ; 
@@ -791,47 +799,29 @@ void read_rcfile() {
     } else { 
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
             /* Now look for info */ 
-            if(strstr(buffer, "colour1" ) != NULL) {
-                strncpy(dummy,strstr(buffer, " ")+2, 7);
-                dummy[7] = '\0';
-                if(getcolor(dummy) == 1)
-                    win_focus = getcolor(defaultcolor[0]);
-                else
-                    win_focus = getcolor(dummy);
+            if(strstr(buffer, "THEME" ) != NULL) {
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                dummy[strlen(dummy)-1] = '\0';
+                //printf("\tTHIS IS DUMMY %s \n", dummy);
+                dummy2 = strdup(dummy);
+                for(i=0;i<5;i++) {
+                    dummy3 = strsep(&dummy2, ",");
+                    if(getcolor(dummy3) == 1)
+                        colors[i].color = getcolor(defaultcolor[4]);
+                    else
+                        colors[i].color = getcolor(dummy3);
+                }
             }
-            if(strstr(buffer, "colour2" ) != NULL) {
-                strncpy(dummy,strstr(buffer, " ")+2, 7);
-                dummy[7] = '\0';
-                if(getcolor(dummy) == 1)
-                    win_unfocus = getcolor(defaultcolor[1]);
-                else
-                    win_unfocus = getcolor(dummy);
+            if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
+                //printf("\t FOUND DESK NAMES \n");
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                //dummy[strlen(dummy)-1] = '\0';
+                //printf("\tTHIS IS DUMMY %s \n", dummy);
+                dummy2 = strdup(dummy);
+                for(i=0;i<DESKTOPS;i++)
+                    sb_bar[i].label = strsep(&dummy2, ",");
             }
-            if(strstr(buffer, "colour3" ) != NULL) {
-                strncpy(dummy,strstr(buffer, " ")+2, 7);
-                dummy[7] = '\0';
-                if(getcolor(dummy) == 1)
-                    hilight = getcolor(defaultcolor[2]);
-                else
-                    hilight = getcolor(dummy);
-            }
-            if(strstr(buffer, "colour4" ) != NULL) {
-                strncpy(dummy,strstr(buffer, " ")+2, 7);
-                dummy[7] = '\0';
-                if(getcolor(dummy) == 1)
-                    bordercolor = getcolor(defaultcolor[3]);
-                else
-                    bordercolor = getcolor(dummy);
-            }
-            if(strstr(buffer, "colour5" ) != NULL) {
-                strncpy(dummy,strstr(buffer, " ")+2, 7);
-                dummy[7] = '\0';
-                if(getcolor(dummy) == 1)
-                    fontcolor = getcolor(defaultcolor[4]);
-                else
-                    fontcolor = getcolor(dummy);
-            }
-            if(STATUS_BAR == 0) {
+           if(STATUS_BAR == 0) {
                 if(strstr(buffer,"FONTNAME" ) != NULL) {
                     strncpy(fontname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
                     font = XLoadQueryFont(dis, fontname);
@@ -858,20 +848,15 @@ void read_rcfile() {
 }
 void update_config() {
     int i;
-    XGCValues values;
 
     read_rcfile();
     update_current();
-    XSetWindowBorder(dis,sb_area,bordercolor);
-    XSetWindowBackground(dis, sb_area, win_unfocus);
-    values.foreground = fontcolor;
-    values.font = font->fid;
-    XChangeGC(dis, sb_b, GCForeground|GCFont, &values);
-    XClearWindow(dis, sb_area);
     for(i=0;i<DESKTOPS;i++)
-        XSetWindowBorder(dis, sb_bar[i].sb_win, bordercolor);
-    update_bar();
-    getwindowname();
+        XDestroyWindow(dis, sb_bar[i].sb_win);
+    XDestroyWindow(dis, sb_area);
+    status_bar();
+    tile();
+    update_current();
 }
 
 /* ********************** Keyboard Management ********************** */
@@ -1060,7 +1045,7 @@ void enternotify(XEvent *e) {
         int i;
         for(i=0;i<DESKTOPS;i++)
             if(sb_bar[i].sb_win == ev->window) {
-                XSetWindowBackground(dis, sb_bar[i].sb_win, hilight);
+                XSetWindowBackground(dis, sb_bar[i].sb_win, colors[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
                 XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent, sb_bar[i].label, sb_bar[i].width);
                 }

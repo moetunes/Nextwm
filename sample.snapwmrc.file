@@ -1,12 +1,7 @@
-// win_focus . dkorange focused window/desktop
-colour1 "#664422"
-// win_unfocus . blueish unfocused window/desktop and statusbar
-colour2 "#003040"
-// hilight . lighter blueish mouseover desktop switcher
-colour3 "#006070"
-// bordercolor . mid grey bar border and switcher lines
-colour4 "#555555"
-// fontcolor . white statusbar font
-colour5 "#ffffff"
+// colours are: focused window border & desktop in switcher; unfocused window & bar background;
+// hilight when mouseover the desktop switcher;border and lines of the bar;font
+// comma separated list must end in a comma
+THEME #664422,#003040,#006070,#555555,#ffffff,
+DESKTOP_NAMES 1,2,3,4,5,6,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
 // "-*-freesans-*-r-*-*-*-*-*-*-*-*-*"
