@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.0.7 ]
+ /* config.h for snapwm.c [ 0.0.8 ]
  *
  *  Started from catwm 31/12/10
  *  Bad window error checking and numlock checking used from
@@ -31,7 +31,7 @@
 #define MOD4            Mod4Mask
 #define MASTER_SIZE     0.55
 #define TOP_PANEL       0  /* 1=Don't 0=Have the panel at the top instead of the bottom */
-#define PANEL_HEIGHT	18 /* 0 for no space for a panel */
+#define PANEL_HEIGHT    18 /* 0 for no space for a panel */
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 0=TRUE, 1=New window is master */
 #define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
@@ -94,7 +94,7 @@ static key keys[] = {
     {  MOD1,             XK_u,          update_config,     {NULL}},
     {  MOD1,             XK_Tab,        last_desktop,      {NULL}},
     {  MOD1,             XK_Return,     spawn,             {.com = urxvtcmd}},
-    {  MOD1,             XK_Up,	        spawn,             {.com = volupcmd}},
+    {  MOD1,             XK_Up,            spawn,             {.com = volupcmd}},
     {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
 // alt + shift + shortcut
     {  MOD1|ShiftMask,   XK_j,          move_up,           {NULL}},
@@ -119,7 +119,7 @@ static key keys[] = {
     {  MOD4,             XK_h,          spawn,             {.com = thunarcmd}},
     {  MOD4,             XK_t,          spawn,             {.com = terminalcmd}},
     {  MOD4,             XK_v,          spawn,             {.com = vols_what}},
-    {  MOD4,             XK_Up,	        spawn,             {.com = prevolupcmd}},
+    {  MOD4,             XK_Up,            spawn,             {.com = prevolupcmd}},
     {  MOD4,             XK_Down,       spawn,             {.com = prevoldowncmd}},
        DESKTOPCHANGE(   XK_1,                              0)
        DESKTOPCHANGE(   XK_2,                              1)

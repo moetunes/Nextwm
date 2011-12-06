@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.7 ]
+/* snapwm.c [ 0.0.8 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -177,7 +177,7 @@ static int show_bar;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 //static unsigned int colors[0].color, colors[1].color, colors[2].color, colors[3].color, colors[4].color;
-unsigned int numlockmask;		/* dynamic key lock mask */
+unsigned int numlockmask;        /* dynamic key lock mask */
 static Window root;
 static Window sb_area;
 static client *head;
@@ -305,7 +305,7 @@ void kill_client() {
         XSendEvent(dis, current->win, False, NoEventMask, &ke);
         send_kill_signal(current->win);
         remove_window(current->win);
-	}
+    }
 }
 
 void next_win() {
@@ -486,7 +486,7 @@ void tile() {
     else if(head != NULL) {
         switch(mode) {
             case 0: /* Vertical */
-            	// Master window
+                // Master window
                 XMoveResizeWindow(dis,head->win,0,y,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
 
                 // Stack
@@ -505,7 +505,7 @@ void tile() {
                 }
                 break;
             case 2: /* Horizontal */
-            	// Master window
+                // Master window
                 XMoveResizeWindow(dis,head->win,0,y,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
 
                 // Stack
@@ -622,7 +622,7 @@ void switch_vertical() {
     if(mode != 0) {
         mode = 0;
         master_size = sw * MASTER_SIZE;
-	tile();
+    tile();
         update_current();
     }
 }
@@ -666,23 +666,23 @@ void resize_stack(const Arg arg) {
 /* ************************** Status Bar *************************** */
 void status_bar() {
     int i;
-   	XGCValues values;
+       XGCValues values;
 
     logger(" \033[0;33mStatus Bar called ...");
 
-   	/* create the sb_b GC to draw the font */
-	values.foreground = colors[4].color;
-	values.line_width = 2;
-	values.line_style = LineSolid;
-	values.font = font->fid;
-	sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
+       /* create the sb_b GC to draw the font */
+    values.foreground = colors[4].color;
+    values.line_width = 2;
+    values.line_style = LineSolid;
+    values.font = font->fid;
+    sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
-   	/* create the sb_c GC to draw the  */
-	values.foreground = colors[3].color;
-	values.line_width = 2;
-	values.line_style = LineSolid;
-	values.font = font->fid;
-	sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
+       /* create the sb_c GC to draw the  */
+    values.foreground = colors[3].color;
+    values.line_width = 2;
+    values.line_style = LineSolid;
+    values.font = font->fid;
+    sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
@@ -700,16 +700,16 @@ void status_bar() {
 
         XMapWindow(dis, sb_bar[i].sb_win);
     }
-	
-	sb_desks = (i*sb_width)+BORDER_WIDTH;
+
+    sb_desks = (i*sb_width)+BORDER_WIDTH;
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[1].color);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
 
-	status_text("");
-	update_bar();
+    status_text("");
+    update_bar();
 }
 
 void toggle_bar() {
@@ -750,18 +750,18 @@ void getwindowname() {
 }
 
 void status_text(const char *sb_text) {
-	int text_length, text_start;
+    int text_length, text_start;
 
-	if(sb_text == NULL) sb_text = "snapwm";
-	if(head == NULL) sb_text = "snapwm";
-	if(strlen(sb_text) >= 45)
-	    text_length = 45;
-	else
-	    text_length = strlen(sb_text);
-	text_start = (sb_width+(XTextWidth(font, sb_text, 45)))-(XTextWidth(font, sb_text, text_length));
+    if(sb_text == NULL) sb_text = "snapwm";
+    if(head == NULL) sb_text = "snapwm";
+    if(strlen(sb_text) >= 45)
+        text_length = 45;
+    else
+        text_length = strlen(sb_text);
+    text_start = (sb_width+(XTextWidth(font, sb_text, 45)))-(XTextWidth(font, sb_text, text_length));
 
-	XClearWindow(dis, sb_area);
-	XDrawString(dis, sb_area, sb_b, text_start, font->ascent+2, sb_text, text_length);
+    XClearWindow(dis, sb_area);
+    XDrawString(dis, sb_area, sb_b, text_start, font->ascent+2, sb_text, text_length);
 }
 
 void update_bar() {
@@ -784,7 +784,7 @@ void update_bar() {
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
-    FILE *rcfile ; 
+    FILE *rcfile ;
     char buffer[80]; /* Way bigger that neccessary */
     char dummy[50];
     char *dummy2;
@@ -792,17 +792,16 @@ void read_rcfile() {
     int i;
 
     show_bar = STATUS_BAR;
-    rcfile = fopen( RCFILE, "r" ) ; 
-    if ( rcfile == NULL ) { 
+    rcfile = fopen( RCFILE, "r" ) ;
+    if ( rcfile == NULL ) {
         fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RCFILE);
-        return; 
-    } else { 
+        return;
+    } else {
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
-            /* Now look for info */ 
+            /* Now look for info */
             if(strstr(buffer, "THEME" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 dummy[strlen(dummy)-1] = '\0';
-                //printf("\tTHIS IS DUMMY %s \n", dummy);
                 dummy2 = strdup(dummy);
                 for(i=0;i<5;i++) {
                     dummy3 = strsep(&dummy2, ",");
@@ -813,10 +812,8 @@ void read_rcfile() {
                 }
             }
             if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
-                //printf("\t FOUND DESK NAMES \n");
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                //dummy[strlen(dummy)-1] = '\0';
-                //printf("\tTHIS IS DUMMY %s \n", dummy);
+                dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
                 for(i=0;i<DESKTOPS;i++)
                     sb_bar[i].label = strsep(&dummy2, ",");
@@ -930,9 +927,9 @@ void maprequest(XEvent *e) {
             return;
         }
 
-   	Window trans = None;
-   	if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-   	    add_window(ev->window);
+       Window trans = None;
+       if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
+           add_window(ev->window);
         XMapWindow(dis, ev->window);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         XRaiseWindow(dis,ev->window);
@@ -1171,7 +1168,6 @@ void setup() {
 
     // Read in RCFILE
     setlocale(LC_CTYPE, "");
-    //printf("\t Reading RCFILE\n");
     read_rcfile();
     if(STATUS_BAR == 0)
         status_bar();
@@ -1235,11 +1231,11 @@ void setup() {
 
 void sigchld(int unused) {
     // Again, thx to dwm ;)
-	if(signal(SIGCHLD, sigchld) == SIG_ERR) {
-		logger("\033[0;31mCan't install SIGCHLD handler");
-		exit(1);
+    if(signal(SIGCHLD, sigchld) == SIG_ERR) {
+        logger("\033[0;31mCan't install SIGCHLD handler");
+        exit(1);
         }
-	while(0 < waitpid(-1, NULL, WNOHANG));
+    while(0 < waitpid(-1, NULL, WNOHANG));
 }
 
 void spawn(const Arg arg) {
@@ -1258,13 +1254,13 @@ void spawn(const Arg arg) {
 /* There's no way to check accesses to destroyed windows, thus those cases are ignored (especially on UnmapNotify's).  Other types of errors call Xlibs default error handler, which may call exit.  */
 int xerror(Display *dis, XErrorEvent *ee) {
     if(ee->error_code == BadWindow
-	|| (ee->request_code == X_SetInputFocus && ee->error_code == BadMatch)
-	|| (ee->request_code == X_PolyText8 && ee->error_code == BadDrawable)
-	|| (ee->request_code == X_PolyFillRectangle && ee->error_code == BadDrawable)
-	|| (ee->request_code == X_PolySegment && ee->error_code == BadDrawable)
-	|| (ee->request_code == X_ConfigureWindow && ee->error_code == BadMatch)
-	|| (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
-	|| (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
+    || (ee->request_code == X_SetInputFocus && ee->error_code == BadMatch)
+    || (ee->request_code == X_PolyText8 && ee->error_code == BadDrawable)
+    || (ee->request_code == X_PolyFillRectangle && ee->error_code == BadDrawable)
+    || (ee->request_code == X_PolySegment && ee->error_code == BadDrawable)
+    || (ee->request_code == X_ConfigureWindow && ee->error_code == BadMatch)
+    || (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
+    || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
         return 0;
     logger("\033[0;31mBad Window Error!");
     return xerrorxlib(dis, ee); /* may call exit */
