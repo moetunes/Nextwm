@@ -106,4 +106,4 @@ Need Xlib, then:
 
   * when swithching desktops stop the mouse being in an unfocused window changing focus.
   * Pipe user input to the remaining space on the bar
-  * 
+  * Improve font handling

@@ -612,8 +612,11 @@ void update_current() {
                 XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
     }
-    if(show_bar == 0 && head != NULL) {
-        getwindowname();
+    if(show_bar == 0) {
+        if(head != NULL)
+            getwindowname();
+        else
+            status_text("");
     }
     XSync(dis, False);
 }
@@ -735,7 +738,6 @@ void toggle_bar() {
         tile();
         update_current();
         update_bar();
-        getwindowname();
     }
 }
 
@@ -774,11 +776,11 @@ void update_bar() {
             if(desktops[i].head != NULL)
                 XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-XTextWidth(font, "#",1))/2, font->ascent+2, "#", 1);
             else
-                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, sb_bar[i].width);
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, colors[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, sb_bar[i].width);
+            XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         }
 }
 
@@ -846,6 +848,8 @@ void read_rcfile() {
 void update_config() {
     int i;
 
+    for(i=0;i<81;i++)
+        fontname[i] = '\0';
     read_rcfile();
     update_current();
     for(i=0;i<DESKTOPS;i++)
