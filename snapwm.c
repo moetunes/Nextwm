@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.8 ]
+/* snapwm.c [ 0.0.9 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -140,6 +140,7 @@ static void save_desktop(int i);
 static void select_desktop(int i);
 static void send_kill_signal(Window w);
 static void setup();
+static void setup_status_bar();
 static void set_defaults();
 static void sigchld(int unused);
 static void spawn(const Arg arg);
@@ -183,8 +184,8 @@ static Window root;
 static Window sb_area;
 static client *head;
 static client *current;
-static char fontname[80];
-static XFontStruct *font;
+static char fontbarname[80];
+static XFontStruct *fontbar;
 static GC sb_b, sb_c;
 // Events array
 static void (*events[LASTEvent])(XEvent *e) = {
@@ -668,50 +669,54 @@ void resize_stack(const Arg arg) {
 }
 
 /* ************************** Status Bar *************************** */
-void status_bar() {
+void setup_status_bar() {
     int i;
-       XGCValues values;
+    XGCValues values;
 
+    show_bar = STATUS_BAR;
     logger(" \033[0;33mStatus Bar called ...");
 
-       /* create the sb_b GC to draw the font */
+       /* create the sb_b GC to draw the status fontbar */
     values.foreground = colors[4].color;
     values.line_width = 2;
     values.line_style = LineSolid;
-    values.font = font->fid;
+    values.font = fontbar->fid;
     sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
-       /* create the sb_c GC to draw the  */
+       /* create the sb_c GC to draw the desktop switcher fontbar */
     values.foreground = colors[5].color;
     values.line_width = 2;
     values.line_style = LineSolid;
-    values.font = font->fid;
+    values.font = fontbar->fid;
     sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(font, sb_bar[i].label, strlen(sb_bar[i].label));
+        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label));
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
     sb_width += 4;
     if(sb_width < 20) sb_width = 20;
+    sb_desks = (DESKTOPS*sb_width)+BORDER_WIDTH;
+
+}
+
+void status_bar() {
+    int i;
+
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
                                             sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[0].color);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
-
         XMapWindow(dis, sb_bar[i].sb_win);
     }
-
-    sb_desks = (i*sb_width)+BORDER_WIDTH;
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[1].color);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
-
     status_text("");
     update_bar();
 }
@@ -761,10 +766,11 @@ void status_text(const char *sb_text) {
         text_length = 45;
     else
         text_length = strlen(sb_text);
-    text_start = (sb_width+(XTextWidth(font, sb_text, 45)))-(XTextWidth(font, sb_text, text_length));
+    text_start = (sb_width+(XTextWidth(fontbar, sb_text, 45)))-(XTextWidth(fontbar, sb_text, text_length));
 
     XClearWindow(dis, sb_area);
-    XDrawString(dis, sb_area, sb_b, text_start, font->ascent+2, sb_text, text_length);
+    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
+    XSync(dis, False);
 }
 
 void update_bar() {
@@ -775,14 +781,15 @@ void update_bar() {
             XSetWindowBackground(dis, sb_bar[i].sb_win, colors[1].color);
             XClearWindow(dis, sb_bar[i].sb_win);
             if(desktops[i].head != NULL)
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(font, "#",1))/2, font->ascent+2, "#", 1);
+                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, "#",1))/2, fontbar->ascent+2, "#", 1);
             else
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
+                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, colors[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, font->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
+            XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         }
+    XSync(dis, False);
 }
 
 /* *********************** Read Config File ************************ */
@@ -794,7 +801,6 @@ void read_rcfile() {
     char *dummy3;
     int i;
 
-    show_bar = STATUS_BAR;
     rcfile = fopen( RCFILE, "r" ) ;
     if ( rcfile == NULL ) {
         fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RCFILE);
@@ -824,15 +830,15 @@ void read_rcfile() {
             }
            if(STATUS_BAR == 0) {
                 if(strstr(buffer,"FONTNAME" ) != NULL) {
-                    strncpy(fontname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
-                    font = XLoadQueryFont(dis, fontname);
-                    if (!font) {
-                        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred font: %s using fixed", fontname);
-                        font = XLoadQueryFont(dis, "fixed");
+                    strncpy(fontbarname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
+                    fontbar = XLoadQueryFont(dis, fontbarname);
+                    if (!fontbar) {
+                        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
+                        fontbar = XLoadQueryFont(dis, "fixed");
                     } else {
-                        logger("\033[0;32m Font Loaded");
+                        logger("\033[0;32m fontbar Loaded");
                     }
-                    sb_height = font->ascent+10;
+                    sb_height = fontbar->ascent+10;
 
                     // Screen height
                     sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
@@ -854,10 +860,10 @@ void set_defaults() {
     logger("\033[0;32m Setting default values");
     for(i=0;i<6;i++)
         colors[i].color = getcolor(defaultcolor[i]);
-    if(STATUS_BAR == 0 && strlen(fontname) < 1) {
-        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontname);
-        font = XLoadQueryFont(dis, "fixed");
-        sb_height = font->ascent+10;
+    if(STATUS_BAR == 0 && strlen(fontbarname) < 1) {
+        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
+        fontbar = XLoadQueryFont(dis, "fixed");
+        sb_height = fontbar->ascent+10;
         sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     }
@@ -868,16 +874,20 @@ void set_defaults() {
 
 void update_config() {
     int i;
-
+    
+    XFreeFont(dis, fontbar);
     for(i=0;i<81;i++)
-        fontname[i] = '\0';
+        fontbarname[i] = '\0';
     read_rcfile();
     if(STATUS_BAR == 0) {
+        setup_status_bar();
         for(i=0;i<DESKTOPS;i++)
-            XDestroyWindow(dis, sb_bar[i].sb_win);
-        XDestroyWindow(dis, sb_area);
-        status_bar();
+            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
+                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
+        XMoveResizeWindow(dis, sb_area, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
+                             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH);
         tile();
+        update_bar();
     }
     update_current();
 }
@@ -922,9 +932,15 @@ void configurerequest(XEvent *e) {
     // Paste from DWM, thx again \o/
     XConfigureRequestEvent *ev = &e->xconfigurerequest;
     XWindowChanges wc;
+    int y;
 
+    
+    if(TOP_PANEL == 0)
+        y = PANEL_HEIGHT;
+    else
+        y = 0;
     wc.x = ev->x;
-    wc.y = ev->y;
+    wc.y = ev->y + y;
     if(ev->width < sw-BORDER_WIDTH)
         wc.width = ev->width;
     else
@@ -949,13 +965,13 @@ void maprequest(XEvent *e) {
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
-            XMoveResizeWindow(dis,c->win,-BORDER_WIDTH,-BORDER_WIDTH,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
+            XMoveResizeWindow(dis,c->win,0,0,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
             return;
         }
 
-       Window trans = None;
-       if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-           add_window(ev->window);
+    Window trans = None;
+    if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
+        add_window(ev->window);
         XMapWindow(dis, ev->window);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         XRaiseWindow(dis,ev->window);
@@ -1041,13 +1057,13 @@ void destroynotify(XEvent *e) {
         if(i != 0) {
             remove_window(ev->window);
             select_desktop(tmp);
+            update_bar();
             return;
         }
 
         i = 0;
     }
     select_desktop(tmp);
-    update_bar();
 }
 
 void enternotify(XEvent *e) {
@@ -1070,7 +1086,7 @@ void enternotify(XEvent *e) {
             if(sb_bar[i].sb_win == ev->window) {
                 XSetWindowBackground(dis, sb_bar[i].sb_win, colors[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, font->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, fontbar->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
                 }
    }
 }
@@ -1195,8 +1211,10 @@ void setup() {
     // Read in RCFILE
     setlocale(LC_CTYPE, "");
     read_rcfile();
-    if(STATUS_BAR == 0)
+    if(STATUS_BAR == 0) {
+        setup_status_bar();
         status_bar();
+    }
 
     // numlock workaround
     int j, k;
