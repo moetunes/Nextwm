@@ -1,8 +1,8 @@
-// colours are: focused window border & desktop in switcher; unfocused window & bar background;
-// hilight when mouseover the desktop switcher;border and lines of the bar;font
+// 6 colours are: focused window border & desktop in switcher; unfocused window & bar background;
+// hilight when mouseover the desktop switcher;border and lines of the bar;statusbar font;desktop switcher font
 // comma separated list must end in a comma
-THEME #664422,#003040,#006070,#555555,#ffffff,
+THEME #664422,#003040,#006070,#555555,#ffffff,#cccccc,
 DESKTOP_NAMES 1,2,3,4,5,6,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
-// "-*-freesans-*-r-*-*-*-*-*-*-*-*-*"
-// "-*-terminus-*-*-*-*-16-*-*-*-*-*-*"
+// "-*-freesans-*-r-*-*-*-*-*-*-*-*-*-*"
+// "-*-terminus-*-*-*-*-16-*-*-*-*-*-*-*"
