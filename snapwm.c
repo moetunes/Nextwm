@@ -876,6 +876,7 @@ void update_config() {
     int i;
     
     XFreeFont(dis, fontbar);
+    fontbar = NULL;
     for(i=0;i<81;i++)
         fontbarname[i] = '\0';
     read_rcfile();
@@ -932,23 +933,19 @@ void configurerequest(XEvent *e) {
     // Paste from DWM, thx again \o/
     XConfigureRequestEvent *ev = &e->xconfigurerequest;
     XWindowChanges wc;
-    int y;
+    int y = 0;
 
-    
-    if(TOP_PANEL == 0)
-        y = PANEL_HEIGHT;
-    else
-        y = 0;
     wc.x = ev->x;
+    if(TOP_PANEL == 0) y = PANEL_HEIGHT;
     wc.y = ev->y + y;
     if(ev->width < sw-BORDER_WIDTH)
         wc.width = ev->width;
     else
-        wc.width = sw-BORDER_WIDTH;
+        wc.width = sw+BORDER_WIDTH;
     if(ev->height < sh-BORDER_WIDTH)
         wc.height = ev->height;
     else
-        wc.height = sh-BORDER_WIDTH;
+        wc.height = sh+BORDER_WIDTH;
     wc.border_width = ev->border_width;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
@@ -965,7 +962,7 @@ void maprequest(XEvent *e) {
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
-            XMoveResizeWindow(dis,c->win,0,0,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
+            XMoveResizeWindow(dis,c->win,0,0,sw,sh);
             return;
         }
 
@@ -997,12 +994,12 @@ void maprequest(XEvent *e) {
                     XMapWindow(dis, ev->window);
                     XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
                     XRaiseWindow(dis,ev->window);
+                    if(temp)
+                        XFree(temp);
                     return;
                 }
             }
         }
-        if(temp)
-         XFree(temp);
     }
 
     XClassHint ch = {0};
@@ -1086,7 +1083,8 @@ void enternotify(XEvent *e) {
             if(sb_bar[i].sb_win == ev->window) {
                 XSetWindowBackground(dis, sb_bar[i].sb_win, colors[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2, fontbar->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
+                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2,
+                          fontbar->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
                 }
    }
 }
