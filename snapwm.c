@@ -409,10 +409,11 @@ void change_desktop(const Arg arg) {
     select_desktop(arg.i);
 
     // Map all windows
-    if(head != NULL)
-        for(c=head;c;c=c->next)
-            XMapWindow(dis,c->win);
-    else
+    if(head != NULL) {
+        if(mode != 1)
+            for(c=head;c;c=c->next)
+                XMapWindow(dis,c->win);
+    } else
         status_text("");
 
     tile();
@@ -503,7 +504,10 @@ void tile() {
                 break;
             case 1: /* Fullscreen */
                 for(c=head;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
+                    if(current == c) {
+                        XMapWindow(dis, c->win);
+                        XMoveResizeWindow(dis,c->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
+                    }
                 }
                 break;
             case 2: /* Horizontal */
