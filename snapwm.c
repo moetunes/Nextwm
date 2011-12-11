@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.0.9 ]
+/* snapwm.c [ 0.1.0 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -484,7 +484,9 @@ void tile() {
 
     // If only one window
     if(head != NULL && head->next == NULL) {
+        if(mode == 1) XMapWindow(dis, head->win);
         XMoveResizeWindow(dis,head->win,0,y,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
+        growth = 0;
     }
     else if(head != NULL) {
         switch(mode) {
@@ -494,7 +496,6 @@ void tile() {
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
-                if(n == 1) growth = 0;
                 XMoveResizeWindow(dis,head->next->win,master_size + BORDER_WIDTH,y,sw-master_size-(2*BORDER_WIDTH),(sh/n)+growth - BORDER_WIDTH);
                 y += (sh/n)+growth;
                 for(c=head->next->next;c;c=c->next) {
@@ -516,7 +517,6 @@ void tile() {
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
-                if(n == 1) growth = 0;
                 XMoveResizeWindow(dis,head->next->win,0,y+master_size + BORDER_WIDTH,(sw/n)+growth-BORDER_WIDTH,sh-master_size-(2*BORDER_WIDTH));
                 x = (sw/n)+growth;
                 for(c=head->next->next;c;c=c->next) {
@@ -795,7 +795,7 @@ void status_text(const char *sb_text) {
 
     XClearWindow(dis, sb_area);
     XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
-    XSync(dis, False);
+    //XSync(dis, False);
 }
 
 void update_bar() {
@@ -814,7 +814,7 @@ void update_bar() {
             XClearWindow(dis, sb_bar[i].sb_win);
             XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         }
-    XSync(dis, False);
+    //XSync(dis, False);
 }
 
 /* *********************** Read Config File ************************ */
