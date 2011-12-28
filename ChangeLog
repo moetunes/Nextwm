@@ -1,3 +1,6 @@
+28/12/11
+  Fixed rereading the rc file killing the wm or messing with the keyboard shortcuts
+
 8/12/11
   Fixes for fullscreen mode
 

@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.1.1 ]
+/* snapwm.c [ 0.1.2 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -185,6 +185,7 @@ static Window sb_area;
 static client *head;
 static client *current;
 static char fontbarname[80];
+static char mode_res[1];
 static XFontStruct *fontbar;
 static GC sb_b, sb_c;
 // Events array
@@ -491,6 +492,7 @@ void tile() {
     else if(head != NULL) {
         switch(mode) {
             case 0: /* Vertical */
+                sprintf(mode_res, "V");
                 // Master window
                 XMoveResizeWindow(dis,head->win,0,y,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
 
@@ -504,6 +506,7 @@ void tile() {
                 }
                 break;
             case 1: /* Fullscreen */
+                sprintf(mode_res, "F");
                 for(c=head;c;c=c->next) {
                     if(current == c) {
                         XMapWindow(dis, c->win);
@@ -512,6 +515,7 @@ void tile() {
                 }
                 break;
             case 2: /* Horizontal */
+                sprintf(mode_res, "H");
                 // Master window
                 XMoveResizeWindow(dis,head->win,0,y,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
 
@@ -525,6 +529,7 @@ void tile() {
                 }
                 break;
             case 3: { // Grid
+                sprintf(mode_res, "G");
                 int xpos = 0;
                 int wdt = 0;
                 int ht = 0;
@@ -640,6 +645,7 @@ void switch_vertical() {
         master_size = sw * MASTER_SIZE;
         tile();
         update_current();
+        getwindowname();
     }
 }
 
@@ -648,6 +654,7 @@ void switch_fullscreen() {
         mode = 1;
         tile();
         update_current();
+        getwindowname();
     }
 }
 
@@ -664,6 +671,7 @@ void switch_horizontal() {
         master_size = sh * MASTER_SIZE;
         tile();
         update_current();
+        getwindowname();
     }
 }
 
@@ -680,6 +688,7 @@ void switch_grid() {
         master_size = sw * MASTER_SIZE;
         tile();
         update_current();
+        getwindowname();
     }
 }
 
@@ -784,17 +793,19 @@ void getwindowname() {
 
 void status_text(const char *sb_text) {
     int text_length, text_start;
+    char mode_text[3];
 
     if(sb_text == NULL) sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
-    if(strlen(sb_text) >= 45)
-        text_length = 45;
+    if(strlen(sb_text) >= 35)
+        text_length = 35;
     else
         text_length = strlen(sb_text);
-    text_start = (sb_width+(XTextWidth(fontbar, sb_text, 45)))-(XTextWidth(fontbar, sb_text, text_length));
+    sprintf(mode_text, "[%s]", mode_res);
+    text_start = 10+(XTextWidth(fontbar, mode_text, strlen(mode_text)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
 
     XClearWindow(dis, sb_area);
-    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, "[v]", 3);
+    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, mode_text, 3);
     XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
     //XSync(dis, False);
 }
@@ -815,7 +826,6 @@ void update_bar() {
             XClearWindow(dis, sb_bar[i].sb_win);
             XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         }
-    //XSync(dis, False);
 }
 
 /* *********************** Read Config File ************************ */
@@ -1260,6 +1270,7 @@ void setup() {
 
     // Default stack
     mode = DEFAULT_MODE;
+    sprintf(mode_res, "*");
     growth = 0;
 
     // For exiting
