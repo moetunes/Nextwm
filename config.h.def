@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.1.0 ]
+ /* config.h for snapwm.c [ 0.1.1 ]
  *
  *  Started from catwm 31/12/10
  *  Bad window error checking and numlock checking used from
@@ -91,7 +91,7 @@ static key keys[] = {
     {  MOD1,             XK_u,          update_config,     {NULL}},
     {  MOD1,             XK_Tab,        last_desktop,      {NULL}},
     {  MOD1,             XK_Return,     spawn,             {.com = urxvtcmd}},
-    {  MOD1,             XK_Up,            spawn,             {.com = volupcmd}},
+    {  MOD1,             XK_Up,         spawn,             {.com = volupcmd}},
     {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
 // alt + shift + shortcut
     {  MOD1|ShiftMask,   XK_j,          move_up,           {NULL}},
@@ -116,7 +116,7 @@ static key keys[] = {
     {  MOD4,             XK_h,          spawn,             {.com = thunarcmd}},
     {  MOD4,             XK_t,          spawn,             {.com = terminalcmd}},
     {  MOD4,             XK_v,          spawn,             {.com = vols_what}},
-    {  MOD4,             XK_Up,            spawn,             {.com = prevolupcmd}},
+    {  MOD4,             XK_Up,         spawn,             {.com = prevolupcmd}},
     {  MOD4,             XK_Down,       spawn,             {.com = prevoldowncmd}},
        DESKTOPCHANGE(   XK_1,                              0)
        DESKTOPCHANGE(   XK_2,                              1)

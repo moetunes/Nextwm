@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.1.0 ]
+/* snapwm.c [ 0.1.1 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -846,14 +846,7 @@ void read_rcfile() {
                         colors[i].color = getcolor(dummy3);
                 }
             }
-            if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                dummy[strlen(dummy)-1] = '\0';
-                dummy2 = strdup(dummy);
-                for(i=0;i<DESKTOPS;i++)
-                    sb_bar[i].label = strsep(&dummy2, ",");
-            }
-           if(STATUS_BAR == 0) {
+            if(STATUS_BAR == 0) {
                 if(strstr(buffer,"FONTNAME" ) != NULL) {
                     strncpy(fontbarname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
                     fontbar = XLoadQueryFont(dis, fontbarname);
@@ -864,19 +857,27 @@ void read_rcfile() {
                         logger("\033[0;32m fontbar Loaded");
                     }
                     sb_height = fontbar->ascent+10;
-
-                    // Screen height
-                    sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
-                    sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
                 }
-            } else {
-                sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
-                sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+                if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
+                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                    dummy[strlen(dummy)-1] = '\0';
+                    dummy2 = strdup(dummy);
+                    for(i=0;i<DESKTOPS;i++)
+                        sb_bar[i].label = strsep(&dummy2, ",");
+                }
             }
         }
         fclose(rcfile);
-        return;
+        if(STATUS_BAR == 0) {
+            // Screen height
+            sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
+            sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+        } else {
+            sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
+            sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+        }
     }
+    return;
 }
 
 void set_defaults() {
