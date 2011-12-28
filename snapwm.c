@@ -794,6 +794,7 @@ void status_text(const char *sb_text) {
     text_start = (sb_width+(XTextWidth(fontbar, sb_text, 45)))-(XTextWidth(fontbar, sb_text, text_length));
 
     XClearWindow(dis, sb_area);
+    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, "[v]", 3);
     XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
     //XSync(dis, False);
 }
@@ -868,14 +869,14 @@ void read_rcfile() {
             }
         }
         fclose(rcfile);
-        if(STATUS_BAR == 0) {
-            // Screen height
-            sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
-            sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-        } else {
-            sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
-            sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-        }
+    }
+    if(STATUS_BAR == 0) {
+        // Screen height
+        sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
+        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+    } else {
+        sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
+        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     }
     return;
 }
@@ -901,6 +902,7 @@ void set_defaults() {
 void update_config() {
     int i;
     
+    XUngrabKey(dis, AnyKey, AnyModifier, root);
     XFreeFont(dis, fontbar);
     fontbar = NULL;
     for(i=0;i<81;i++)
@@ -917,14 +919,27 @@ void update_config() {
         update_bar();
     }
     update_current();
+    grabkeys();
 }
 
 /* ********************** Keyboard Management ********************** */
 void grabkeys() {
-    int i;
+    int i, j;
+    XModifierKeymap *modmap;
     KeyCode code;
 
     XUngrabKey(dis, AnyKey, AnyModifier, root);
+    // numlock workaround
+    numlockmask = 0;
+    modmap = XGetModifierMapping(dis);
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < modmap->max_keypermod; j++) {
+            if(modmap->modifiermap[i * modmap->max_keypermod + j] == XKeysymToKeycode(dis, XK_Num_Lock))
+                numlockmask = (1 << i);
+        }
+    }
+    XFreeModifiermap(modmap);
+
     // For each shortcuts
     for(i=0;i<TABLENGTH(keys);++i) {
         code = XKeysymToKeycode(dis,keys[i].keysym);
@@ -1233,25 +1248,12 @@ void setup() {
     root = RootWindow(dis,screen);
 
     // Read in RCFILE
-    setlocale(LC_CTYPE, "");
+    //setlocale(LC_CTYPE, "");
     read_rcfile();
     if(STATUS_BAR == 0) {
         setup_status_bar();
         status_bar();
     }
-
-    // numlock workaround
-    int j, k;
-    XModifierKeymap *modmap;
-    numlockmask = 0;
-    modmap = XGetModifierMapping(dis);
-    for (k = 0; k < 8; k++) {
-        for (j = 0; j < modmap->max_keypermod; j++) {
-            if(modmap->modifiermap[k * modmap->max_keypermod + j] == XKeysymToKeycode(dis, XK_Num_Lock))
-                numlockmask = (1 << k);
-        }
-    }
-    XFreeModifiermap(modmap);
 
     // Shortcuts
     grabkeys();

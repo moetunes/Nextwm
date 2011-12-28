@@ -57,7 +57,7 @@ static const Convenience convenience[] = { \
 
 const char* dmenucmd[]      = {"dmenu_run","-i","-nb","#666622","-nf","white",NULL};
 const char* urxvtcmd[]      = {"urxvtc",NULL};
-const char* terminalcmd[]   = {"terminal",NULL};
+const char* terminalcmd[]   = {"Terminal",NULL};
 const char* thunarcmd[]     = {"thunar",NULL};
 const char* firefoxcmd[]    = {"firefox",NULL};
 const char* webcmd[]        = {"links","-g",NULL};
