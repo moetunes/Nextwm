@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.1.2 ]
+ /* config.h for snapwm.c [ 0.1.6 ]
  *
  *  Started from catwm 31/12/10
  *  Bad window error checking and numlock checking used from
@@ -31,7 +31,7 @@
 #define MOD4            Mod4Mask
 #define MASTER_SIZE     0.55
 #define TOP_PANEL       0  /* 1=Don't 0=Have the panel at the top instead of the bottom */
-#define PANEL_HEIGHT    18 /* 0 for no space for a panel */
+#define PANEL_HEIGHT    0 /* 0 for no space for a panel */
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 0=TRUE, 1=New window is master */
 #define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
@@ -42,6 +42,7 @@
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
 static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", };
+static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", };
 
 // Applications to a specific desktop
 static const Convenience convenience[] = { \
@@ -75,7 +76,8 @@ const char* shutdowncmd[]   = {"sudo","shutdown","-h","now",NULL};
 // Avoid multiple paste
 #define DESKTOPCHANGE(K,N) \
     {  MOD1,             K,              change_desktop, {.i = N}}, \
-    {  MOD1|ShiftMask,   K,              client_to_desktop, {.i = N}},
+    {  MOD1|ShiftMask,   K,        follow_client_to_desktop, {.i = N}}, \
+    {  MOD4|ShiftMask,   K,        client_to_desktop, {.i = N}},
 
 // Shortcuts
 static key keys[] = {
@@ -90,6 +92,7 @@ static key keys[] = {
     {  MOD1,             XK_o,          resize_stack,      {.i = -10}},
     {  MOD1,             XK_u,          update_config,     {NULL}},
     {  MOD1,             XK_Tab,        last_desktop,      {NULL}},
+    {  MOD1,             XK_b,          toggle_panel,      {NULL}},
     {  MOD1,             XK_Return,     spawn,             {.com = urxvtcmd}},
     {  MOD1,             XK_Up,         spawn,             {.com = volupcmd}},
     {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
@@ -97,10 +100,10 @@ static key keys[] = {
     {  MOD1|ShiftMask,   XK_j,          move_up,           {NULL}},
     {  MOD1|ShiftMask,   XK_k,          move_down,         {NULL}},
     {  MOD1|ShiftMask,   XK_Return,     swap_master,       {NULL}},
-    {  MOD1|ShiftMask,   XK_g,          switch_grid,       {NULL}},
-    {  MOD1|ShiftMask,   XK_h,          switch_horizontal, {NULL}},
-    {  MOD1|ShiftMask,   XK_m,          switch_fullscreen, {NULL}},
-    {  MOD1|ShiftMask,   XK_v,          switch_vertical,   {NULL}},
+    {  MOD1|ShiftMask,   XK_g,          switch_mode,       {.i = 3}}, // grid
+    {  MOD1|ShiftMask,   XK_h,          switch_mode,       {.i = 2}}, // horizontal
+    {  MOD1|ShiftMask,   XK_f,          switch_mode,       {.i = 1}}, // fullscreen
+    {  MOD1|ShiftMask,   XK_v,          switch_mode,       {.i = 0}}, // vertical
 // Control + alt + shortcut
     {  MOD1|ControlMask, XK_q,          quit,              {NULL}},
     {  MOD1|ControlMask, XK_r,          spawn,             {.com = rebootcmd}},

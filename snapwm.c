@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.1.2 ]
+/* snapwm.c [ 0.1.6 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -30,6 +30,8 @@
 #include <sys/wait.h>
 #include <locale.h>
 #include <string.h>
+#include <sys/select.h>
+#include <errno.h>
 
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
 
@@ -79,6 +81,7 @@ typedef struct {
 
 typedef struct {
     unsigned long color;
+    const char *modename;
 } Theme;
 
 typedef enum {
@@ -116,11 +119,13 @@ static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static void destroynotify(XEvent *e);
 static void enternotify(XEvent *e);
+static void follow_client_to_desktop(const Arg arg);
 static unsigned long getcolor(const char* color);
 static void getwindowname();
 static void grabkeys();
 static void keypress(XEvent *e);
 static void kill_client();
+static void kill_client_now(Window w);
 static void last_desktop();
 static void leavenotify(XEvent *e);
 static void logger(const char* e);
@@ -138,7 +143,6 @@ static void resize_stack(const Arg arg);
 static void rotate_desktop(const Arg arg);
 static void save_desktop(int i);
 static void select_desktop(int i);
-static void send_kill_signal(Window w);
 static void setup();
 static void setup_status_bar();
 static void set_defaults();
@@ -148,15 +152,14 @@ static void start();
 static void status_bar();
 static void status_text(const char* sb_text);
 static void swap_master();
+static void switch_mode(const Arg arg);
 static void tile();
 static void toggle_bar();
-static void switch_fullscreen();
-static void switch_grid();
-static void switch_horizontal();
-static void switch_vertical();
+static void toggle_panel();
 static void update_bar();
 static void update_config();
 static void update_current();
+static void update_output();
 
 // Include configuration file (need struct key)
 #include "config.h"
@@ -169,6 +172,7 @@ static int previous_desktop;
 static int growth;
 static int master_size;
 static int mode;
+static int panel_size;
 static int sb_desks;        // width of the desktop switcher
 static int sb_height;
 static int sb_width;
@@ -178,14 +182,14 @@ static int screen;
 static int show_bar;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
-//static unsigned int colors[0].color, colors[1].color, colors[2].color, colors[3].color, colors[4].color;
+//static unsigned int theme[0].color, theme[1].color, theme[2].color, theme[3].color, theme[4].color;
 unsigned int numlockmask;        /* dynamic key lock mask */
 static Window root;
 static Window sb_area;
 static client *head;
 static client *current;
 static char fontbarname[80];
-static char mode_res[1];
+static char output[256];
 static XFontStruct *fontbar;
 static GC sb_b, sb_c;
 // Events array
@@ -204,7 +208,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
 // Desktop array
 static desktop desktops[DESKTOPS];
 static Barwin sb_bar[DESKTOPS];
-static Theme colors[5];
+static Theme theme[5];
 
 /* ***************************** Window Management ******************************* */
 void add_window(Window w) {
@@ -266,6 +270,7 @@ void remove_window(Window w) {
                 free(head);
                 head = NULL;
                 current = NULL;
+                growth = 0;
                 save_desktop(current_desktop);
                 status_text("");
                 return;
@@ -288,26 +293,11 @@ void remove_window(Window w) {
 
             free(c);
             save_desktop(current_desktop);
+            if(mode == 1) XMapWindow(dis, current->win);
             tile();
             update_current();
             return;
         }
-    }
-}
-
-void kill_client() {
-    if(current != NULL) {
-        //send delete signal to window
-        XEvent ke;
-        ke.type = ClientMessage;
-        ke.xclient.window = current->win;
-        ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
-        ke.xclient.format = 32;
-        ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
-        ke.xclient.data.l[1] = CurrentTime;
-        XSendEvent(dis, current->win, False, NoEventMask, &ke);
-        send_kill_signal(current->win);
-        remove_window(current->win);
     }
 }
 
@@ -411,11 +401,12 @@ void change_desktop(const Arg arg) {
 
     // Map all windows
     if(head != NULL) {
-        if(mode != 1 || head->next == NULL)
+        if(mode != 1) {
             for(c=head;c;c=c->next)
                 XMapWindow(dis,c->win);
-    } else
-        status_text("");
+        } else
+            XMapWindow(dis, current->win);
+    }
 
     tile();
     update_current();
@@ -428,9 +419,30 @@ void last_desktop() {
 }
 
 void rotate_desktop(const Arg arg) {
-    int ndesktops = TABLENGTH(desktops);
-    Arg a = {.i = (current_desktop + ndesktops + arg.i) % ndesktops};
+    Arg a = {.i = (current_desktop + TABLENGTH(desktops) + arg.i) % TABLENGTH(desktops)};
      change_desktop(a);
+}
+
+void follow_client_to_desktop(const Arg arg) {
+    client *tmp = current;
+    int tmp2 = current_desktop;
+
+    if(arg.i == current_desktop || current == NULL)
+        return;
+
+    // Add client to desktop
+    select_desktop(arg.i);
+    add_window(tmp->win);
+    save_desktop(arg.i);
+
+    // Remove client from current desktop
+    select_desktop(tmp2);
+    XUnmapWindow(dis,tmp->win);
+    remove_window(tmp->win);
+    save_desktop(tmp2);
+    tile();
+    update_current();
+    change_desktop(arg);
 }
 
 void client_to_desktop(const Arg arg) {
@@ -452,8 +464,7 @@ void client_to_desktop(const Arg arg) {
     save_desktop(tmp2);
     tile();
     update_current();
-    if(FOLLOW_WINDOW == 0)
-        change_desktop(arg);
+    update_bar();
 }
 
 void save_desktop(int i) {
@@ -480,20 +491,16 @@ void tile() {
     int y = 0;
 
     // For a top panel
-    if(TOP_PANEL == 0)
-        y = PANEL_HEIGHT;
+    if(TOP_PANEL == 0) y = panel_size;
 
     // If only one window
-    if(head != NULL && head->next == NULL) {
-        if(mode == 1) XMapWindow(dis, head->win);
-        XMoveResizeWindow(dis,head->win,0,y,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
-        growth = 0;
-    }
+    if(head != NULL && head->next == NULL)
+        XMoveResizeWindow(dis,head->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
+
     else if(head != NULL) {
         switch(mode) {
             case 0: /* Vertical */
-                sprintf(mode_res, "V");
-                // Master window
+            	// Master window
                 XMoveResizeWindow(dis,head->win,0,y,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
 
                 // Stack
@@ -506,17 +513,11 @@ void tile() {
                 }
                 break;
             case 1: /* Fullscreen */
-                sprintf(mode_res, "F");
-                for(c=head;c;c=c->next) {
-                    if(current == c) {
-                        XMapWindow(dis, c->win);
-                        XMoveResizeWindow(dis,c->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
-                    }
-                }
+                XMapWindow(dis, current->win);
+                XMoveResizeWindow(dis,current->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
                 break;
             case 2: /* Horizontal */
-                sprintf(mode_res, "H");
-                // Master window
+            	// Master window
                 XMoveResizeWindow(dis,head->win,0,y,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
 
                 // Stack
@@ -529,7 +530,6 @@ void tile() {
                 }
                 break;
             case 3: { // Grid
-                sprintf(mode_res, "G");
                 int xpos = 0;
                 int wdt = 0;
                 int ht = 0;
@@ -611,14 +611,14 @@ void update_current() {
 
         if(current == c) {
             // "Enable" current window
-            XSetWindowBorder(dis,c->win,colors[0].color);
+            XSetWindowBorder(dis,c->win,theme[0].color);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(CLICK_TO_FOCUS == 0)
                 XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
         else {
-            XSetWindowBorder(dis,c->win,colors[1].color);
+            XSetWindowBorder(dis,c->win,theme[1].color);
             if(CLICK_TO_FOCUS == 0)
                 XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
@@ -632,64 +632,25 @@ void update_current() {
     XSync(dis, False);
 }
 
-void switch_vertical() {
+void switch_mode(const Arg arg) {
     client *c;
 
-    if(mode != 0) {
-        if(mode == 1)
-            for(c=head;c;c=c->next) {
-                XUnmapWindow(dis, c->win);
-                XMapWindow(dis, c->win);
-            }
-        mode = 0;
-        master_size = sw * MASTER_SIZE;
-        tile();
-        update_current();
-        getwindowname();
+    if(mode == arg.i) return;
+    if(mode == 1 && head->next != NULL) {
+        XUnmapWindow(dis, current->win);
+        for(c=head;c;c=c->next)
+            XMapWindow(dis, c->win);
     }
-}
 
-void switch_fullscreen() {
-    if(mode != 1) {
-        mode = 1;
-        tile();
-        update_current();
-        getwindowname();
-    }
-}
+    mode = arg.i;
+    if(mode == 0 || mode == 3) master_size = sw * MASTER_SIZE;
+    if(mode == 1 && head->next != NULL)
+        for(c=head;c;c=c->next)
+            XUnmapWindow(dis, c->win);
 
-void switch_horizontal() {
-    client *c;
-
-    if(mode != 2) {
-        if(mode == 1)
-            for(c=head;c;c=c->next) {
-                XUnmapWindow(dis, c->win);
-                XMapWindow(dis, c->win);
-            }
-        mode = 2;
-        master_size = sh * MASTER_SIZE;
-        tile();
-        update_current();
-        getwindowname();
-    }
-}
-
-void switch_grid() {
-    client *c;
-
-    if(mode != 3) {
-        if(mode == 1)
-            for(c=head;c;c=c->next) {
-                XUnmapWindow(dis, c->win);
-                XMapWindow(dis, c->win);
-            }
-        mode = 3;
-        master_size = sw * MASTER_SIZE;
-        tile();
-        update_current();
-        getwindowname();
-    }
+    if(mode == 2) master_size = sh * MASTER_SIZE;
+    tile();
+    update_current();
 }
 
 void resize_master(const Arg arg) {
@@ -702,6 +663,19 @@ void resize_stack(const Arg arg) {
     tile();
 }
 
+void toggle_panel() {
+    if(PANEL_HEIGHT > 0) {
+        if(panel_size >0) {
+            sh += panel_size;
+            panel_size = 0;
+        } else {
+            panel_size = PANEL_HEIGHT;
+            sh -= panel_size;
+        }
+        tile();
+    }
+}
+
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
     int i;
@@ -711,14 +685,14 @@ void setup_status_bar() {
     logger(" \033[0;33mStatus Bar called ...");
 
        /* create the sb_b GC to draw the status fontbar */
-    values.foreground = colors[4].color;
+    values.foreground = theme[4].color;
     values.line_width = 2;
     values.line_style = LineSolid;
     values.font = fontbar->fid;
     sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
 
        /* create the sb_c GC to draw the desktop switcher fontbar */
-    values.foreground = colors[5].color;
+    values.foreground = theme[5].color;
     values.line_width = 2;
     values.line_style = LineSolid;
     values.font = fontbar->fid;
@@ -726,7 +700,7 @@ void setup_status_bar() {
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label));
+        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+1);
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
@@ -741,13 +715,13 @@ void status_bar() {
 
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
-                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[0].color);
+                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[0].color);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
         XMapWindow(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
-             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,colors[3].color,colors[1].color);
+             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[1].color);
 
     XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
@@ -793,7 +767,6 @@ void getwindowname() {
 
 void status_text(const char *sb_text) {
     int text_length, text_start;
-    char mode_text[3];
 
     if(sb_text == NULL) sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
@@ -801,31 +774,52 @@ void status_text(const char *sb_text) {
         text_length = 35;
     else
         text_length = strlen(sb_text);
-    sprintf(mode_text, "[%s]", mode_res);
-    text_start = 10+(XTextWidth(fontbar, mode_text, strlen(mode_text)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
+    text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
 
-    XClearWindow(dis, sb_area);
-    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, mode_text, 3);
+    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", 40), sb_height-2*BORDER_WIDTH, False);
+    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, theme[mode].modename, strlen(theme[mode].modename));
     XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
-    //XSync(dis, False);
 }
 
 void update_bar() {
     int i;
+    char busylabel[20];
 
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, colors[1].color);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            if(desktops[i].head != NULL)
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, "#",1))/2, fontbar->ascent+2, "#", 1);
-            else
+            if(desktops[i].head != NULL) {
+                strcpy(busylabel, sb_bar[i].label); strcat(busylabel, "*");
+                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+2, busylabel, strlen(busylabel));
+            } else
                 XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         } else {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, colors[0].color);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
             XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
         }
+}
+
+void update_output() {
+    int text_length, text_start;
+    XTextProperty text_prop;
+
+    if(!(XGetTextProperty(dis,root,&text_prop,XA_WM_NAME))) {
+        logger("\033[0;31m Failed to get status output. \n");
+        strcpy(output, "What's going on here then?");
+    } else {
+        strncpy(output, (char *)text_prop.value, strlen((char *)text_prop.value) - 1);
+    }
+    if(strlen(output) >= 150)
+        text_length = 150;
+    else
+        text_length = strlen(output);
+    text_start = 10+(XTextWidth(fontbar, " ", 40))+(sw-sb_desks-XTextWidth(fontbar, " ", 40)-XTextWidth(fontbar, output, text_length)-20);
+
+    XClearArea(dis, sb_area,XTextWidth(fontbar, " ", 40),0,0,0, False);
+    XDrawString(dis, sb_area, sb_b, text_start+10, fontbar->ascent+2, output, text_length);
+    return;
 }
 
 /* *********************** Read Config File ************************ */
@@ -852,12 +846,24 @@ void read_rcfile() {
                 for(i=0;i<6;i++) {
                     dummy3 = strsep(&dummy2, ",");
                     if(getcolor(dummy3) == 1)
-                        colors[i].color = getcolor(defaultcolor[i]);
+                        theme[i].color = getcolor(defaultcolor[i]);
                     else
-                        colors[i].color = getcolor(dummy3);
+                        theme[i].color = getcolor(dummy3);
                 }
             }
             if(STATUS_BAR == 0) {
+                if(strstr(buffer, "MODENAME" ) != NULL) {
+                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                    dummy[strlen(dummy)-1] = '\0';
+                    dummy2 = strdup(dummy);
+                    for(i=0;i<4;i++) {
+                        dummy3 = strsep(&dummy2, ",");
+                        if(strlen(dummy3) < 1)
+                            theme[i].modename = strdup(defaultmodename[i]);
+                        else
+                            theme[i].modename = strdup(dummy3);
+                    }
+                }
                 if(strstr(buffer,"FONTNAME" ) != NULL) {
                     strncpy(fontbarname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
                     fontbar = XLoadQueryFont(dis, fontbarname);
@@ -882,10 +888,10 @@ void read_rcfile() {
     }
     if(STATUS_BAR == 0) {
         // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+panel_size+BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     } else {
-        sh = (XDisplayHeight(dis,screen) - (PANEL_HEIGHT+BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (panel_size+BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     }
     return;
@@ -896,7 +902,7 @@ void set_defaults() {
 
     logger("\033[0;32m Setting default values");
     for(i=0;i<6;i++)
-        colors[i].color = getcolor(defaultcolor[i]);
+        theme[i].color = getcolor(defaultcolor[i]);
     if(STATUS_BAR == 0 && strlen(fontbarname) < 1) {
         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
         fontbar = XLoadQueryFont(dis, "fixed");
@@ -987,7 +993,7 @@ void configurerequest(XEvent *e) {
     int y = 0;
 
     wc.x = ev->x;
-    if(TOP_PANEL == 0) y = PANEL_HEIGHT;
+    if(TOP_PANEL == 0) y = panel_size;
     wc.y = ev->y + y;
     if(ev->width < sw-BORDER_WIDTH)
         wc.width = ev->width;
@@ -1023,6 +1029,7 @@ void maprequest(XEvent *e) {
         XMapWindow(dis, ev->window);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         XRaiseWindow(dis,ev->window);
+        getwindowname();
         return;
     }
 
@@ -1045,6 +1052,7 @@ void maprequest(XEvent *e) {
                     XMapWindow(dis, ev->window);
                     XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
                     XRaiseWindow(dis,ev->window);
+                    getwindowname();
                     if(temp)
                         XFree(temp);
                     return;
@@ -1132,7 +1140,7 @@ void enternotify(XEvent *e) {
         int i;
         for(i=0;i<DESKTOPS;i++)
             if(sb_bar[i].sb_win == ev->window) {
-                XSetWindowBackground(dis, sb_bar[i].sb_win, colors[2].color);
+                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
                 XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2,
                           fontbar->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
@@ -1180,18 +1188,60 @@ void propertynotify(XEvent *e) {
         logger("prop notify delete");
         return;
     } else
+        if((ev->window == root) && (ev->atom == XA_WM_NAME)) update_output();
+    else
         getwindowname();
 }
 
-void send_kill_signal(Window w) {
+void kill_client() {
+    kill_client_now(current->win);
+    remove_window(current->win);
+}
+
+void kill_client_now(Window w) {
+    Atom *protocols;
+    int n, i;
+    int can_delete = 0;
+    Atom wm_delete_window;
     XEvent ke;
-    ke.type = ClientMessage;
-    ke.xclient.window = w;
-    ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
-    ke.xclient.format = 32;
-    ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
-    ke.xclient.data.l[1] = CurrentTime;
-    XSendEvent(dis, w, False, NoEventMask, &ke);
+    wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False); 
+
+    if (XGetWMProtocols(dis, w, &protocols, &n) != 0)
+        for (i=0;i<n;i++)
+            if (protocols[i] == wm_delete_window) can_delete = 1;
+
+    //XFree(protocols);
+    if(can_delete == 1) {
+        ke.type = ClientMessage;
+        ke.xclient.window = w;
+        ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
+        ke.xclient.format = 32;
+        ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
+        ke.xclient.data.l[1] = CurrentTime;
+        XSendEvent(dis, w, False, NoEventMask, &ke);
+    } else {
+        XKillClient(dis, w);
+    }
+}
+
+void quit() {
+    Window root_return, parent;
+    Window *children;
+    int i;
+    unsigned int nchildren;
+
+    XQueryTree(dis, root, &root_return, &parent, &children, &nchildren);
+    for(i = 0; i < nchildren; i++) {
+        kill_client_now(children[i]);
+    }
+    logger("\033[0;34mYou Quit : Thanks for using!");
+    XUngrabKey(dis, AnyKey, AnyModifier, root);
+    XDestroySubwindows(dis, root);
+    XSync(dis, False);
+    bool_quit = 1;
+    logger(" \033[0;33mThanks for using!");
+    XCloseDisplay(dis);
+    exit (0);
 }
 
 unsigned long getcolor(const char* color) {
@@ -1205,46 +1255,6 @@ unsigned long getcolor(const char* color) {
     return c.pixel;
 }
 
-void quit() {
-    Window root_return, parent;
-    Window *children;
-    int i;
-    unsigned int nchildren;
-    XEvent ev;
-
-    /*
-     * if a client refuses to terminate itself,
-     * we kill every window remaining the brutal way.
-     * Since we're stuck in the while(nchildren > 0) { ... } loop
-     * we can't exit through the main method.
-     * This all happens if MOD+q is pushed a second time.
-     */
-    if(bool_quit == 1) {
-        XUngrabKey(dis, AnyKey, AnyModifier, root);
-        XDestroySubwindows(dis, root);
-        logger(" \033[0;33mThanks for using!");
-        XCloseDisplay(dis);
-        logger("\033[0;31mforced shutdown");
-        exit (0);
-    }
-
-    bool_quit = 1;
-    XQueryTree(dis, root, &root_return, &parent, &children, &nchildren);
-    for(i = 0; i < nchildren; i++) {
-        send_kill_signal(children[i]);
-    }
-    //keep alive until all windows are killed
-    while(nchildren > 0) {
-        XQueryTree(dis, root, &root_return, &parent, &children, &nchildren);
-        XNextEvent(dis,&ev);
-        if(events[ev.type])
-            events[ev.type](&ev);
-    }
-
-    XUngrabKey(dis,AnyKey,AnyModifier,root);
-    logger("\033[0;34mYou Quit : Thanks for using!");
-}
-
 void logger(const char* e) {
     fprintf(stderr,"\n\033[0;34m:: snapwm : %s \033[0;m\n", e);
 }
@@ -1256,6 +1266,7 @@ void setup() {
     // Screen and root window
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
+    panel_size = PANEL_HEIGHT;
 
     // Read in RCFILE
     //setlocale(LC_CTYPE, "");
@@ -1270,7 +1281,6 @@ void setup() {
 
     // Default stack
     mode = DEFAULT_MODE;
-    sprintf(mode_res, "*");
     growth = 0;
 
     // For exiting
@@ -1305,7 +1315,7 @@ void setup() {
     for(x = 0; x < ATOM_COUNT; x++)
         *atomList[x].atom = XInternAtom(dis, atomList[x].name, False);
     // To catch maprequest and destroynotify (if other wm running)
-    XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask);
+    XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
     XSetErrorHandler(xerror);
     logger("\033[0;32mWe're up and running!");
 }

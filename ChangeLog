@@ -1,3 +1,9 @@
+29/12/11
+  Statusbar takes text from stdin (e.g. conky)
+
+29/12/11
+  Added the tiling mode shown in the status bar
+
 28/12/11
   Fixed rereading the rc file killing the wm or messing with the keyboard shortcuts
 

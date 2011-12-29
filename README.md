@@ -59,8 +59,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-1/12/11
-	Colours and font are read from an rc file and can be updated with a keyboard shortcut.
+29/12/11
+	Text (e.g. conky) can be piped into the status bar from .xinitrc.
 
 ###Status
 ------
@@ -78,6 +78,7 @@ There are more options in the config file than the original catwm.
   * Added ability to change back to last opened desktop.
   * Added bar with desktop switcher and statusbar.
   * Colours and font are read from an rc file and can be updated with a keyboard shortcut.
+  * Text (e.g. conky) can be piped into the status bar from .xinitrc.
 
 
 ###Installation
