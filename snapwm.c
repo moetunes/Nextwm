@@ -1,8 +1,9 @@
-/* snapwm.c [ 0.1.6 ]
+/* snapwm.c [ 0.1.7 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
 *  2wm at http://hg.suckless.org/2wm/
+*  See the dwm license at http://hg.suckless.org/dwm/raw-file/tip/LICENSE
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -30,8 +31,6 @@
 #include <sys/wait.h>
 #include <locale.h>
 #include <string.h>
-#include <sys/select.h>
-#include <errno.h>
 
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
 
@@ -182,7 +181,6 @@ static int screen;
 static int show_bar;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
-//static unsigned int theme[0].color, theme[1].color, theme[2].color, theme[3].color, theme[4].color;
 unsigned int numlockmask;        /* dynamic key lock mask */
 static Window root;
 static Window sb_area;
@@ -495,7 +493,7 @@ void tile() {
 
     // If only one window
     if(head != NULL && head->next == NULL)
-        XMoveResizeWindow(dis,head->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
+        XMoveResizeWindow(dis,head->win,0,y,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
 
     else if(head != NULL) {
         switch(mode) {
@@ -809,7 +807,8 @@ void update_output() {
         logger("\033[0;31m Failed to get status output. \n");
         strcpy(output, "What's going on here then?");
     } else {
-        strncpy(output, (char *)text_prop.value, strlen((char *)text_prop.value) - 1);
+        strncpy(output, (char *)text_prop.value, strlen((char *)text_prop.value));
+        output[strlen(output)] = '\0';
     }
     if(strlen(output) >= 150)
         text_length = 150;
@@ -927,8 +926,10 @@ void update_config() {
     if(STATUS_BAR == 0) {
         setup_status_bar();
         for(i=0;i<DESKTOPS;i++)
+            XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
             XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
                                             sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
+        XSetWindowBorder(dis,sb_area,theme[3].color);
         XMoveResizeWindow(dis, sb_area, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
                              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH);
         tile();
