@@ -810,6 +810,7 @@ void update_output() {
         strncpy(output, (char *)text_prop.value, strlen((char *)text_prop.value));
         output[strlen(output)] = '\0';
     }
+    XFree(text_prop.value);
     if(strlen(output) >= 150)
         text_length = 150;
     else
