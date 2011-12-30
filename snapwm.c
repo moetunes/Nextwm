@@ -774,7 +774,7 @@ void status_text(const char *sb_text) {
         text_length = strlen(sb_text);
     text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
 
-    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", 40), sb_height-2*BORDER_WIDTH, False);
+    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height-2*BORDER_WIDTH, False);
     XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, theme[mode].modename, strlen(theme[mode].modename));
     XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
 }
@@ -811,14 +811,17 @@ void update_output() {
         output[strlen(output)] = '\0';
     }
     XFree(text_prop.value);
-    if(strlen(output) >= 150)
-        text_length = 150;
+    if(strlen(output) >= 255)
+        text_length = 255;
     else
         text_length = strlen(output);
-    text_start = 10+(XTextWidth(fontbar, " ", 40))+(sw-sb_desks-XTextWidth(fontbar, " ", 40)-XTextWidth(fontbar, output, text_length)-20);
+    if(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, text_length)+20) > 0)
+        text_start = (XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)))+(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, text_length)+20));
+    else
+        text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 
-    XClearArea(dis, sb_area,XTextWidth(fontbar, " ", 40),0,0,0, False);
-    XDrawString(dis, sb_area, sb_b, text_start+10, fontbar->ascent+2, output, text_length);
+    XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
+    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, output, text_length);
     for(i=0;i<256;i++)
         output[i] = '\0';
     return;
