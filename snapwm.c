@@ -928,10 +928,10 @@ void update_config() {
     read_rcfile();
     if(STATUS_BAR == 0) {
         setup_status_bar();
-        for(i=0;i<DESKTOPS;i++)
+        for(i=0;i<DESKTOPS;i++) {
             XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
-                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
+            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
+        }
         XSetWindowBorder(dis,sb_area,theme[3].color);
         XMoveResizeWindow(dis, sb_area, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
                              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH);
