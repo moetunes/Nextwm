@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.1.7 ]
+/* snapwm.c [ 0.1.8 ]
 *
 *  I started this from catwm 31/12/10
 *  Bad window error checking and numlock checking used from
@@ -721,7 +721,7 @@ void status_bar() {
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[1].color);
 
-    XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
+    //XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
     status_text("");
     update_bar();
@@ -800,7 +800,7 @@ void update_bar() {
 }
 
 void update_output() {
-    int text_length, text_start;
+    int text_length, text_start, i;
     XTextProperty text_prop;
 
     if(!(XGetTextProperty(dis,root,&text_prop,XA_WM_NAME))) {
@@ -819,6 +819,8 @@ void update_output() {
 
     XClearArea(dis, sb_area,XTextWidth(fontbar, " ", 40),0,0,0, False);
     XDrawString(dis, sb_area, sb_b, text_start+10, fontbar->ascent+2, output, text_length);
+    for(i=0;i<256;i++)
+        output[i] = '\0';
     return;
 }
 
@@ -826,7 +828,7 @@ void update_output() {
 void read_rcfile() {
     FILE *rcfile ;
     char buffer[80]; /* Way bigger that neccessary */
-    char dummy[70];
+    char dummy[80];
     char *dummy2;
     char *dummy3;
     int i;
