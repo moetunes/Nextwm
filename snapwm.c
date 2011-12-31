@@ -706,7 +706,7 @@ void setup_status_bar() {
             sb_width = sb_bar[i].width;
     }
     sb_width += 4;
-    if(sb_width < 20) sb_width = 20;
+    if(sb_width < sb_height) sb_width = sb_height;
     sb_desks = (DESKTOPS*sb_width)+BORDER_WIDTH;
 
 }
@@ -791,7 +791,8 @@ void update_bar() {
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
             XClearWindow(dis, sb_bar[i].sb_win);
             if(desktops[i].head != NULL) {
-                strcpy(busylabel, sb_bar[i].label); strcat(busylabel, "*");
+                //strcpy(busylabel, sb_bar[i].label); strcat(busylabel, "*");
+                strcpy(busylabel, "*"); strcat(busylabel, sb_bar[i].label);
                 XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             } else
                 XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
