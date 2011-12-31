@@ -1,20 +1,23 @@
 /* snapwm.c [ 0.1.8 ]
 *
-*  I started this from catwm 31/12/10
-*  Bad window error checking and numlock checking used from
-*  2wm at http://hg.suckless.org/2wm/
-*  See the dwm license at http://hg.suckless.org/dwm/raw-file/tip/LICENSE
+*  Permission is hereby granted, free of charge, to any person obtaining a
+*  copy of this software and associated documentation files (the "Software"),
+*  to deal in the Software without restriction, including without limitation
+*  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+*  and/or sell copies of the Software, and to permit persons to whom the
+*  Software is furnished to do so, subject to the following conditions:
 *
-*  This program is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*  You should have received a copy of the GNU General Public License
-*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*  The above copyright notice and this permission notice shall be included in
+*  all copies or substantial portions of the Software.
+*
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+*  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+*  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+*  DEALINGS IN THE SOFTWARE.
+*
 */
 
 #include <X11/Xlib.h>
@@ -775,8 +778,8 @@ void status_text(const char *sb_text) {
     text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
 
     XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height-2*BORDER_WIDTH, False);
-    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+2, theme[mode].modename, strlen(theme[mode].modename));
-    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, sb_text, text_length);
+    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
+    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+1, sb_text, text_length);
 }
 
 void update_bar() {
@@ -789,13 +792,13 @@ void update_bar() {
             XClearWindow(dis, sb_bar[i].sb_win);
             if(desktops[i].head != NULL) {
                 strcpy(busylabel, sb_bar[i].label); strcat(busylabel, "*");
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+2, busylabel, strlen(busylabel));
+                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             } else
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
+                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+2, sb_bar[i].label, strlen(sb_bar[i].label));
+            XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
         }
 }
 
@@ -821,7 +824,7 @@ void update_output() {
         text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 
     XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
-    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+2, output, text_length);
+    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+1, output, text_length);
     for(i=0;i<256;i++)
         output[i] = '\0';
     return;
@@ -878,7 +881,7 @@ void read_rcfile() {
                     } else {
                         logger("\033[0;32m fontbar Loaded");
                     }
-                    sb_height = fontbar->ascent+10;
+                    sb_height = fontbar->ascent+8;
                 }
                 if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -994,7 +997,6 @@ void configurenotify(XEvent *e) {
 
 /* ********************** Signal Management ************************** */
 void configurerequest(XEvent *e) {
-    // Paste from DWM, thx again \o/
     XConfigureRequestEvent *ev = &e->xconfigurerequest;
     XWindowChanges wc;
     int y = 0;
@@ -1328,7 +1330,6 @@ void setup() {
 }
 
 void sigchld(int unused) {
-    // Again, thx to dwm ;)
     if(signal(SIGCHLD, sigchld) == SIG_ERR) {
         logger("\033[0;31mCan't install SIGCHLD handler");
         exit(1);
@@ -1367,7 +1368,6 @@ int xerror(Display *dis, XErrorEvent *ee) {
 void start() {
     XEvent ev;
 
-    // Main loop, just dispatch events (thx to dwm ;)
     while(!bool_quit && !XNextEvent(dis,&ev)) {
         if(events[ev.type])
             events[ev.type](&ev);

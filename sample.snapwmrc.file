@@ -1,9 +1,9 @@
 // 6 colours are: focused window border & desktop in switcher; unfocused window & bar background;
 // hilight when mouseover the desktop switcher;border and lines of the bar;statusbar font;desktop switcher font
 // comma separated list must end in a comma
-THEME #664422,#003040,#006070,#555555,#ffffff,#cccccc,
-DESKTOP_NAMES 1,2,3,4,5,6,
+THEME #443311,#002030,#004050,#001020,#999999,#777777,
 MODENAME [V],[F],[H],[G],
+DESKTOP_NAMES term,edit,web,media,mail,play,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
 // "-*-freesans-*-r-*-*-*-*-*-*-*-*-*-*"
 // "-*-terminus-*-*-*-*-16-*-*-*-*-*-*-*"
