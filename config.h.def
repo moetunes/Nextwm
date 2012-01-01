@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.1.8 ]
+ /* config.h for snapwm.c [ 0.1.9 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -43,7 +43,7 @@
 #define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
-static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", };
+static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", "#ff00ff", };
 static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", };
 
 // Applications to a specific desktop

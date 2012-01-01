@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.1.8 ]
+/* snapwm.c [ 0.1.9 ]
 *
 *  Permission is hereby granted, free of charge, to any person obtaining a
 *  copy of this software and associated documentation files (the "Software"),
@@ -84,6 +84,7 @@ typedef struct {
 typedef struct {
     unsigned long color;
     const char *modename;
+    GC gc;
 } Theme;
 
 typedef enum {
@@ -192,7 +193,6 @@ static client *current;
 static char fontbarname[80];
 static char output[256];
 static XFontStruct *fontbar;
-static GC sb_b, sb_c;
 // Events array
 static void (*events[LASTEvent])(XEvent *e) = {
     [KeyPress] = keypress,
@@ -685,19 +685,13 @@ void setup_status_bar() {
     show_bar = STATUS_BAR;
     logger(" \033[0;33mStatus Bar called ...");
 
-       /* create the sb_b GC to draw the status fontbar */
-    values.foreground = theme[4].color;
-    values.line_width = 2;
-    values.line_style = LineSolid;
-    values.font = fontbar->fid;
-    sb_b = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
-
-       /* create the sb_c GC to draw the desktop switcher fontbar */
-    values.foreground = theme[5].color;
-    values.line_width = 2;
-    values.line_style = LineSolid;
-    values.font = fontbar->fid;
-    sb_c = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
+    for(i=0;i<3;i++) {
+        values.foreground = theme[i+4].color;
+        values.line_width = 2;
+        values.line_style = LineSolid;
+        values.font = fontbar->fid;
+        theme[i].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
+    }
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
@@ -778,8 +772,8 @@ void status_text(const char *sb_text) {
     text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
 
     XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height-2*BORDER_WIDTH, False);
-    XDrawString(dis, sb_area, sb_b, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
-    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+1, sb_text, text_length);
+    XDrawString(dis, sb_area, theme[0].gc, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
+    XDrawString(dis, sb_area, theme[0].gc, text_start, fontbar->ascent+1, sb_text, text_length);
 }
 
 void update_bar() {
@@ -793,13 +787,13 @@ void update_bar() {
             if(desktops[i].head != NULL) {
                 //strcpy(busylabel, sb_bar[i].label); strcat(busylabel, "*");
                 strcpy(busylabel, "*"); strcat(busylabel, sb_bar[i].label);
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
+                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             } else
-                XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
+                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, sb_c, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
+            XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
         }
 }
 
@@ -825,7 +819,7 @@ void update_output() {
         text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 
     XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
-    XDrawString(dis, sb_area, sb_b, text_start, fontbar->ascent+1, output, text_length);
+    XDrawString(dis, sb_area, theme[2].gc, text_start, fontbar->ascent+1, output, text_length);
     for(i=0;i<256;i++)
         output[i] = '\0';
     return;
@@ -852,11 +846,12 @@ void read_rcfile() {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
-                for(i=0;i<6;i++) {
+                for(i=0;i<7;i++) {
                     dummy3 = strsep(&dummy2, ",");
-                    if(getcolor(dummy3) == 1)
+                    if(getcolor(dummy3) == 1) {
                         theme[i].color = getcolor(defaultcolor[i]);
-                    else
+                        logger("Default colour");
+                    } else
                         theme[i].color = getcolor(dummy3);
                 }
             }
@@ -1152,7 +1147,7 @@ void enternotify(XEvent *e) {
             if(sb_bar[i].sb_win == ev->window) {
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, sb_b, (sb_width-sb_bar[i].width)/2,
+                XDrawString(dis, sb_bar[i].sb_win, theme[0].gc, (sb_width-sb_bar[i].width)/2,
                           fontbar->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
                 }
    }
