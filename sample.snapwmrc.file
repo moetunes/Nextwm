@@ -1,7 +1,8 @@
-// 6 colours are: focused window border & desktop in switcher; unfocused window & bar background;
-// hilight when mouseover the desktop switcher;border and lines of the bar;statusbar font;desktop switcher font
+// 9 colours are: focused window border & desktop in switcher; unfocused window & bar background;
+// hilight when mouseover the desktop switcher;border and lines of the bar;statusbar font;desktop switcher font;
+// and 3 extra to be used in the external text display.
 // comma separated list must end in a comma
-THEME #443311,#002030,#004050,#001020,#999999,#777777,
+THEME #443311,#002030,#004050,#001020,#999999,#777755,#339933,#aa6644,#ffffff,
 MODENAME [V],[F],[H],[G],
 DESKTOP_NAMES term,edit,web,media,mail,play,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"

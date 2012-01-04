@@ -1,4 +1,4 @@
-/* snapwm.c [ 0.1.9 ]
+/* snapwm.c [ 0.2.0 ]
 *
 *  Permission is hereby granted, free of charge, to any person obtaining a
 *  copy of this software and associated documentation files (the "Software"),
@@ -191,7 +191,6 @@ static Window sb_area;
 static client *head;
 static client *current;
 static char fontbarname[80];
-static char output[256];
 static XFontStruct *fontbar;
 // Events array
 static void (*events[LASTEvent])(XEvent *e) = {
@@ -685,7 +684,7 @@ void setup_status_bar() {
     show_bar = STATUS_BAR;
     logger(" \033[0;33mStatus Bar called ...");
 
-    for(i=0;i<3;i++) {
+    for(i=0;i<5;i++) {
         values.foreground = theme[i+4].color;
         values.line_width = 2;
         values.line_style = LineSolid;
@@ -798,30 +797,43 @@ void update_bar() {
 }
 
 void update_output() {
-    int text_length, text_start, i;
-    XTextProperty text_prop;
+    int text_length, text_start, i, j=2, k=0;
+    char output[256];
+    char *win_name;
 
-    if(!(XGetTextProperty(dis,root,&text_prop,XA_WM_NAME))) {
+    if(!(XFetchName(dis, root, &win_name))) {
         logger("\033[0;31m Failed to get status output. \n");
         strcpy(output, "What's going on here then?");
     } else {
-        strncpy(output, (char *)text_prop.value, strlen((char *)text_prop.value));
-        output[strlen(output)] = '\0';
+        strncpy(output, win_name, strlen(win_name));
+        output[strlen(win_name)] = '\0';
     }
-    XFree(text_prop.value);
-    if(strlen(output) >= 255)
-        text_length = 255;
+    XFree(win_name);
+
+    if(strlen(output) > 255) text_length = 255;
     else
         text_length = strlen(output);
-    if(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, text_length)+20) > 0)
-        text_start = (XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)))+(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, text_length)+20));
+    for(i=0;i<text_length;i++) {
+        k++;
+        if(strncmp(&output[i], "&", 1) == 0)
+            i += 2;
+    }
+    if(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20) > 0)
+        text_start = (XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)))+(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20));
     else
         text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 
     XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
-    XDrawString(dis, sb_area, theme[2].gc, text_start, fontbar->ascent+1, output, text_length);
-    for(i=0;i<256;i++)
-        output[i] = '\0';
+    k = 0;
+    for(i=0;i<text_length;i++) {
+        k++;
+        if(strncmp(&output[i], "&", 1) == 0) {
+            j = output[i+1]-'0';
+            i += 2;
+        }
+        XDrawString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
+    }
+    output[0] ='\0';
     return;
 }
 
@@ -846,7 +858,7 @@ void read_rcfile() {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
-                for(i=0;i<7;i++) {
+                for(i=0;i<9;i++) {
                     dummy3 = strsep(&dummy2, ",");
                     if(getcolor(dummy3) == 1) {
                         theme[i].color = getcolor(defaultcolor[i]);
@@ -1199,6 +1211,7 @@ void propertynotify(XEvent *e) {
 }
 
 void kill_client() {
+    if(head == NULL) return;
     kill_client_now(current->win);
     remove_window(current->win);
 }
