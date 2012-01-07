@@ -1,24 +1,25 @@
-/* snapwm.c [ 0.2.1 ]
-*
-*  Permission is hereby granted, free of charge, to any person obtaining a
-*  copy of this software and associated documentation files (the "Software"),
-*  to deal in the Software without restriction, including without limitation
-*  the rights to use, copy, modify, merge, publish, distribute, sublicense,
-*  and/or sell copies of the Software, and to permit persons to whom the
-*  Software is furnished to do so, subject to the following conditions:
-*
-*  The above copyright notice and this permission notice shall be included in
-*  all copies or substantial portions of the Software.
-*
-*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-*  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-*  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-*  DEALINGS IN THE SOFTWARE.
-*
-*/
+ /* snapwm.c [ 0.2.3 ]
+ *
+ *  Started from catwm 31/12/10
+ *  Permission is hereby granted, free of charge, to any person obtaining a
+ *  copy of this software and associated documentation files (the "Software"),
+ *  to deal in the Software without restriction, including without limitation
+ *  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ *  and/or sell copies of the Software, and to permit persons to whom the
+ *  Software is furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ *  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ *  DEALINGS IN THE SOFTWARE.
+ *
+ */
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -63,8 +64,7 @@ struct client{
 typedef struct desktop desktop;
 struct desktop{
     int master_size;
-    int mode;
-    int growth;
+    int mode, growth, numwins;
     client *head;
     client *current;
 };
@@ -87,32 +87,6 @@ typedef struct {
     GC gc;
 } Theme;
 
-typedef enum {
-    ATOM_NET_WM_WINDOW_TYPE,
-    ATOM_NET_WM_WINDOW_TYPE_UTILITY,
-    ATOM_NET_WM_WINDOW_TYPE_DOCK,
-    ATOM_NET_WM_WINDOW_TYPE_SPLASH,
-    ATOM_NET_WM_WINDOW_TYPE_DIALOG,
-    ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION,
-    ATOM_COUNT
-} AtomType;
-
-typedef struct {
-   Atom *atom;
-   const char *name;
-} AtomNode;
-
-Atom atoms[ATOM_COUNT];
-
-static const AtomNode atomList[] = {
-    { &atoms[ATOM_NET_WM_WINDOW_TYPE],              "_NET_WM_WINDOW_TYPE"             },
-    { &atoms[ATOM_NET_WM_WINDOW_TYPE_UTILITY],      "_NET_WM_WINDOW_TYPE_UTILITY"     },
-    { &atoms[ATOM_NET_WM_WINDOW_TYPE_DOCK],         "_NET_WM_WINDOW_TYPE_DOCK"        },
-    { &atoms[ATOM_NET_WM_WINDOW_TYPE_SPLASH],       "_NET_WM_WINDOW_TYPE_SPLASH"      },
-    { &atoms[ATOM_NET_WM_WINDOW_TYPE_DIALOG],       "_NET_WM_WINDOW_TYPE_DIALOG"      },
-    { &atoms[ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION], "_NET_WM_WINDOW_TYPE_NOTIFICATION"},
-};
-
 // Functions
 static void add_window(Window w);
 static void buttonpressed(XEvent *e);
@@ -130,7 +104,6 @@ static void keypress(XEvent *e);
 static void kill_client();
 static void kill_client_now(Window w);
 static void last_desktop();
-static void leavenotify(XEvent *e);
 static void logger(const char* e);
 static void maprequest(XEvent *e);
 static void move_down();
@@ -158,7 +131,6 @@ static void swap_master();
 static void switch_mode(const Arg arg);
 static void tile();
 static void toggle_bar();
-static void toggle_panel();
 static void update_bar();
 static void update_config();
 static void update_current();
@@ -175,7 +147,6 @@ static int previous_desktop;
 static int growth;
 static int master_size;
 static int mode;
-static int panel_size;
 static int sb_desks;        // width of the desktop switcher
 static int sb_height;
 static int sb_width;
@@ -197,7 +168,6 @@ static void (*events[LASTEvent])(XEvent *e) = {
     [KeyPress] = keypress,
     [MapRequest] = maprequest,
     [EnterNotify] = enternotify,
-    [LeaveNotify] = leavenotify,
     [ButtonPress] = buttonpressed,
     [DestroyNotify] = destroynotify,
     [PropertyNotify] = propertynotify,
@@ -249,13 +219,14 @@ void add_window(Window w) {
     }
 
     current = c;
+    desktops[current_desktop].numwins += 1;
     save_desktop(current_desktop);
     // for folow mouse and statusbar updates
-    if(FOLLOW_MOUSE == 0 && show_bar == 0)
+    if(FOLLOW_MOUSE == 0 && STATUS_BAR == 0)
         XSelectInput(dis, c->win, EnterWindowMask|PropertyChangeMask);
     else if(FOLLOW_MOUSE == 0)
         XSelectInput(dis, c->win, EnterWindowMask);
-    else if(show_bar == 0)
+    else if(STATUS_BAR == 0)
         XSelectInput(dis, c->win, PropertyChangeMask);
 }
 
@@ -264,15 +235,15 @@ void remove_window(Window w) {
 
     // CHANGE THIS UGLY CODE
     for(c=head;c;c=c->next) {
-
         if(c->win == w) {
+            if(desktops[current_desktop].numwins < 4) growth = 0;
+            desktops[current_desktop].numwins -= 1;
             if(c->prev == NULL && c->next == NULL) {
                 free(head);
                 head = NULL;
                 current = NULL;
-                growth = 0;
                 save_desktop(current_desktop);
-                status_text("");
+                if(STATUS_BAR == 0) status_text("");
                 return;
             }
 
@@ -327,8 +298,7 @@ void prev_win() {
             c = current->prev;
 
         current = c;
-        if(mode == 1)
-            tile();
+        if(mode == 1) tile();
         update_current();
     }
 }
@@ -410,7 +380,7 @@ void change_desktop(const Arg arg) {
 
     tile();
     update_current();
-    update_bar();
+    if(STATUS_BAR == 0) update_bar();
 }
 
 void last_desktop() {
@@ -464,7 +434,7 @@ void client_to_desktop(const Arg arg) {
     save_desktop(tmp2);
     tile();
     update_current();
-    update_bar();
+    if(STATUS_BAR == 0) update_bar();
 }
 
 void save_desktop(int i) {
@@ -490,8 +460,9 @@ void tile() {
     int x = 0;
     int y = 0;
 
-    // For a top panel
-    if(TOP_PANEL == 0) y = panel_size;
+    // For a top bar
+    if(STATUS_BAR == 0 && TOP_BAR == 0 && show_bar == 0) y = sb_height;
+    else y = 0;
 
     // If only one window
     if(head != NULL && head->next == NULL)
@@ -623,7 +594,7 @@ void update_current() {
                 XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
     }
-    if(show_bar == 0) {
+    if(STATUS_BAR == 0 && show_bar == 0) {
         if(head != NULL)
             getwindowname();
         else
@@ -636,7 +607,7 @@ void switch_mode(const Arg arg) {
     client *c;
 
     if(mode == arg.i) return;
-    if(mode == 1 && current != NULL && head->next != NULL) {
+    if(mode == 1 && head != NULL && head->next != NULL) {
         printf("\tMODE == 1\n");
         XUnmapWindow(dis, current->win);
         for(c=head;c;c=c->next)
@@ -645,7 +616,7 @@ void switch_mode(const Arg arg) {
 
     mode = arg.i;
     if(mode == 0 || mode == 3) master_size = sw * MASTER_SIZE;
-    if(mode == 1 && current != NULL && head->next != NULL)
+    if(mode == 1 && head != NULL && head->next != NULL)
         for(c=head;c;c=c->next)
             XUnmapWindow(dis, c->win);
 
@@ -660,19 +631,8 @@ void resize_master(const Arg arg) {
 }
 
 void resize_stack(const Arg arg) {
-    growth += arg.i;
-    tile();
-}
-
-void toggle_panel() {
-    if(PANEL_HEIGHT > 0) {
-        if(panel_size >0) {
-            sh += panel_size;
-            panel_size = 0;
-        } else {
-            panel_size = PANEL_HEIGHT;
-            sh -= panel_size;
-        }
+    if(desktops[current_desktop].numwins > 2) {
+        growth += arg.i;
         tile();
     }
 }
@@ -702,23 +662,23 @@ void setup_status_bar() {
     sb_width += 4;
     if(sb_width < sb_height) sb_width = sb_height;
     sb_desks = (DESKTOPS*sb_width)+BORDER_WIDTH;
-
 }
 
 void status_bar() {
-    int i;
+    int i, y;
 
+    if(TOP_BAR == 0) y = 0;
+    else y = sh+BORDER_WIDTH;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,
+        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
                                             sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[0].color);
 
-        XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
+        XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask);
         XMapWindow(dis, sb_bar[i].sb_win);
     }
-    sb_area = XCreateSimpleWindow(dis, root, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
+    sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[1].color);
 
-    //XSelectInput(dis, sb_area, ButtonPressMask|EnterWindowMask|LeaveWindowMask );
     XMapWindow(dis, sb_area);
     status_text("");
     update_bar();
@@ -782,14 +742,16 @@ void update_bar() {
 
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
-            XClearWindow(dis, sb_bar[i].sb_win);
             if(desktops[i].head != NULL) {
-                //strcpy(busylabel, sb_bar[i].label); strcat(busylabel, "*");
                 strcpy(busylabel, "*"); strcat(busylabel, sb_bar[i].label);
+                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
+                XClearWindow(dis, sb_bar[i].sb_win);
                 XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
-            } else
+            } else {
+                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
+                XClearWindow(dis, sb_bar[i].sb_win);
                 XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
+            }
         } else {
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
@@ -812,8 +774,7 @@ void update_output() {
     XFree(win_name);
 
     if(strlen(output) > 255) text_length = 255;
-    else
-        text_length = strlen(output);
+    else text_length = strlen(output);
     for(i=0;i<text_length;i++) {
         k++;
         if(strncmp(&output[i], "&", 1) == 0)
@@ -896,8 +857,13 @@ void read_rcfile() {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
-                    for(i=0;i<DESKTOPS;i++)
-                        sb_bar[i].label = strsep(&dummy2, ",");
+                    for(i=0;i<DESKTOPS;i++) {
+                        dummy3 = strsep(&dummy2, ",");
+                        if(strlen(dummy3) < 1)
+                            sb_bar[i].label = strdup("?");
+                        else
+                            sb_bar[i].label = strdup(dummy3);
+                    }
                 }
             }
         }
@@ -905,10 +871,10 @@ void read_rcfile() {
     }
     if(STATUS_BAR == 0) {
         // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+panel_size+BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     } else {
-        sh = (XDisplayHeight(dis,screen) - (panel_size+BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     }
     return;
@@ -918,22 +884,27 @@ void set_defaults() {
     int i;
 
     logger("\033[0;32m Setting default values");
-    for(i=0;i<6;i++)
+    for(i=0;i<9;i++)
         theme[i].color = getcolor(defaultcolor[i]);
-    if(STATUS_BAR == 0 && strlen(fontbarname) < 1) {
+    if(STATUS_BAR == 0) {
+        for(i=0;i<4;i++)
+            theme[i].modename = strdup(defaultmodename[i]);
+        for(i=0;i<DESKTOPS;i++)
+            sb_bar[i].label = strdup("?");
         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
         fontbar = XLoadQueryFont(dis, "fixed");
         sb_height = fontbar->ascent+10;
-        sh = (XDisplayHeight(dis,screen) - (sb_height+PANEL_HEIGHT+BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+BORDER_WIDTH));
+        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
+    } else {
+        sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     }
-    if(STATUS_BAR == 0)
-        for(i=0;i<DESKTOPS;i++)
-            sb_bar[i].label = "?";
+    return;
 }
 
 void update_config() {
-    int i;
+    int i, y;
     
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     XFreeFont(dis, fontbar);
@@ -941,14 +912,17 @@ void update_config() {
     for(i=0;i<81;i++)
         fontbarname[i] = '\0';
     read_rcfile();
+    if(TOP_BAR == 0) y = 0;
+    else y = sh+BORDER_WIDTH;
     if(STATUS_BAR == 0) {
         setup_status_bar();
         for(i=0;i<DESKTOPS;i++) {
             XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, sh+PANEL_HEIGHT+BORDER_WIDTH,sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
+            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
         }
         XSetWindowBorder(dis,sb_area,theme[3].color);
-        XMoveResizeWindow(dis, sb_area, sb_desks, sh+PANEL_HEIGHT+BORDER_WIDTH,
+        XSetWindowBackground(dis, sb_area, theme[1].color);
+        XMoveResizeWindow(dis, sb_area, sb_desks, y,
                              sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH);
         tile();
         update_bar();
@@ -1011,7 +985,7 @@ void configurerequest(XEvent *e) {
     int y = 0;
 
     wc.x = ev->x;
-    if(TOP_PANEL == 0) y = panel_size;
+    if(STATUS_BAR == 0 && TOP_BAR == 0) y = sb_height;
     wc.y = ev->y + y;
     if(ev->width < sw-BORDER_WIDTH)
         wc.width = ev->width;
@@ -1025,6 +999,7 @@ void configurerequest(XEvent *e) {
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
     XConfigureWindow(dis, ev->window, ev->value_mask, &wc);
+    if(STATUS_BAR == 0) update_bar();
     XSync(dis, False);
 }
 
@@ -1049,34 +1024,6 @@ void maprequest(XEvent *e) {
         XRaiseWindow(dis,ev->window);
         getwindowname();
         return;
-    }
-
-    unsigned long count, j, extra;
-    Atom realType;
-    int realFormat;
-    unsigned char *temp;
-    Atom *type;
-
-    if(XGetWindowProperty(dis, ev->window, atoms[ATOM_NET_WM_WINDOW_TYPE], 0, 32, False, XA_ATOM, &realType, &realFormat, &count, &extra, &temp) == Success) {
-        if(count > 0) {
-            type = (unsigned long*)temp;
-            for(j=0; j<count; j++) {
-                if((type[j] == atoms[ATOM_NET_WM_WINDOW_TYPE_UTILITY]) ||
-                  (type[j] == atoms[ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION]) ||
-                  (type[j] == atoms[ATOM_NET_WM_WINDOW_TYPE_SPLASH]) ||
-                  (type[j] == atoms[ATOM_NET_WM_WINDOW_TYPE_DIALOG]) ||
-                  (type[j] == atoms[ATOM_NET_WM_WINDOW_TYPE_DOCK])) {
-                    add_window(ev->window);
-                    XMapWindow(dis, ev->window);
-                    XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
-                    XRaiseWindow(dis,ev->window);
-                    getwindowname();
-                    if(temp)
-                        XFree(temp);
-                    return;
-                }
-            }
-        }
     }
 
     XClassHint ch = {0};
@@ -1104,7 +1051,7 @@ void maprequest(XEvent *e) {
                     XFree(ch.res_class);
                 if(ch.res_name)
                     XFree(ch.res_name);
-                update_bar();
+                if(STATUS_BAR == 0) update_bar();
                 return;
             }
 
@@ -1112,6 +1059,7 @@ void maprequest(XEvent *e) {
     XMapWindow(dis,ev->window);
     tile();
     update_current();
+    if(STATUS_BAR == 0) update_bar();
 }
 
 void destroynotify(XEvent *e) {
@@ -1131,7 +1079,7 @@ void destroynotify(XEvent *e) {
         if(i != 0) {
             remove_window(ev->window);
             select_desktop(tmp);
-            update_bar();
+            if(STATUS_BAR == 0) update_bar();
             return;
         }
 
@@ -1154,26 +1102,6 @@ void enternotify(XEvent *e) {
                 return;
        }
    }
-    if(STATUS_BAR == 0) {
-        int i;
-        for(i=0;i<DESKTOPS;i++)
-            if(sb_bar[i].sb_win == ev->window) {
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
-                XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, theme[0].gc, (sb_width-sb_bar[i].width)/2,
-                          fontbar->ascent, sb_bar[i].label, strlen(sb_bar[i].label));
-                }
-   }
-}
-
-void leavenotify(XEvent *e) {
-    if(STATUS_BAR == 0) {
-        XCrossingEvent *ev = &e->xcrossing;
-        int i;
-        for(i=0;i<DESKTOPS;i++)
-            if(sb_bar[i].sb_win == ev->window)
-                update_bar();
-    }
 }
 
 void buttonpressed(XEvent *e) {
@@ -1206,9 +1134,9 @@ void propertynotify(XEvent *e) {
         logger("prop notify delete");
         return;
     } else
-        if((ev->window == root) && (ev->atom == XA_WM_NAME)) update_output();
+        if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output();
     else
-        getwindowname();
+        if(STATUS_BAR == 0) getwindowname();
 }
 
 void kill_client() {
@@ -1285,7 +1213,6 @@ void setup() {
     // Screen and root window
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
-    panel_size = PANEL_HEIGHT;
 
     // Read in RCFILE
     //setlocale(LC_CTYPE, "");
@@ -1293,14 +1220,13 @@ void setup() {
     if(STATUS_BAR == 0) {
         setup_status_bar();
         status_bar();
-    }
+    } else set_defaults();
 
     // Shortcuts
     grabkeys();
 
     // Default stack
     mode = DEFAULT_MODE;
-    growth = 0;
 
     // For exiting
     bool_quit = 0;
@@ -1320,7 +1246,8 @@ void setup() {
     for(i=0;i<TABLENGTH(desktops);++i) {
         desktops[i].master_size = master_size;
         desktops[i].mode = mode;
-        desktops[i].growth = growth;
+        desktops[i].growth = 0;
+        desktops[i].numwins = 0;
         desktops[i].head = head;
         desktops[i].current = current;
     }
@@ -1329,9 +1256,6 @@ void setup() {
     const Arg arg = {.i = 0};
     current_desktop = arg.i;
     change_desktop(arg);
-    // Set up atoms for dialog/notification windows
-    for(i = 0; i < ATOM_COUNT; i++)
-        *atomList[i].atom = XInternAtom(dis, atomList[i].name, False);
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
     XSetErrorHandler(xerror);

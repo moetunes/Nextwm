@@ -1,3 +1,6 @@
+7/1/12
+  Fixed wm crash if not using status bar and resize of stack top window only if 3 or more windows
+
 4/1/12
   Statusbar text now has 5 colours
 

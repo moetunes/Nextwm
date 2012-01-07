@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.2.1 ]
+ /* config.h for snapwm.c [ 0.2.3 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,15 +32,13 @@
 #define MOD1            Mod1Mask
 #define MOD4            Mod4Mask
 #define MASTER_SIZE     0.55
-#define TOP_PANEL       0  /* 1=Don't 0=Have the panel at the top instead of the bottom */
-#define PANEL_HEIGHT    0 /* 0 for no space for a panel */
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 0=TRUE, 1=New window is master */
 #define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
-#define FOLLOW_WINDOW   0  /* 1=Don't 0=Follow the window when moved to a different desktop */
 #define CLICK_TO_FOCUS  1  /* 1=Don't 0=Focus an unfocused window when clicked */
 #define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
+#define TOP_BAR         1  /* 1=Don't 0=Have the bar at the top instead of the bottom */
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
 static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };
@@ -94,7 +92,6 @@ static key keys[] = {
     {  MOD1,             XK_o,          resize_stack,      {.i = -10}},
     {  MOD1,             XK_u,          update_config,     {NULL}},
     {  MOD1,             XK_Tab,        last_desktop,      {NULL}},
-    {  MOD1,             XK_b,          toggle_panel,      {NULL}},
     {  MOD1,             XK_Return,     spawn,             {.com = urxvtcmd}},
     {  MOD1,             XK_Up,         spawn,             {.com = volupcmd}},
     {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
