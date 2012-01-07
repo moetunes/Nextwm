@@ -53,7 +53,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
  
  * The window W at the top of the stack can be resized on a per desktop basis.
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
- * There is a bar with a desktop switcher and status bar.
+ * There is a bar with a desktop switcher and status bar and which can show external text.
 
 
 ###Recent Changes
@@ -106,5 +106,5 @@ Need Xlib, then:
 ----
 
   * when swithching desktops stop the mouse being in an unfocused window changing focus.
-  * Pipe user input to the remaining space on the bar
   * Improve font handling
+  * Some applications just withdraw windows so handle that
