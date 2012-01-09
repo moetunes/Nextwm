@@ -1,5 +1,11 @@
+9/1/12
+  Master area is reset if second last window is removed
+
 7/1/12
   Fixed wm crash if not using status bar and resize of stack top window only if 3 or more windows
+  Fix for window sizes after the window at the top of the stack has been resized
+  Added limits on the area of the master window 
+  Fix for thunderbird write window( and others probably) just unmapping
 
 4/1/12
   Statusbar text now has 5 colours

@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.2.3 ]
+ /* snapwm.c [ 0.2.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -112,7 +112,7 @@ static void next_win();
 static void prev_win();
 static void propertynotify(XEvent *e);
 static void quit();
-static void remove_window(Window w);
+static void remove_window(Window w, int dr);
 static void read_rcfile();
 static void resize_master(const Arg arg);
 static void resize_stack(const Arg arg);
@@ -131,6 +131,7 @@ static void swap_master();
 static void switch_mode(const Arg arg);
 static void tile();
 static void toggle_bar();
+static void unmapnotify(XEvent *e);    // Thunderbird's write window just unmaps...
 static void update_bar();
 static void update_config();
 static void update_current();
@@ -168,6 +169,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
     [KeyPress] = keypress,
     [MapRequest] = maprequest,
     [EnterNotify] = enternotify,
+    [UnmapNotify] = unmapnotify,
     [ButtonPress] = buttonpressed,
     [DestroyNotify] = destroynotify,
     [PropertyNotify] = propertynotify,
@@ -220,6 +222,8 @@ void add_window(Window w) {
 
     current = c;
     desktops[current_desktop].numwins += 1;
+    if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
+    else growth = 0;
     save_desktop(current_desktop);
     // for folow mouse and statusbar updates
     if(FOLLOW_MOUSE == 0 && STATUS_BAR == 0)
@@ -230,13 +234,14 @@ void add_window(Window w) {
         XSelectInput(dis, c->win, PropertyChangeMask);
 }
 
-void remove_window(Window w) {
+void remove_window(Window w, int dr) {
     client *c;
 
     // CHANGE THIS UGLY CODE
     for(c=head;c;c=c->next) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
+            else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
             desktops[current_desktop].numwins -= 1;
             if(c->prev == NULL && c->next == NULL) {
                 free(head);
@@ -262,9 +267,10 @@ void remove_window(Window w) {
                 current = c->prev;
             }
 
-            free(c);
+            if(dr == 0) free(c);
+            if(head->next == NULL && mode != 2) master_size = sw*MASTER_SIZE;
+            if(head->next == NULL && mode == 2) master_size = sh*MASTER_SIZE;
             save_desktop(current_desktop);
-            if(mode == 1) XMapWindow(dis, current->win);
             tile();
             update_current();
             return;
@@ -282,8 +288,7 @@ void next_win() {
             c = current->next;
 
         current = c;
-        if(mode == 1)
-            tile();
+        if(mode == 1) tile();
         update_current();
     }
 }
@@ -408,7 +413,7 @@ void follow_client_to_desktop(const Arg arg) {
     // Remove client from current desktop
     select_desktop(tmp2);
     XUnmapWindow(dis,tmp->win);
-    remove_window(tmp->win);
+    remove_window(tmp->win, 0);
     save_desktop(tmp2);
     tile();
     update_current();
@@ -430,7 +435,7 @@ void client_to_desktop(const Arg arg) {
     // Remove client from current desktop
     select_desktop(tmp2);
     XUnmapWindow(dis,tmp->win);
-    remove_window(tmp->win);
+    remove_window(tmp->win, 0);
     save_desktop(tmp2);
     tile();
     update_current();
@@ -626,13 +631,29 @@ void switch_mode(const Arg arg) {
 }
 
 void resize_master(const Arg arg) {
-        master_size += arg.i;
-        tile();
+    if(arg.i > 0) {
+        if((mode != 2 && sw-master_size > 70) || (mode == 2 && sh-master_size > 70)) {
+            master_size += arg.i;
+            tile();
+        }
+    } else {
+        if(master_size > 70) {
+            master_size += arg.i;
+            tile();
+        }
+    }
 }
 
 void resize_stack(const Arg arg) {
     if(desktops[current_desktop].numwins > 2) {
-        growth += arg.i;
+        int n = desktops[current_desktop].numwins-1;
+        if(arg.i >0) {
+            if((mode != 2 && sh-(growth+sh/n) > (n-1)*70) || (mode == 2 && sw-(growth+sw/n) > (n-1)*70))
+                growth += arg.i;
+        } else {
+            if((mode != 2 && (sh/n+growth) > 70) || (mode == 2 && (sw/n+growth) > 70))
+                growth += arg.i;
+        }
         tile();
     }
 }
@@ -1064,26 +1085,20 @@ void maprequest(XEvent *e) {
 
 void destroynotify(XEvent *e) {
     int i = 0;
-    int j = 0;
     int tmp = current_desktop;
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
 
     save_desktop(tmp);
-    for(j=0;j<TABLENGTH(desktops);++j) {
-        select_desktop(j);
+    for(i=0;i<TABLENGTH(desktops);++i) {
+        select_desktop(i);
         for(c=head;c;c=c->next)
-            if(ev->window == c->win)
-                i++;
-
-        if(i != 0) {
-            remove_window(ev->window);
-            select_desktop(tmp);
-            if(STATUS_BAR == 0) update_bar();
-            return;
-        }
-
-        i = 0;
+            if(ev->window == c->win) {
+                remove_window(ev->window, 0);
+                select_desktop(tmp);
+                if(STATUS_BAR == 0) update_bar();
+                return;
+            }
     }
     select_desktop(tmp);
 }
@@ -1139,10 +1154,31 @@ void propertynotify(XEvent *e) {
         if(STATUS_BAR == 0) getwindowname();
 }
 
+void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
+    XUnmapEvent *ev = &e->xunmap;
+    int i = 0;
+    int tmp = current_desktop;
+    client *c;
+
+    if(ev->send_event == 1) {
+        save_desktop(tmp);
+        for(i=0;i<TABLENGTH(desktops);++i) {
+            select_desktop(i);
+            for(c=head;c;c=c->next)
+                if(ev->window == c->win) {
+                    remove_window(ev->window, 1);
+                    select_desktop(tmp);
+                    return;
+                }
+        }
+        select_desktop(tmp);
+    }
+}
+
 void kill_client() {
     if(head == NULL) return;
     kill_client_now(current->win);
-    remove_window(current->win);
+    remove_window(current->win, 0);
 }
 
 void kill_client_now(Window w) {
@@ -1215,7 +1251,7 @@ void setup() {
     root = RootWindow(dis,screen);
 
     // Read in RCFILE
-    //setlocale(LC_CTYPE, "");
+    if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
     read_rcfile();
     if(STATUS_BAR == 0) {
         setup_status_bar();
