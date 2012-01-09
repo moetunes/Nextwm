@@ -1026,6 +1026,10 @@ void configurerequest(XEvent *e) {
 
 void maprequest(XEvent *e) {
     XMapRequestEvent *ev = &e->xmaprequest;
+    XWindowAttributes attr;
+
+    XGetWindowAttributes(dis, ev->window, &attr);
+    if(attr.override_redirect) return;
 
     // For fullscreen mplayer (and maybe some other program)
     client *c;
