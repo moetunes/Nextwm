@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.2.4 ]
+ /* snapwm.c [ 0.2.5 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -135,7 +135,7 @@ static void unmapnotify(XEvent *e);    // Thunderbird's write window just unmaps
 static void update_bar();
 static void update_config();
 static void update_current();
-static void update_output();
+static void update_output(int messg);
 
 // Include configuration file (need struct key)
 #include "config.h"
@@ -466,7 +466,7 @@ void tile() {
     int y = 0;
 
     // For a top bar
-    if(STATUS_BAR == 0 && TOP_BAR == 0 && show_bar == 0) y = sb_height;
+    if(STATUS_BAR == 0 && TOP_BAR == 0 && show_bar == 0) y = sb_height+2*BORDER_WIDTH;
     else y = 0;
 
     // If only one window
@@ -692,13 +692,13 @@ void status_bar() {
     else y = sh+BORDER_WIDTH;
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
-                                            sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[0].color);
+                                            sb_width-BORDER_WIDTH,sb_height,BORDER_WIDTH,theme[3].color,theme[0].color);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask);
         XMapWindow(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH,BORDER_WIDTH,theme[3].color,theme[1].color);
+             sw-(sb_desks+BORDER_WIDTH),sb_height,BORDER_WIDTH,theme[3].color,theme[1].color);
 
     XMapWindow(dis, sb_area);
     status_text("");
@@ -752,7 +752,7 @@ void status_text(const char *sb_text) {
         text_length = strlen(sb_text);
     text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
 
-    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height-2*BORDER_WIDTH, False);
+    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height, False);
     XDrawString(dis, sb_area, theme[0].gc, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
     XDrawString(dis, sb_area, theme[0].gc, text_start, fontbar->ascent+1, sb_text, text_length);
 }
@@ -780,14 +780,15 @@ void update_bar() {
         }
 }
 
-void update_output() {
+void update_output(int messg) {
     int text_length, text_start, i, j=2, k=0;
     char output[256];
     char *win_name;
 
     if(!(XFetchName(dis, root, &win_name))) {
-        logger("\033[0;31m Failed to get status output. \n");
         strcpy(output, "What's going on here then?");
+        if(messg == 0)
+            logger("\033[0;31m Failed to get status output. \n");
     } else {
         strncpy(output, win_name, strlen(win_name));
         output[strlen(win_name)] = '\0';
@@ -872,7 +873,7 @@ void read_rcfile() {
                     } else {
                         logger("\033[0;32m fontbar Loaded");
                     }
-                    sb_height = fontbar->ascent+8;
+                    sb_height = fontbar->ascent+fontbar->descent+2;
                 }
                 if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -892,7 +893,7 @@ void read_rcfile() {
     }
     if(STATUS_BAR == 0) {
         // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+4*BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     } else {
         sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
@@ -914,8 +915,8 @@ void set_defaults() {
             sb_bar[i].label = strdup("?");
         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
         fontbar = XLoadQueryFont(dis, "fixed");
-        sb_height = fontbar->ascent+10;
-        sh = (XDisplayHeight(dis,screen) - (sb_height+BORDER_WIDTH));
+        sb_height = fontbar->ascent+fontbar->descent+2;
+        sh = (XDisplayHeight(dis,screen) - (sb_height+4*BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     } else {
         sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
@@ -1006,7 +1007,7 @@ void configurerequest(XEvent *e) {
     int y = 0;
 
     wc.x = ev->x;
-    if(STATUS_BAR == 0 && TOP_BAR == 0) y = sb_height;
+    if(STATUS_BAR == 0 && TOP_BAR == 0) y = sb_height+2*BORDER_WIDTH;
     wc.y = ev->y + y;
     if(ev->width < sw-BORDER_WIDTH)
         wc.width = ev->width;
@@ -1153,7 +1154,7 @@ void propertynotify(XEvent *e) {
         logger("prop notify delete");
         return;
     } else
-        if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output();
+        if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output(0);
     else
         if(STATUS_BAR == 0) getwindowname();
 }
@@ -1172,6 +1173,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
                 if(ev->window == c->win) {
                     remove_window(ev->window, 1);
                     select_desktop(tmp);
+                    if(STATUS_BAR == 0) update_bar();
                     return;
                 }
         }
@@ -1212,23 +1214,11 @@ void kill_client_now(Window w) {
 }
 
 void quit() {
-    Window root_return, parent;
-    Window *children;
-    int i;
-    unsigned int nchildren;
-
-    XQueryTree(dis, root, &root_return, &parent, &children, &nchildren);
-    for(i = 0; i < nchildren; i++) {
-        kill_client_now(children[i]);
-    }
     logger("\033[0;34mYou Quit : Thanks for using!");
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
     bool_quit = 1;
-    logger(" \033[0;33mThanks for using!");
-    XCloseDisplay(dis);
-    exit (0);
 }
 
 unsigned long getcolor(const char* color) {
@@ -1260,6 +1250,7 @@ void setup() {
     if(STATUS_BAR == 0) {
         setup_status_bar();
         status_bar();
+        update_output(1);
     } else set_defaults();
 
     // Shortcuts

@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.2.4 ]
+ /* config.h for snapwm.c [ 0.2.5 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -38,7 +38,7 @@
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
 #define CLICK_TO_FOCUS  1  /* 1=Don't 0=Focus an unfocused window when clicked */
 #define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
-#define TOP_BAR         1  /* 1=Don't 0=Have the bar at the top instead of the bottom */
+#define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
 static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };
