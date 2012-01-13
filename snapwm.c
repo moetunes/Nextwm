@@ -940,12 +940,12 @@ void update_config() {
         setup_status_bar();
         for(i=0;i<DESKTOPS;i++) {
             XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-BORDER_WIDTH,sb_height-2*BORDER_WIDTH);
+            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-BORDER_WIDTH,sb_height);
         }
         XSetWindowBorder(dis,sb_area,theme[3].color);
         XSetWindowBackground(dis, sb_area, theme[1].color);
         XMoveResizeWindow(dis, sb_area, sb_desks, y,
-                             sw-(sb_desks+BORDER_WIDTH),sb_height-2*BORDER_WIDTH);
+                             sw-(sb_desks+BORDER_WIDTH),sb_height);
         tile();
         update_bar();
     }
