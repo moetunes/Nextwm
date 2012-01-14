@@ -1,5 +1,6 @@
 14/1/12
   Added alpha value for unfocused windows to be semi transparent when cairo-compmgr is used
+  Alpha value can be set in the rc file
 
 9/1/12
   Master area is reset if second last window is removed

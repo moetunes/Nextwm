@@ -25,7 +25,7 @@
 #define CONFIG_H
 
 #define RCFILE "/home/pnewm/.snapwmrc"
-#define UF_ALPHA 0.6
+#define UF_ALPHA 75
 
 #define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
 

@@ -54,13 +54,14 @@ It allows the "normal" method of tiling window managers(with the new window as t
  * The window W at the top of the stack can be resized on a per desktop basis.
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
  * There is a bar with a desktop switcher and status bar and which can show external text.
+ * The rc file is reloadable 'on the run'.
 
 
 ###Recent Changes
 --------------
 
-29/12/11
-	Text (e.g. conky) can be piped into the status bar from .xinitrc.
+15/1/12
+	Unfocused windows have an alpha value so can be transparent if e.g. cairo-compmgr is used
 
 ###Status
 ------
@@ -87,8 +88,8 @@ There are more options in the config file than the original catwm.
 Need Xlib, then:
 
     Copy the rc file to $HOME and edit it to suit.
-    Edit the config.h.def file to suit your needs
-        and save it as config.h making sure to add
+    Edit the config.h.def file to suit your needs and
+        save it as config.h making sure to add
         the correct path for the rc file.
 
     $ make
@@ -107,4 +108,3 @@ Need Xlib, then:
 
   * when swithching desktops stop the mouse being in an unfocused window changing focus.
   * Improve font handling
-  * Some applications just withdraw windows so handle that

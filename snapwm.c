@@ -155,6 +155,7 @@ static int sh;
 static int sw;
 static int screen;
 static int show_bar;
+static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 unsigned int numlockmask;        /* dynamic key lock mask */
@@ -579,7 +580,7 @@ void tile() {
 void update_current() {
     client *c;
     const Atom alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
-    unsigned long opacity = UF_ALPHA * 0xffffffff;
+    unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
     for(c=head;c;c=c->next) {
         if((head->next == NULL) || (mode == 1))
@@ -589,14 +590,14 @@ void update_current() {
 
         if(current == c) {
             // "Enable" current window
-            if(UF_ALPHA < 1) XDeleteProperty(dis, c->win, alphaatom);
+            if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
             XSetWindowBorder(dis,c->win,theme[0].color);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(CLICK_TO_FOCUS == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
         else {
-            if(UF_ALPHA < 1) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
+            if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].color);
             if(CLICK_TO_FOCUS == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
@@ -852,6 +853,11 @@ void read_rcfile() {
                     } else
                         theme[i].color = getcolor(dummy3);
                 }
+                for(i=0;i<81;i++) dummy[i] = '\0';
+            }
+            if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                ufalpha = atoi(dummy); // - '0';
             }
             if(STATUS_BAR == 0) {
                 if(strstr(buffer, "MODENAME" ) != NULL) {
@@ -1257,6 +1263,7 @@ void setup() {
 
     // Shortcuts
     grabkeys();
+    ufalpha = UF_ALPHA;
 
     // Default stack
     mode = DEFAULT_MODE;
