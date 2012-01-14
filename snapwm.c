@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.2.5 ]
+ /* snapwm.c [ 0.2.6 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -578,6 +578,8 @@ void tile() {
 
 void update_current() {
     client *c;
+    const Atom alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
+    unsigned long opacity = UF_ALPHA * 0xffffffff;
 
     for(c=head;c;c=c->next) {
         if((head->next == NULL) || (mode == 1))
@@ -587,16 +589,16 @@ void update_current() {
 
         if(current == c) {
             // "Enable" current window
+            if(UF_ALPHA < 1) XDeleteProperty(dis, c->win, alphaatom);
             XSetWindowBorder(dis,c->win,theme[0].color);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
-            if(CLICK_TO_FOCUS == 0)
-                XUngrabButton(dis, AnyButton, AnyModifier, c->win);
+            if(CLICK_TO_FOCUS == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
         else {
+            if(UF_ALPHA < 1) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].color);
-            if(CLICK_TO_FOCUS == 0)
-                XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+            if(CLICK_TO_FOCUS == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
     }
     if(STATUS_BAR == 0 && show_bar == 0) {
@@ -893,7 +895,7 @@ void read_rcfile() {
     }
     if(STATUS_BAR == 0) {
         // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+4*BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+3*BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     } else {
         sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
@@ -916,7 +918,7 @@ void set_defaults() {
         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
         fontbar = XLoadQueryFont(dis, "fixed");
         sb_height = fontbar->ascent+fontbar->descent+2;
-        sh = (XDisplayHeight(dis,screen) - (sb_height+4*BORDER_WIDTH));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+3*BORDER_WIDTH));
         sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
     } else {
         sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
@@ -1151,7 +1153,7 @@ void propertynotify(XEvent *e) {
     XPropertyEvent *ev = &e->xproperty;
 
     if(ev->state == PropertyDelete) {
-        logger("prop notify delete");
+        //logger("prop notify delete");
         return;
     } else
         if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output(0);
