@@ -1,3 +1,6 @@
+16/1/12
+  Fix for mode not displaying correctly at startup if now window is opened
+
 14/1/12
   Added alpha value for unfocused windows to be semi transparent when cairo-compmgr is used
   Alpha value can be set in the rc file

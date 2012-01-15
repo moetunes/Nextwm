@@ -617,7 +617,6 @@ void switch_mode(const Arg arg) {
     if(mode == arg.i) return;
     growth = 0;
     if(mode == 1 && head != NULL && head->next != NULL) {
-        printf("\tMODE == 1\n");
         XUnmapWindow(dis, current->win);
         for(c=head;c;c=c->next)
             XMapWindow(dis, c->win);
@@ -1253,15 +1252,6 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
-    // Read in RCFILE
-    if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
-    read_rcfile();
-    if(STATUS_BAR == 0) {
-        setup_status_bar();
-        status_bar();
-        update_output(1);
-    } else set_defaults();
-
     // Shortcuts
     grabkeys();
     ufalpha = UF_ALPHA;
@@ -1297,6 +1287,16 @@ void setup() {
     const Arg arg = {.i = 0};
     current_desktop = arg.i;
     change_desktop(arg);
+
+    // Read in RCFILE
+    if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
+    read_rcfile();
+    if(STATUS_BAR == 0) {
+        setup_status_bar();
+        status_bar();
+        update_output(1);
+    } else set_defaults();
+
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
     XSetErrorHandler(xerror);
