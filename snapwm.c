@@ -615,6 +615,7 @@ void switch_mode(const Arg arg) {
     client *c;
 
     if(mode == arg.i) return;
+    growth = 0;
     if(mode == 1 && head != NULL && head->next != NULL) {
         printf("\tMODE == 1\n");
         XUnmapWindow(dis, current->win);
