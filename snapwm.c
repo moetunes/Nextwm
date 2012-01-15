@@ -1253,6 +1253,17 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
+    // Read in RCFILE
+    if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
+    read_rcfile();
+    if(STATUS_BAR == 0) {
+        setup_status_bar();
+        status_bar();
+        update_output(1);
+    } else set_defaults();
+
+    // Shortcuts
+    grabkeys();
     ufalpha = UF_ALPHA;
 
     // Default stack
@@ -1286,22 +1297,12 @@ void setup() {
     const Arg arg = {.i = 0};
     current_desktop = arg.i;
     change_desktop(arg);
-
-    // Read in RCFILE
-    if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
-    read_rcfile();
-    if(STATUS_BAR == 0) {
-        setup_status_bar();
-        status_bar();
-        update_output(1);
-    } else set_defaults();
+    update_current();
 
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
     XSetErrorHandler(xerror);
     logger("\033[0;32mWe're up and running!");
-    // Shortcuts
-    grabkeys();
 }
 
 void sigchld(int unused) {
