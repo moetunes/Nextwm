@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.2.6 ]
+ /* snapwm.c [ 0.2.7 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -798,6 +798,7 @@ void update_output(int messg) {
     }
     XFree(win_name);
 
+    if(strlen(output) < 1) printf("\t EMPTY OUTPUT\n");
     if(strlen(output) > 255) text_length = 255;
     else text_length = strlen(output);
     for(i=0;i<text_length;i++) {
@@ -1252,8 +1253,6 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
-    // Shortcuts
-    grabkeys();
     ufalpha = UF_ALPHA;
 
     // Default stack
@@ -1301,6 +1300,8 @@ void setup() {
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
     XSetErrorHandler(xerror);
     logger("\033[0;32mWe're up and running!");
+    // Shortcuts
+    grabkeys();
 }
 
 void sigchld(int unused) {
