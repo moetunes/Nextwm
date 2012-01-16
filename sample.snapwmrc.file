@@ -3,7 +3,14 @@
 // and 5 extra to be used in the external text display.
 // comma separated list must end in a comma
 THEME #443311,#002030,#004050,#001020,#999999,#777755,#339933,#aa6644,#ffffff,
+BORDERWIDTH 2
+MASTERSIZE 52
+ATTACHASIDE 1
+DEFAULTMODE 0
 UF_WIN_ALPHA 65
+FOLLOWMOUSE 0
+CLICKTOFOCUS 1
+TOPBAR 0
 MODENAME [V],[F],[H],[G],
 DESKTOP_NAMES tone,two,three,four,five,six,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
