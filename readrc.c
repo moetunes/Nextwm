@@ -1,4 +1,4 @@
-// readrc.c [ 0.3.0 ]
+// readrc.c [ 0.3.1 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -175,8 +175,10 @@ void update_config() {
                              sw-(sb_desks+bdw),sb_height);
         update_bar();
     }
-    if(mode == 2) master_size = (sh*msize)/100;
-    else master_size = (sw*msize)/100;
+    for(i=0;i<DESKTOPS;i++) {
+        if(desktops[i].mode == 2) desktops[i].master_size = (sh*msize)/100;
+        else desktops[i].master_size = (sw*msize)/100;
+    }
     tile();
     update_current();
     grabkeys();
