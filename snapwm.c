@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.2.7 ]
+ /* snapwm.c [ 0.3.0 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -142,12 +142,17 @@ static void update_output(int messg);
 
 // Variable
 static Display *dis;
+static int attachaside;
+static int bdw;             // border width
 static int bool_quit;
+static int clicktofocus;
 static int current_desktop;
-static int previous_desktop;
+static int followmouse;
 static int growth;
 static int master_size;
 static int mode;
+static int msize;
+static int previous_desktop;
 static int sb_desks;        // width of the desktop switcher
 static int sb_height;
 static int sb_width;
@@ -155,6 +160,7 @@ static int sh;
 static int sw;
 static int screen;
 static int show_bar;
+static int topbar;
 static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
@@ -182,6 +188,8 @@ static void (*events[LASTEvent])(XEvent *e) = {
 static desktop desktops[DESKTOPS];
 static Barwin sb_bar[DESKTOPS];
 static Theme theme[5];
+#include "bar.c"
+#include "readrc.c"
 
 /* ***************************** Window Management ******************************* */
 void add_window(Window w) {
@@ -199,7 +207,7 @@ void add_window(Window w) {
         head = c;
     }
     else {
-        if(ATTACH_ASIDE == 0) {
+        if(attachaside == 0) {
             for(t=head;t->next;t=t->next);
 
             c->next = NULL;
@@ -227,9 +235,9 @@ void add_window(Window w) {
     else growth = 0;
     save_desktop(current_desktop);
     // for folow mouse and statusbar updates
-    if(FOLLOW_MOUSE == 0 && STATUS_BAR == 0)
+    if(followmouse == 0 && STATUS_BAR == 0)
         XSelectInput(dis, c->win, EnterWindowMask|PropertyChangeMask);
-    else if(FOLLOW_MOUSE == 0)
+    else if(followmouse == 0)
         XSelectInput(dis, c->win, EnterWindowMask);
     else if(STATUS_BAR == 0)
         XSelectInput(dis, c->win, PropertyChangeMask);
@@ -269,8 +277,8 @@ void remove_window(Window w, int dr) {
             }
 
             if(dr == 0) free(c);
-            if(head->next == NULL && mode != 2) master_size = sw*MASTER_SIZE;
-            if(head->next == NULL && mode == 2) master_size = sh*MASTER_SIZE;
+            if(head->next == NULL && mode != 2) master_size = (sw*msize)/100;
+            if(head->next == NULL && mode == 2) master_size = (sh*msize)/100;
             save_desktop(current_desktop);
             tile();
             update_current();
@@ -467,42 +475,42 @@ void tile() {
     int y = 0;
 
     // For a top bar
-    if(STATUS_BAR == 0 && TOP_BAR == 0 && show_bar == 0) y = sb_height+2*BORDER_WIDTH;
+    if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+2*bdw;
     else y = 0;
 
     // If only one window
     if(head != NULL && head->next == NULL)
-        XMoveResizeWindow(dis,head->win,0,y,sw+BORDER_WIDTH,sh+BORDER_WIDTH);
+        XMoveResizeWindow(dis,head->win,0,y,sw+bdw,sh+bdw);
 
     else if(head != NULL) {
         switch(mode) {
             case 0: /* Vertical */
             	// Master window
-                XMoveResizeWindow(dis,head->win,0,y,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
+                XMoveResizeWindow(dis,head->win,0,y,master_size - bdw,sh - bdw);
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
-                XMoveResizeWindow(dis,head->next->win,master_size + BORDER_WIDTH,y,sw-master_size-(2*BORDER_WIDTH),(sh/n)+growth - BORDER_WIDTH);
+                XMoveResizeWindow(dis,head->next->win,master_size + bdw,y,sw-master_size-(2*bdw),(sh/n)+growth - bdw);
                 y += (sh/n)+growth;
                 for(c=head->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,master_size + BORDER_WIDTH,y,sw-master_size-(2*BORDER_WIDTH),(sh/n)-(growth/(n-1)) - BORDER_WIDTH);
+                    XMoveResizeWindow(dis,c->win,master_size + bdw,y,sw-master_size-(2*bdw),(sh/n)-(growth/(n-1)) - bdw);
                     y += (sh/n)-(growth/(n-1));
                 }
                 break;
             case 1: /* Fullscreen */
                 XMapWindow(dis, current->win);
-                XMoveResizeWindow(dis,current->win,0,y,sw+2*BORDER_WIDTH,sh+2*BORDER_WIDTH);
+                XMoveResizeWindow(dis,current->win,0,y,sw+2*bdw,sh+2*bdw);
                 break;
             case 2: /* Horizontal */
             	// Master window
-                XMoveResizeWindow(dis,head->win,0,y,sw-BORDER_WIDTH,master_size - BORDER_WIDTH);
+                XMoveResizeWindow(dis,head->win,0,y,sw-bdw,master_size - bdw);
 
                 // Stack
                 for(c=head->next;c;c=c->next) ++n;
-                XMoveResizeWindow(dis,head->next->win,0,y+master_size + BORDER_WIDTH,(sw/n)+growth-BORDER_WIDTH,sh-master_size-(2*BORDER_WIDTH));
+                XMoveResizeWindow(dis,head->next->win,0,y+master_size + bdw,(sw/n)+growth-bdw,sh-master_size-(2*bdw));
                 x = (sw/n)+growth;
                 for(c=head->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,x,y+master_size + BORDER_WIDTH,(sw/n)-(growth/(n-1)) - BORDER_WIDTH,sh-master_size-(2*BORDER_WIDTH));
+                    XMoveResizeWindow(dis,c->win,x,y+master_size + bdw,(sw/n)-(growth/(n-1)) - bdw,sh-master_size-(2*bdw));
                     x += (sw/n)-(growth/(n-1));
                 }
                 break;
@@ -516,56 +524,56 @@ void tile() {
                 for(c=head;c;c=c->next) {
                     ++n;
                     if(x >= 7) {
-                        wdt = (sw/3) - BORDER_WIDTH;
-                        ht  = (sh/3) - BORDER_WIDTH;
+                        wdt = (sw/3) - bdw;
+                        ht  = (sh/3) - bdw;
                         if((n == 1) || (n == 4) || (n == 7))
                             xpos = 0;
                         if((n == 2) || (n == 5) || (n == 8))
-                            xpos = (sw/3) + BORDER_WIDTH;
+                            xpos = (sw/3) + bdw;
                         if((n == 3) || (n == 6) || (n == 9))
-                            xpos = (2*(sw/3)) + BORDER_WIDTH;
+                            xpos = (2*(sw/3)) + bdw;
                         if((n == 4) || (n == 7))
-                            y += (sh/3) + BORDER_WIDTH;
+                            y += (sh/3) + bdw;
                         if((n == x) && (n == 7))
-                            wdt = sw - BORDER_WIDTH;
+                            wdt = sw - bdw;
                         if((n == x) && (n == 8))
-                            wdt = 2*sw/3 - BORDER_WIDTH;
+                            wdt = 2*sw/3 - bdw;
                     } else
                     if(x >= 5) {
-                        wdt = (sw/3) - BORDER_WIDTH;
-                        ht  = (sh/2) - BORDER_WIDTH;
+                        wdt = (sw/3) - bdw;
+                        ht  = (sh/2) - bdw;
                         if((n == 1) || (n == 4))
                             xpos = 0;
                         if((n == 2) || (n == 5))
-                            xpos = (sw/3) + BORDER_WIDTH;
+                            xpos = (sw/3) + bdw;
                         if((n == 3) || (n == 6))
-                            xpos = (2*(sw/3)) + BORDER_WIDTH;
+                            xpos = (2*(sw/3)) + bdw;
                         if(n == 4)
-                            y += (sh/2); // + BORDER_WIDTH;
+                            y += (sh/2); // + bdw;
                         if((n == x) && (n == 5))
-                            wdt = 2*sw/3 - BORDER_WIDTH;
+                            wdt = 2*sw/3 - bdw;
 
                     } else {
                         if(x > 2) {
                             if((n == 1) || (n == 2))
-                                ht = (sh/2) + growth - BORDER_WIDTH;
+                                ht = (sh/2) + growth - bdw;
                             if(n >= 3)
-                                ht = (sh/2) - growth - 2*BORDER_WIDTH;
+                                ht = (sh/2) - growth - 2*bdw;
                         }
                         else
-                            ht = sh - BORDER_WIDTH;
+                            ht = sh - bdw;
                         if((n == 1) || (n == 3)) {
                             xpos = 0;
-                            wdt = master_size - BORDER_WIDTH;
+                            wdt = master_size - bdw;
                         }
                         if((n == 2) || (n == 4)) {
-                            xpos = master_size+BORDER_WIDTH;
-                            wdt = (sw - master_size) - 2*BORDER_WIDTH;
+                            xpos = master_size+bdw;
+                            wdt = (sw - master_size) - 2*bdw;
                         }
                         if(n == 3)
-                            y += (sh/2) + growth + BORDER_WIDTH;
+                            y += (sh/2) + growth + bdw;
                         if((n == x) && (n == 3))
-                            wdt = sw - BORDER_WIDTH;
+                            wdt = sw - bdw;
                     }
                     XMoveResizeWindow(dis,c->win,xpos,y,wdt,ht);
                 }
@@ -586,7 +594,7 @@ void update_current() {
         if((head->next == NULL) || (mode == 1))
             XSetWindowBorderWidth(dis,c->win,0);
         else
-            XSetWindowBorderWidth(dis,c->win,BORDER_WIDTH);
+            XSetWindowBorderWidth(dis,c->win,bdw);
 
         if(current == c) {
             // "Enable" current window
@@ -594,12 +602,12 @@ void update_current() {
             XSetWindowBorder(dis,c->win,theme[0].color);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
-            if(CLICK_TO_FOCUS == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
+            if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
         else {
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].color);
-            if(CLICK_TO_FOCUS == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+            if(clicktofocus == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
     }
     if(STATUS_BAR == 0 && show_bar == 0) {
@@ -623,12 +631,12 @@ void switch_mode(const Arg arg) {
     }
 
     mode = arg.i;
-    if(mode == 0 || mode == 3) master_size = sw * MASTER_SIZE;
+    if(mode == 0 || mode == 3) master_size = (sw*msize)/100;
     if(mode == 1 && head != NULL && head->next != NULL)
         for(c=head;c;c=c->next)
             XUnmapWindow(dis, c->win);
 
-    if(mode == 2) master_size = sh * MASTER_SIZE;
+    if(mode == 2) master_size = (sh*msize)/100;
     tile();
     update_current();
 }
@@ -659,307 +667,6 @@ void resize_stack(const Arg arg) {
         }
         tile();
     }
-}
-
-/* ************************** Status Bar *************************** */
-void setup_status_bar() {
-    int i;
-    XGCValues values;
-
-    show_bar = STATUS_BAR;
-    logger(" \033[0;33mStatus Bar called ...");
-
-    for(i=0;i<5;i++) {
-        values.foreground = theme[i+4].color;
-        values.line_width = 2;
-        values.line_style = LineSolid;
-        values.font = fontbar->fid;
-        theme[i].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
-    }
-
-    sb_width = 0;
-    for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+1);
-        if(sb_bar[i].width > sb_width)
-            sb_width = sb_bar[i].width;
-    }
-    sb_width += 4;
-    if(sb_width < sb_height) sb_width = sb_height;
-    sb_desks = (DESKTOPS*sb_width)+BORDER_WIDTH;
-}
-
-void status_bar() {
-    int i, y;
-
-    if(TOP_BAR == 0) y = 0;
-    else y = sh+BORDER_WIDTH;
-    for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
-                                            sb_width-BORDER_WIDTH,sb_height,BORDER_WIDTH,theme[3].color,theme[0].color);
-
-        XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask);
-        XMapWindow(dis, sb_bar[i].sb_win);
-    }
-    sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+BORDER_WIDTH),sb_height,BORDER_WIDTH,theme[3].color,theme[1].color);
-
-    XMapWindow(dis, sb_area);
-    status_text("");
-    update_bar();
-}
-
-void toggle_bar() {
-    int i;
-
-    if(STATUS_BAR == 0) {
-        if(show_bar == 1) {
-            show_bar = 0;
-            sh -= sb_height;
-            for(i=0;i<DESKTOPS;i++) {
-                XMapWindow(dis, sb_bar[i].sb_win);
-                XMapWindow(dis, sb_area);
-            }
-        } else {
-            show_bar = 1;
-            sh += sb_height;
-            for(i=0;i<DESKTOPS;i++) {
-                XUnmapWindow(dis,sb_bar[i].sb_win);
-                XUnmapWindow(dis, sb_area);
-            }
-        }
-
-        tile();
-        update_current();
-        update_bar();
-    }
-}
-
-void getwindowname() {
-    char *win_name;
-
-    if(head != NULL) {
-        XFetchName(dis, current->win, &win_name);
-        status_text(win_name);
-        XFree(win_name);
-    }
-}
-
-void status_text(const char *sb_text) {
-    int text_length, text_start;
-
-    if(sb_text == NULL) sb_text = "snapwm";
-    if(head == NULL) sb_text = "snapwm";
-    if(strlen(sb_text) >= 35)
-        text_length = 35;
-    else
-        text_length = strlen(sb_text);
-    text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
-
-    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height, False);
-    XDrawString(dis, sb_area, theme[0].gc, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
-    XDrawString(dis, sb_area, theme[0].gc, text_start, fontbar->ascent+1, sb_text, text_length);
-}
-
-void update_bar() {
-    int i;
-    char busylabel[20];
-
-    for(i=0;i<DESKTOPS;i++)
-        if(i != current_desktop) {
-            if(desktops[i].head != NULL) {
-                strcpy(busylabel, "*"); strcat(busylabel, sb_bar[i].label);
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
-                XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
-            } else {
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
-                XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
-            }
-        } else {
-            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
-            XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
-        }
-}
-
-void update_output(int messg) {
-    int text_length, text_start, i, j=2, k=0;
-    char output[256];
-    char *win_name;
-
-    if(!(XFetchName(dis, root, &win_name))) {
-        strcpy(output, "What's going on here then?");
-        if(messg == 0)
-            logger("\033[0;31m Failed to get status output. \n");
-    } else {
-        strncpy(output, win_name, strlen(win_name));
-        output[strlen(win_name)] = '\0';
-    }
-    XFree(win_name);
-
-    if(strlen(output) < 1) printf("\t EMPTY OUTPUT\n");
-    if(strlen(output) > 255) text_length = 255;
-    else text_length = strlen(output);
-    for(i=0;i<text_length;i++) {
-        k++;
-        if(strncmp(&output[i], "&", 1) == 0)
-            i += 2;
-    }
-    if(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20) > 0)
-        text_start = (XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)))+(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20));
-    else
-        text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
-
-    XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
-    k = 0;
-    for(i=0;i<text_length;i++) {
-        k++;
-        if(strncmp(&output[i], "&", 1) == 0) {
-            j = output[i+1]-'0';
-            i += 2;
-        }
-        XDrawString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
-    }
-    output[0] ='\0';
-    return;
-}
-
-/* *********************** Read Config File ************************ */
-void read_rcfile() {
-    FILE *rcfile ;
-    char buffer[80]; /* Way bigger that neccessary */
-    char dummy[80];
-    char *dummy2;
-    char *dummy3;
-    int i;
-
-    rcfile = fopen( RCFILE, "r" ) ;
-    if ( rcfile == NULL ) {
-        fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RCFILE);
-        set_defaults();
-        return;
-    } else {
-        while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
-            /* Now look for info */
-            if(strstr(buffer, "THEME" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                dummy[strlen(dummy)-1] = '\0';
-                dummy2 = strdup(dummy);
-                for(i=0;i<9;i++) {
-                    dummy3 = strsep(&dummy2, ",");
-                    if(getcolor(dummy3) == 1) {
-                        theme[i].color = getcolor(defaultcolor[i]);
-                        logger("Default colour");
-                    } else
-                        theme[i].color = getcolor(dummy3);
-                }
-                for(i=0;i<81;i++) dummy[i] = '\0';
-            }
-            if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                ufalpha = atoi(dummy); // - '0';
-            }
-            if(STATUS_BAR == 0) {
-                if(strstr(buffer, "MODENAME" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    dummy[strlen(dummy)-1] = '\0';
-                    dummy2 = strdup(dummy);
-                    for(i=0;i<4;i++) {
-                        dummy3 = strsep(&dummy2, ",");
-                        if(strlen(dummy3) < 1)
-                            theme[i].modename = strdup(defaultmodename[i]);
-                        else
-                            theme[i].modename = strdup(dummy3);
-                    }
-                }
-                if(strstr(buffer,"FONTNAME" ) != NULL) {
-                    strncpy(fontbarname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
-                    fontbar = XLoadQueryFont(dis, fontbarname);
-                    if (!fontbar) {
-                        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
-                        fontbar = XLoadQueryFont(dis, "fixed");
-                    } else {
-                        logger("\033[0;32m fontbar Loaded");
-                    }
-                    sb_height = fontbar->ascent+fontbar->descent+2;
-                }
-                if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    dummy[strlen(dummy)-1] = '\0';
-                    dummy2 = strdup(dummy);
-                    for(i=0;i<DESKTOPS;i++) {
-                        dummy3 = strsep(&dummy2, ",");
-                        if(strlen(dummy3) < 1)
-                            sb_bar[i].label = strdup("?");
-                        else
-                            sb_bar[i].label = strdup(dummy3);
-                    }
-                }
-            }
-        }
-        fclose(rcfile);
-    }
-    if(STATUS_BAR == 0) {
-        // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+3*BORDER_WIDTH));
-        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-    } else {
-        sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
-        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-    }
-    return;
-}
-
-void set_defaults() {
-    int i;
-
-    logger("\033[0;32m Setting default values");
-    for(i=0;i<9;i++)
-        theme[i].color = getcolor(defaultcolor[i]);
-    if(STATUS_BAR == 0) {
-        for(i=0;i<4;i++)
-            theme[i].modename = strdup(defaultmodename[i]);
-        for(i=0;i<DESKTOPS;i++)
-            sb_bar[i].label = strdup("?");
-        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
-        fontbar = XLoadQueryFont(dis, "fixed");
-        sb_height = fontbar->ascent+fontbar->descent+2;
-        sh = (XDisplayHeight(dis,screen) - (sb_height+3*BORDER_WIDTH));
-        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-    } else {
-        sh = (XDisplayHeight(dis,screen) - BORDER_WIDTH);
-        sw = XDisplayWidth(dis,screen) - BORDER_WIDTH;
-    }
-    return;
-}
-
-void update_config() {
-    int i, y;
-    
-    XUngrabKey(dis, AnyKey, AnyModifier, root);
-    XFreeFont(dis, fontbar);
-    fontbar = NULL;
-    for(i=0;i<81;i++)
-        fontbarname[i] = '\0';
-    read_rcfile();
-    if(TOP_BAR == 0) y = 0;
-    else y = sh+BORDER_WIDTH;
-    if(STATUS_BAR == 0) {
-        setup_status_bar();
-        for(i=0;i<DESKTOPS;i++) {
-            XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-BORDER_WIDTH,sb_height);
-        }
-        XSetWindowBorder(dis,sb_area,theme[3].color);
-        XSetWindowBackground(dis, sb_area, theme[1].color);
-        XMoveResizeWindow(dis, sb_area, sb_desks, y,
-                             sw-(sb_desks+BORDER_WIDTH),sb_height);
-        tile();
-        update_bar();
-    }
-    update_current();
-    grabkeys();
 }
 
 /* ********************** Keyboard Management ********************** */
@@ -1016,16 +723,16 @@ void configurerequest(XEvent *e) {
     int y = 0;
 
     wc.x = ev->x;
-    if(STATUS_BAR == 0 && TOP_BAR == 0) y = sb_height+2*BORDER_WIDTH;
+    if(STATUS_BAR == 0 && topbar == 0) y = sb_height+2*bdw;
     wc.y = ev->y + y;
-    if(ev->width < sw-BORDER_WIDTH)
+    if(ev->width < sw-bdw)
         wc.width = ev->width;
     else
-        wc.width = sw+BORDER_WIDTH;
-    if(ev->height < sh-BORDER_WIDTH)
+        wc.width = sw+bdw;
+    if(ev->height < sh-bdw)
         wc.height = ev->height;
     else
-        wc.height = sh+BORDER_WIDTH;
+        wc.height = sh+bdw;
     wc.border_width = ev->border_width;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
@@ -1121,7 +828,7 @@ void enternotify(XEvent *e) {
     client *c;
     XCrossingEvent *ev = &e->xcrossing;
 
-    if(FOLLOW_MOUSE == 0) {
+    if(followmouse == 0) {
         if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
             return;
         for(c=head;c;c=c->next)
@@ -1138,7 +845,7 @@ void buttonpressed(XEvent *e) {
     XButtonPressedEvent *ev = &e->xbutton;
 
     // change focus with LMB
-    if(CLICK_TO_FOCUS == 0 && ev->window != current->win && ev->button == Button1)
+    if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
                 current = c;
@@ -1253,6 +960,14 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
+    msize = MASTER_SIZE;
+    ufalpha = UF_ALPHA;
+    bdw = BORDER_WIDTH;
+    attachaside = ATTACH_ASIDE;
+    followmouse = FOLLOW_MOUSE;
+    clicktofocus = CLICK_TO_FOCUS;
+    topbar = TOP_BAR;
+
     // Read in RCFILE
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
     read_rcfile();
@@ -1264,7 +979,6 @@ void setup() {
 
     // Shortcuts
     grabkeys();
-    ufalpha = UF_ALPHA;
 
     // Default stack
     mode = DEFAULT_MODE;
@@ -1278,9 +992,9 @@ void setup() {
 
     // Master size
     if(mode == 2)
-        master_size = sh*MASTER_SIZE;
+        master_size = (sh*msize)/100;
     else
-        master_size = sw*MASTER_SIZE;
+        master_size = (sw*msize)/100;
 
     // Set up all desktop
     int i;

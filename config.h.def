@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.2.7 ]
+ /* config.h for snapwm.c [ 0.3.0 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,7 +32,7 @@
 /* Mod (Mod1 == alt) (Mod4 == Super/windows) */
 #define MOD1            Mod1Mask
 #define MOD4            Mod4Mask
-#define MASTER_SIZE     0.55
+#define MASTER_SIZE     55
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 0=TRUE, 1=New window is master */
 #define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
