@@ -475,7 +475,7 @@ void tile() {
     int y = 0;
 
     // For a top bar
-    if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+2*bdw;
+    if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     else y = 0;
 
     // If only one window
@@ -723,7 +723,7 @@ void configurerequest(XEvent *e) {
     int y = 0;
 
     wc.x = ev->x;
-    if(STATUS_BAR == 0 && topbar == 0) y = sb_height+2*bdw;
+    if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
     wc.y = ev->y + y;
     if(ev->width < sw-bdw)
         wc.width = ev->width;

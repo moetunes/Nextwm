@@ -119,7 +119,7 @@ void read_rcfile() {
     }
     if(STATUS_BAR == 0) {
         // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+3*bdw));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
         sw = XDisplayWidth(dis,screen) - bdw;
     } else {
         sh = (XDisplayHeight(dis,screen) - bdw);
@@ -142,7 +142,7 @@ void set_defaults() {
         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
         fontbar = XLoadQueryFont(dis, "fixed");
         sb_height = fontbar->ascent+fontbar->descent+2;
-        sh = (XDisplayHeight(dis,screen) - (sb_height+3*bdw));
+        sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
         sw = XDisplayWidth(dis,screen) - bdw;
     } else {
         sh = (XDisplayHeight(dis,screen) - bdw);
@@ -164,16 +164,12 @@ void update_config() {
     if(STATUS_BAR == 0) {
         setup_status_bar();
         for(i=0;i<DESKTOPS;i++) {
-            XSetWindowBorderWidth(dis,sb_bar[i].sb_win,bdw);
             XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-bdw,sb_height);
+            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-2,sb_height);
         }
-        XSetWindowBorderWidth(dis,sb_area,bdw);
         XSetWindowBorder(dis,sb_area,theme[3].color);
         XSetWindowBackground(dis, sb_area, theme[1].color);
-        XMoveResizeWindow(dis, sb_area, sb_desks, y,
-                             sw-(sb_desks+bdw),sb_height);
-        update_bar();
+        XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2),sb_height);
     }
     for(i=0;i<DESKTOPS;i++) {
         if(desktops[i].mode == 2) desktops[i].master_size = (sh*msize)/100;
@@ -181,5 +177,6 @@ void update_config() {
     }
     tile();
     update_current();
+    if(STATUS_BAR == 0) update_bar();
     grabkeys();
 }

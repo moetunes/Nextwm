@@ -60,8 +60,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-15/1/12
-	Unfocused windows have an alpha value so can be transparent if e.g. cairo-compmgr is used
+16/1/12
+	Lots of things can be changed in the running wm from the rc file
+		e.g. Whether the bar is at the top or bottom
+			 font, colours, border width, default mode etc (see the sample rc file).
 
 ###Status
 ------
@@ -80,6 +82,7 @@ There are more options in the config file than the original catwm.
   * Added bar with desktop switcher and statusbar.
   * Colours and font are read from an rc file and can be updated with a keyboard shortcut.
   * Text (e.g. conky) can be piped into the status bar from .xinitrc.
+  * Unfocused windows have an alpha value so can be transparent if e.g. cairo-compmgr is used
 
 
 ###Installation

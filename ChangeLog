@@ -1,3 +1,7 @@
+19/1/12
+  Desktop switcher updates now when bar switched from top/bottom
+  Changing border width does not affect the bar
+
 16/1/12
   Added more options to the rc file
   Fix for mode not displaying correctly at startup if now window is opened

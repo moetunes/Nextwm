@@ -24,7 +24,7 @@ void setup_status_bar() {
     }
     sb_width += 4;
     if(sb_width < sb_height) sb_width = sb_height;
-    sb_desks = (DESKTOPS*sb_width)+bdw;
+    sb_desks = (DESKTOPS*sb_width)+2;
 }
 
 void status_bar() {
@@ -34,15 +34,15 @@ void status_bar() {
     else y = sh+bdw;
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
-                                            sb_width-bdw,sb_height,bdw,theme[3].color,theme[0].color);
+                                            sb_width-2,sb_height,2,theme[3].color,theme[0].color);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask);
-        XMapWindow(dis, sb_bar[i].sb_win);
+        XMapRaised(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+bdw),sb_height,bdw,theme[3].color,theme[1].color);
+             sw-(sb_desks+2),sb_height,2,theme[3].color,theme[1].color);
 
-    XMapWindow(dis, sb_area);
+    XMapRaised(dis, sb_area);
     status_text("");
     update_bar();
 }
@@ -54,17 +54,13 @@ void toggle_bar() {
         if(show_bar == 1) {
             show_bar = 0;
             sh -= sb_height;
-            for(i=0;i<DESKTOPS;i++) {
-                XMapWindow(dis, sb_bar[i].sb_win);
-                XMapWindow(dis, sb_area);
-            }
+            for(i=0;i<DESKTOPS;i++) XMapRaised(dis, sb_bar[i].sb_win);
+            XMapRaised(dis, sb_area);
         } else {
             show_bar = 1;
             sh += sb_height;
-            for(i=0;i<DESKTOPS;i++) {
-                XUnmapWindow(dis,sb_bar[i].sb_win);
-                XUnmapWindow(dis, sb_area);
-            }
+            for(i=0;i<DESKTOPS;i++) XUnmapWindow(dis,sb_bar[i].sb_win);
+            XUnmapWindow(dis, sb_area);
         }
 
         tile();
@@ -161,5 +157,6 @@ void update_output(int messg) {
         XDrawString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
     }
     output[0] ='\0';
+    XFlush(dis);
     return;
 }
