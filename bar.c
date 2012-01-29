@@ -42,6 +42,7 @@ void status_bar() {
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+2),sb_height,2,theme[3].color,theme[1].color);
 
+    XSelectInput(dis, sb_area, ExposureMask);
     XMapRaised(dis, sb_area);
     status_text("");
     update_bar();
@@ -76,7 +77,7 @@ void getwindowname() {
         XFetchName(dis, current->win, &win_name);
         status_text(win_name);
         XFree(win_name);
-    }
+    } else status_text("");
 }
 
 void status_text(const char *sb_text) {

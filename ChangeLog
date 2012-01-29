@@ -1,3 +1,6 @@
+31/1/12
+  Fix for bar text not updating when bar is covered and the uncovered
+
 19/1/12
   Desktop switcher updates now when bar switched from top/bottom
   Changing border width does not affect the bar

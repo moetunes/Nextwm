@@ -96,6 +96,7 @@ static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static void destroynotify(XEvent *e);
 static void enternotify(XEvent *e);
+static void expose(XEvent *e);
 static void follow_client_to_desktop(const Arg arg);
 static unsigned long getcolor(const char* color);
 static void getwindowname();
@@ -173,6 +174,7 @@ static char fontbarname[80];
 static XFontStruct *fontbar;
 // Events array
 static void (*events[LASTEvent])(XEvent *e) = {
+    [Expose] = expose,
     [KeyPress] = keypress,
     [MapRequest] = maprequest,
     [EnterNotify] = enternotify,
@@ -894,6 +896,16 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
                 }
         }
         select_desktop(tmp);
+    }
+}
+
+void expose(XEvent *e) {
+    XExposeEvent *ev = &e->xexpose;
+
+    if(STATUS_BAR == 0 && ev->count == 0 && ev->window == sb_area) {
+        update_output(1);
+        getwindowname();
+        update_bar();
     }
 }
 
