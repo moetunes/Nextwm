@@ -1,11 +1,10 @@
-// bar.c [ 0.3.1 ]
+// bar.c [ 0.3.2 ]
 
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
     int i;
     XGCValues values;
 
-    show_bar = STATUS_BAR;
     logger(" \033[0;33mStatus Bar called ...");
 
     for(i=0;i<5;i++) {
@@ -40,7 +39,7 @@ void status_bar() {
         XMapRaised(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+2),sb_height,2,theme[3].color,theme[1].color);
+             sw-(sb_desks+2)+bdw,sb_height,2,theme[3].color,theme[1].color);
 
     XSelectInput(dis, sb_area, ExposureMask);
     XMapRaised(dis, sb_area);
@@ -52,16 +51,16 @@ void toggle_bar() {
     int i;
 
     if(STATUS_BAR == 0) {
-        if(show_bar == 1) {
-            show_bar = 0;
-            sh -= sb_height;
-            for(i=0;i<DESKTOPS;i++) XMapRaised(dis, sb_bar[i].sb_win);
-            XMapRaised(dis, sb_area);
-        } else {
+        if(show_bar == 0) {
             show_bar = 1;
-            sh += sb_height;
+            sh += sb_height+4;
             for(i=0;i<DESKTOPS;i++) XUnmapWindow(dis,sb_bar[i].sb_win);
             XUnmapWindow(dis, sb_area);
+        } else {
+            show_bar = 0;
+            sh -= sb_height+4;
+            for(i=0;i<DESKTOPS;i++) XMapRaised(dis, sb_bar[i].sb_win);
+            XMapRaised(dis, sb_area);
         }
 
         tile();

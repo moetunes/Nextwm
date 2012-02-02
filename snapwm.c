@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.1 ]
+ /* snapwm.c [ 0.3.2 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -984,9 +984,11 @@ void setup() {
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
     read_rcfile();
     if(STATUS_BAR == 0) {
+        show_bar = STATUS_BAR;
         setup_status_bar();
         status_bar();
         update_output(1);
+        if(SHOW_BAR > 0) toggle_bar();
     } else set_defaults();
 
     // Shortcuts

@@ -1,4 +1,4 @@
-// readrc.c [ 0.3.1 ]
+// readrc.c [ 0.3.2 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -65,8 +65,9 @@ void read_rcfile() {
             if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 mode = atoi(dummy);
-                for(i=0;i<DESKTOPS;i++) desktops[i].mode = mode;
-                Arg a = {.i = mode}; switch_mode(a);
+                for(i=0;i<DESKTOPS;i++)
+                    desktops[i].mode = mode;
+                //Arg a = {.i = mode}; switch_mode(a);
                 for(i=0;i<81;i++) dummy[i] = '\0'; continue;
             }
             if(STATUS_BAR == 0) {
@@ -94,8 +95,8 @@ void read_rcfile() {
                     if (!fontbar) {
                         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
                         fontbar = XLoadQueryFont(dis, "fixed");
-                    } else {
-                        logger("\033[0;32m fontbar Loaded");
+                    //} else {
+                      //  logger("\033[0;32m fontbar Loaded");
                     }
                     sb_height = fontbar->ascent+fontbar->descent+2;
                     continue;
@@ -117,13 +118,13 @@ void read_rcfile() {
         }
         fclose(rcfile);
     }
-    if(STATUS_BAR == 0) {
+    if(STATUS_BAR == 0 && show_bar == 0) {
         // Screen height
         sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
-        sw = XDisplayWidth(dis,screen) - bdw;
+        sw = XDisplayWidth(dis,screen)- bdw;
     } else {
         sh = (XDisplayHeight(dis,screen) - bdw);
-        sw = XDisplayWidth(dis,screen) - bdw;
+        sw = XDisplayWidth(dis,screen)- bdw;
     }
     return;
 }
@@ -143,10 +144,10 @@ void set_defaults() {
         fontbar = XLoadQueryFont(dis, "fixed");
         sb_height = fontbar->ascent+fontbar->descent+2;
         sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
-        sw = XDisplayWidth(dis,screen) - bdw;
+        sw = XDisplayWidth(dis,screen)- bdw;
     } else {
         sh = (XDisplayHeight(dis,screen) - bdw);
-        sw = XDisplayWidth(dis,screen) - bdw;
+        sw = XDisplayWidth(dis,screen)- bdw;
     }
     return;
 }
@@ -169,12 +170,15 @@ void update_config() {
         }
         XSetWindowBorder(dis,sb_area,theme[3].color);
         XSetWindowBackground(dis, sb_area, theme[1].color);
-        XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2),sb_height);
+        XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2)+bdw,sb_height);
     }
     for(i=0;i<DESKTOPS;i++) {
-        if(desktops[i].mode == 2) desktops[i].master_size = (sh*msize)/100;
-        else desktops[i].master_size = (sw*msize)/100;
+        if(desktops[i].mode == 2)
+            desktops[i].master_size = (sh*msize)/100;
+        else
+            desktops[i].master_size = (sw*msize)/100;
     }
+    select_desktop(current_desktop);
     tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
