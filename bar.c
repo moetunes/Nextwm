@@ -162,6 +162,6 @@ void update_output(int messg) {
         XDrawString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
     }
     output[0] ='\0';
-    XFlush(dis);
+    XSync(dis, False);
     return;
 }

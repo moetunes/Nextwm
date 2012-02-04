@@ -103,7 +103,6 @@ static void getwindowname();
 static void grabkeys();
 static void keypress(XEvent *e);
 static void kill_client();
-static void kill_client_now(Window w);
 static void last_desktop();
 static void logger(const char* e);
 static void maprequest(XEvent *e);
@@ -764,11 +763,10 @@ void maprequest(XEvent *e) {
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
         add_window(ev->window);
         XMapWindow(dis, ev->window);
+        XSetWindowBorderWidth(dis,ev->window,bdw);
+        XSetWindowBorder(dis,ev->window,theme[0].color);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         XRaiseWindow(dis,ev->window);
-        current->win = ev->window;
-        update_current();
-        //getwindowname();
         return;
     }
 
@@ -913,11 +911,6 @@ void expose(XEvent *e) {
 
 void kill_client() {
     if(head == NULL) return;
-    kill_client_now(current->win);
-    remove_window(current->win, 0);
-}
-
-void kill_client_now(Window w) {
     Atom *protocols;
     int n, i;
     int can_delete = 0;
@@ -925,26 +918,34 @@ void kill_client_now(Window w) {
     XEvent ke;
     wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False); 
 
-    if (XGetWMProtocols(dis, w, &protocols, &n) != 0)
+    if (XGetWMProtocols(dis, current->win, &protocols, &n) != 0)
         for (i=0;i<n;i++)
             if (protocols[i] == wm_delete_window) can_delete = 1;
 
     //XFree(protocols);
     if(can_delete == 1) {
         ke.type = ClientMessage;
-        ke.xclient.window = w;
+        ke.xclient.window = current->win;
         ke.xclient.message_type = XInternAtom(dis, "WM_PROTOCOLS", True);
         ke.xclient.format = 32;
         ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
         ke.xclient.data.l[1] = CurrentTime;
-        XSendEvent(dis, w, False, NoEventMask, &ke);
+        XSendEvent(dis, current->win, False, NoEventMask, &ke);
     } else {
-        XKillClient(dis, w);
+        XKillClient(dis, current->win);
     }
+    remove_window(current->win, 0);
 }
 
 void quit() {
+    int i;
+    client *c;
     logger("\033[0;34mYou Quit : Thanks for using!");
+    for(i=0;i<DESKTOPS;++i) {
+        select_desktop(i);
+        for(c=head;c;c=c->next)
+            kill_client();
+    }
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
