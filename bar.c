@@ -1,4 +1,4 @@
-// bar.c [ 0.3.2 ]
+// bar.c [ 0.3.3 ]
 
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
@@ -14,6 +14,10 @@ void setup_status_bar() {
         values.font = fontbar->fid;
         theme[i].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
+    values.foreground = theme[1].color;
+    values.line_width = 2;
+    values.line_style = LineSolid;
+    theme[5].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle,&values);
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
@@ -133,7 +137,7 @@ void update_output(int messg) {
     }
     XFree(win_name);
 
-    if(strlen(output) < 1) printf("\t EMPTY OUTPUT\n");
+    //if(strlen(output) < 1) printf("\t EMPTY OUTPUT\n");
     if(strlen(output) > 255) text_length = 255;
     else text_length = strlen(output);
     for(i=0;i<text_length;i++) {
@@ -146,7 +150,8 @@ void update_output(int messg) {
     else
         text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 
-    XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
+    //XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
+    XFillRectangle(dis, sb_area, theme[5].gc, XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), 0, sw-((sb_desks+2)+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))), sb_height);
     k = 0;
     for(i=0;i<text_length;i++) {
         k++;

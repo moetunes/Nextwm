@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.2 ]
+ /* snapwm.c [ 0.3.3 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -766,7 +766,9 @@ void maprequest(XEvent *e) {
         XMapWindow(dis, ev->window);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         XRaiseWindow(dis,ev->window);
-        getwindowname();
+        current->win = ev->window;
+        update_current();
+        //getwindowname();
         return;
     }
 
