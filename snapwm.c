@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.4 ]
+ /* snapwm.c [ 0.3.5 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -203,7 +203,7 @@ void add_window(Window w, int tw) {
         exit(1);
     }
 
-    if(tw == 1) {
+    if(tw == 1) { // For the transient window
         c->win = w;
         transient = c;
         save_desktop(current_desktop);
@@ -218,7 +218,7 @@ void add_window(Window w, int tw) {
     }
     else {
         if(attachaside == 0) {
-            for(t=head;t->next;t=t->next);
+            for(t=head;t->next;t=t->next); // Start at the last in the stack
             c->next = NULL;
             c->prev = t;
             c->win = w;
@@ -799,14 +799,18 @@ void maprequest(XEvent *e) {
 
     XClassHint ch = {0};
     static unsigned int len = sizeof convenience / sizeof convenience[0];
-    int i = 0;
+    int i=0, j=0;
     int tmp = current_desktop;
     if(XGetClassHint(dis, ev->window, &ch))
         for(i=0;i<len;i++)
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
                 save_desktop(tmp);
                 select_desktop(convenience[i].preferredd-1);
-                add_window(ev->window, 0);
+                for(c=head;c;c=c->next)
+                    if(ev->window == c->win)
+                        ++j;
+                if(j < 1) add_window(ev->window, 0);
+                printf("\t added window in maprequest!!!\n");
                 if(tmp == convenience[i].preferredd-1) {
                     XMapWindow(dis, ev->window);
                     tile();
@@ -963,8 +967,8 @@ void kill_client() {
         ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
         ke.xclient.data.l[1] = CurrentTime;
         XSendEvent(dis, current->win, False, NoEventMask, &ke);
-    } else {
-        XKillClient(dis, current->win);
+  //  } else {
+    //    XKillClient(dis, current->win);
     }
     remove_window(current->win, 0);
 }
