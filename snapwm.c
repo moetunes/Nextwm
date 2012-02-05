@@ -262,11 +262,12 @@ void remove_window(Window w, int dr) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
             else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
-            desktops[current_desktop].numwins -= 1;
+            XUnmapWindow(dis, c->win);
             if(c->prev == NULL && c->next == NULL) {
                 free(head);
                 head = NULL;
                 current = NULL;
+                desktops[current_desktop].numwins = 0;
                 save_desktop(current_desktop);
                 if(STATUS_BAR == 0) status_text("");
                 return;
@@ -288,6 +289,7 @@ void remove_window(Window w, int dr) {
             }
 
             if(dr == 0) free(c);
+            desktops[current_desktop].numwins -= 1;
             if(head->next == NULL && mode != 2) master_size = (sw*msize)/100;
             if(head->next == NULL && mode == 2) master_size = (sh*msize)/100;
             save_desktop(current_desktop);
