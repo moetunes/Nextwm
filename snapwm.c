@@ -767,7 +767,7 @@ void maprequest(XEvent *e) {
     XWindowAttributes attr;
 
     XGetWindowAttributes(dis, ev->window, &attr);
-    if(attr.override_redirect) return;
+    if(attr.override_redirect == True) return;
 
     // For fullscreen mplayer (and maybe some other program)
     client *c;
