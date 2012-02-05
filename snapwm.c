@@ -252,6 +252,7 @@ void remove_window(Window w, int dr) {
 
     if(transient != NULL && w == transient->win) {
         c = transient;
+        transient = NULL;
         free(c);
         return;
     }
@@ -600,7 +601,7 @@ void tile() {
 }
 
 void update_current() {
-    client *c, *trw;
+    client *c;
     const Atom alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
@@ -614,7 +615,7 @@ void update_current() {
             // "Enable" current window
             if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
             XSetWindowBorder(dis,c->win,theme[0].color);
-            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
+            if(transient == NULL) XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
