@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.3 ]
+ /* snapwm.c [ 0.3.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -67,6 +67,7 @@ struct desktop{
     int mode, growth, numwins;
     client *head;
     client *current;
+    client *transient;
 };
 
 typedef struct {
@@ -88,7 +89,7 @@ typedef struct {
 } Theme;
 
 // Functions
-static void add_window(Window w);
+static void add_window(Window w, int tw);
 static void buttonpressed(XEvent *e);
 static void change_desktop(const Arg arg);
 static void client_to_desktop(const Arg arg);
@@ -169,6 +170,7 @@ static Window root;
 static Window sb_area;
 static client *head;
 static client *current;
+static client *transient;
 static char fontbarname[80];
 static XFontStruct *fontbar;
 // Events array
@@ -193,12 +195,18 @@ static Theme theme[5];
 #include "readrc.c"
 
 /* ***************************** Window Management ******************************* */
-void add_window(Window w) {
+void add_window(Window w, int tw) {
     client *c,*t;
 
     if(!(c = (client *)calloc(1,sizeof(client)))) {
         logger("\033[0;31mError calloc!");
         exit(1);
+    }
+
+    if(tw == 1) {
+        c->win = w;
+        transient = c;
+        return;
     }
 
     if(head == NULL) {
@@ -210,22 +218,17 @@ void add_window(Window w) {
     else {
         if(attachaside == 0) {
             for(t=head;t->next;t=t->next);
-
             c->next = NULL;
             c->prev = t;
             c->win = w;
-
             t->next = c;
         }
         else {
-            for(t=head;t->prev;t=t->prev);
-
+            t=head;
             c->prev = NULL;
             c->next = t;
             c->win = w;
-
             t->prev = c;
-
             head = c;
         }
     }
@@ -246,6 +249,12 @@ void add_window(Window w) {
 
 void remove_window(Window w, int dr) {
     client *c;
+
+    if(transient != NULL && w == transient->win) {
+        c = transient;
+        free(c);
+        return;
+    }
 
     // CHANGE THIS UGLY CODE
     for(c=head;c;c=c->next) {
@@ -377,6 +386,7 @@ void change_desktop(const Arg arg) {
     previous_desktop = current_desktop;
 
     // Unmap all window
+    if(transient != NULL) XUnmapWindow(dis,transient->win);
     if(head != NULL)
         for(c=head;c;c=c->next)
             XUnmapWindow(dis,c->win);
@@ -385,6 +395,7 @@ void change_desktop(const Arg arg) {
     select_desktop(arg.i);
 
     // Map all windows
+    if(transient != NULL) XMapWindow(dis,transient->win);
     if(head != NULL) {
         if(mode != 1) {
             for(c=head;c;c=c->next)
@@ -417,7 +428,7 @@ void follow_client_to_desktop(const Arg arg) {
 
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win);
+    add_window(tmp->win, 0);
     save_desktop(arg.i);
 
     // Remove client from current desktop
@@ -439,7 +450,7 @@ void client_to_desktop(const Arg arg) {
 
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win);
+    add_window(tmp->win, 0);
     save_desktop(arg.i);
 
     // Remove client from current desktop
@@ -458,6 +469,7 @@ void save_desktop(int i) {
     desktops[i].growth = growth;
     desktops[i].head = head;
     desktops[i].current = current;
+    desktops[i].transient = transient;
 }
 
 void select_desktop(int i) {
@@ -466,6 +478,7 @@ void select_desktop(int i) {
     growth = desktops[i].growth;
     head = desktops[i].head;
     current = desktops[i].current;
+    transient = desktops[i].transient;
     current_desktop = i;
 }
 
@@ -587,7 +600,7 @@ void tile() {
 }
 
 void update_current() {
-    client *c;
+    client *c, *trw;
     const Atom alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
@@ -610,6 +623,10 @@ void update_current() {
             XSetWindowBorder(dis,c->win,theme[1].color);
             if(clicktofocus == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
+    }
+    if(transient != NULL) {
+        XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
+        XRaiseWindow(dis,transient->win);
     }
     if(STATUS_BAR == 0 && show_bar == 0) {
         if(head != NULL)
@@ -761,7 +778,7 @@ void maprequest(XEvent *e) {
 
     Window trans = None;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-        add_window(ev->window);
+        add_window(ev->window, 1);
         XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].color);
@@ -779,7 +796,7 @@ void maprequest(XEvent *e) {
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
                 save_desktop(tmp);
                 select_desktop(convenience[i].preferredd-1);
-                add_window(ev->window);
+                add_window(ev->window, 0);
                 if(tmp == convenience[i].preferredd-1) {
                     XMapWindow(dis, ev->window);
                     tile();
@@ -799,7 +816,7 @@ void maprequest(XEvent *e) {
                 return;
             }
 
-    add_window(ev->window);
+    add_window(ev->window, 0);
     XMapWindow(dis,ev->window);
     tile();
     update_current();
