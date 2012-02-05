@@ -206,6 +206,7 @@ void add_window(Window w, int tw) {
     if(tw == 1) {
         c->win = w;
         transient = c;
+        save_desktop(current_desktop);
         return;
     }
 
@@ -251,9 +252,12 @@ void remove_window(Window w, int dr) {
     client *c;
 
     if(transient != NULL && w == transient->win) {
+        printf("\t transient removed!!!\n");
         c = transient;
         transient = NULL;
         free(c);
+        save_desktop(current_desktop);
+        update_current();
         return;
     }
 
@@ -631,13 +635,13 @@ void update_current() {
         XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
         XRaiseWindow(dis,transient->win);
     }
-    XSync(dis, False);
     if(STATUS_BAR == 0 && show_bar == 0) {
         if(head != NULL)
             getwindowname();
         else
             status_text("");
     }
+    XSync(dis, False);
 }
 
 void switch_mode(const Arg arg) {
@@ -767,7 +771,10 @@ void maprequest(XEvent *e) {
     XWindowAttributes attr;
 
     XGetWindowAttributes(dis, ev->window, &attr);
-    if(attr.override_redirect == True) return;
+    if(attr.override_redirect == True) {
+        printf("\t o-d !!! \n");
+        return;
+    }
 
     // For fullscreen mplayer (and maybe some other program)
     client *c;
@@ -785,8 +792,7 @@ void maprequest(XEvent *e) {
         XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].color);
-        XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
-        XRaiseWindow(dis,ev->window);
+        update_current();
         return;
     }
 
@@ -832,6 +838,10 @@ void destroynotify(XEvent *e) {
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
 
+    if(transient != NULL && ev->window == transient->win) {
+        remove_window(ev->window, 0);
+        return;
+    }
     save_desktop(tmp);
     for(i=0;i<TABLENGTH(desktops);++i) {
         select_desktop(i);
