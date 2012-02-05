@@ -629,13 +629,13 @@ void update_current() {
         XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
         XRaiseWindow(dis,transient->win);
     }
+    XSync(dis, False);
     if(STATUS_BAR == 0 && show_bar == 0) {
         if(head != NULL)
             getwindowname();
         else
             status_text("");
     }
-    XSync(dis, False);
 }
 
 void switch_mode(const Arg arg) {
@@ -851,6 +851,7 @@ void enternotify(XEvent *e) {
     if(followmouse == 0) {
         if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
             return;
+        if(transient != NULL) return;
         for(c=head;c;c=c->next)
            if(ev->window == c->win) {
                 current = c;
