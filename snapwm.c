@@ -252,7 +252,6 @@ void remove_window(Window w, int dr) {
     client *c;
 
     if(transient != NULL && w == transient->win) {
-        printf("\t transient removed!!!\n");
         c = transient;
         transient = NULL;
         free(c);
@@ -500,8 +499,10 @@ void tile() {
     else y = 0;
 
     // If only one window
-    if(head != NULL && head->next == NULL)
+    if(head != NULL && head->next == NULL) {
+        if(mode == 1) XMapWindow(dis, current->win);
         XMoveResizeWindow(dis,head->win,0,y,sw+bdw,sh+bdw);
+    }
 
     else if(head != NULL) {
         switch(mode) {
