@@ -109,5 +109,5 @@ Need Xlib, then:
 ###Todo
 ----
 
-  * when swithching desktops stop the mouse being in an unfocused window changing focus.
   * Improve font handling
+  * Add commands and keyboard shortcuts to rc file.

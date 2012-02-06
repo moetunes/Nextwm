@@ -1,3 +1,6 @@
+7/2/12
+  When changing desktops move cursor to center of current window before mapping
+
 6/2/12
   Fixed flicker in the external text
   Fixed apps with tabs opening blank windows when opened on an unfocused desktop e.g. firefox

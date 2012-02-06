@@ -383,6 +383,7 @@ void swap_master() {
 /* **************************** Desktop Management ************************************* */
 void change_desktop(const Arg arg) {
     client *c;
+    XWindowAttributes attr;
 
     if(arg.i == current_desktop)
         return;
@@ -400,6 +401,11 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
+    // Move cursor to the center of the current window
+    if(FOLLOW_MOUSE == 0 && head != NULL) {
+        XGetWindowAttributes(dis, current->win, &attr);
+        XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.height/2, attr.width/2);
+    }
     // Map all windows
     if(transient != NULL) XMapWindow(dis,transient->win);
     if(head != NULL) {
