@@ -8,16 +8,13 @@ void setup_status_bar() {
     logger(" \033[0;33mStatus Bar called ...");
 
     for(i=0;i<5;i++) {
+        values.background = theme[1].color;
         values.foreground = theme[i+4].color;
         values.line_width = 2;
         values.line_style = LineSolid;
         values.font = fontbar->fid;
-        theme[i].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
+        theme[i].gc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
-    values.foreground = theme[1].color;
-    values.line_width = 2;
-    values.line_style = LineSolid;
-    theme[5].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle,&values);
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
@@ -124,6 +121,7 @@ void update_bar() {
 
 void update_output(int messg) {
     int text_length, text_start, i, j=2, k=0;
+    int sb_end, text_space;
     char output[256];
     char *win_name;
 
@@ -145,13 +143,16 @@ void update_output(int messg) {
         if(strncmp(&output[i], "&", 1) == 0)
             i += 2;
     }
-    if(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20) > 0)
+    sb_end = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
+    text_space = sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)+20);
+    //printf("\t k == %d\n", k);
+    if(text_space > 0)
         text_start = (XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)))+(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20));
     else
         text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 
-    //XClearArea(dis, sb_area,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)),0,0,0, False);
-    XFillRectangle(dis, sb_area, theme[5].gc, XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), 0, sw-((sb_desks+2)+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))), sb_height);
+    for(i=0;i<text_space;i++)
+        XDrawImageString(dis, sb_area, theme[1].gc, sb_end+i, fontbar->ascent+1, " ", 1);
     k = 0;
     for(i=0;i<text_length;i++) {
         k++;
@@ -159,7 +160,7 @@ void update_output(int messg) {
             j = output[i+1]-'0';
             i += 2;
         }
-        XDrawString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
+        XDrawImageString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
     }
     output[0] ='\0';
     XSync(dis, False);

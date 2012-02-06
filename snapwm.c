@@ -772,10 +772,7 @@ void maprequest(XEvent *e) {
     XWindowAttributes attr;
 
     XGetWindowAttributes(dis, ev->window, &attr);
-    if(attr.override_redirect == True) {
-        printf("\t o-d !!! \n");
-        return;
-    }
+    if(attr.override_redirect == True) return;
 
     // For fullscreen mplayer (and maybe some other program)
     client *c;
@@ -810,7 +807,6 @@ void maprequest(XEvent *e) {
                     if(ev->window == c->win)
                         ++j;
                 if(j < 1) add_window(ev->window, 0);
-                printf("\t added window in maprequest!!!\n");
                 if(tmp == convenience[i].preferredd-1) {
                     XMapWindow(dis, ev->window);
                     tile();
