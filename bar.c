@@ -135,7 +135,6 @@ void update_output(int messg) {
     }
     XFree(win_name);
 
-    //if(strlen(output) < 1) printf("\t EMPTY OUTPUT\n");
     if(strlen(output) > 255) text_length = 255;
     else text_length = strlen(output);
     for(i=0;i<text_length;i++) {
@@ -145,11 +144,10 @@ void update_output(int messg) {
     }
     sb_end = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
     text_space = sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)+20);
-    //printf("\t k == %d\n", k);
     if(text_space > 0)
-        text_start = (XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)))+(sw-(sb_desks+XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40))+XTextWidth(fontbar, output, k)+20));
+        text_start = sb_end+(sw-(sb_desks+sb_end+XTextWidth(fontbar, output, k)+20));
     else
-        text_start = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
+        text_start = sb_end;
 
     for(i=0;i<text_space;i++)
         XDrawImageString(dis, sb_area, theme[1].gc, sb_end+i, fontbar->ascent+1, " ", 1);
