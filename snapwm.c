@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.5 ]
+ /* snapwm.c [ 0.3.6 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -173,6 +173,8 @@ static client *current;
 static client *transient;
 static char fontbarname[80];
 static XFontStruct *fontbar;
+static Atom alphaatom, wm_delete_window;
+static XWindowAttributes attr;
 // Events array
 static void (*events[LASTEvent])(XEvent *e) = {
     [Expose] = expose,
@@ -298,6 +300,11 @@ void remove_window(Window w, int dr) {
             save_desktop(current_desktop);
             tile();
             update_current();
+            // Move cursor to the center of the current window
+            if(FOLLOW_MOUSE == 0 && head != NULL) {
+                XGetWindowAttributes(dis, current->win, &attr);
+                XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
+            }
             return;
         }
     }
@@ -383,7 +390,6 @@ void swap_master() {
 /* **************************** Desktop Management ************************************* */
 void change_desktop(const Arg arg) {
     client *c;
-    XWindowAttributes attr;
 
     if(arg.i == current_desktop)
         return;
@@ -404,7 +410,7 @@ void change_desktop(const Arg arg) {
     // Move cursor to the center of the current window
     if(FOLLOW_MOUSE == 0 && head != NULL) {
         XGetWindowAttributes(dis, current->win, &attr);
-        XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.height/2, attr.width/2);
+        XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
     }
     // Map all windows
     if(transient != NULL) XMapWindow(dis,transient->win);
@@ -615,7 +621,6 @@ void tile() {
 
 void update_current() {
     client *c;
-    const Atom alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
     for(c=head;c;c=c->next) {
@@ -950,11 +955,8 @@ void expose(XEvent *e) {
 void kill_client() {
     if(head == NULL) return;
     Atom *protocols;
-    int n, i;
-    int can_delete = 0;
-    Atom wm_delete_window;
+    int n, i, can_delete = 0;
     XEvent ke;
-    wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False); 
 
     if (XGetWMProtocols(dis, current->win, &protocols, &n) != 0)
         for (i=0;i<n;i++)
@@ -969,8 +971,8 @@ void kill_client() {
         ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
         ke.xclient.data.l[1] = CurrentTime;
         XSendEvent(dis, current->win, False, NoEventMask, &ke);
-  //  } else {
-    //    XKillClient(dis, current->win);
+    } else {
+        XKillClient(dis, current->win);
     }
     remove_window(current->win, 0);
 }
@@ -981,10 +983,14 @@ void quit() {
     logger("\033[0;34mYou Quit : Thanks for using!");
     for(i=0;i<DESKTOPS;++i) {
         select_desktop(i);
-        for(c=head;c;c=c->next)
+        for(c=head;c;c=c->next) {
+            XUnmapWindow(dis, c->win);
             kill_client();
+        }
     }
     XUngrabKey(dis, AnyKey, AnyModifier, root);
+    for(i=0;i<5;i++)
+        XFreeGC(dis, theme[i].gc);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
     bool_quit = 1;
@@ -1066,6 +1072,8 @@ void setup() {
     const Arg arg = {.i = 0};
     current_desktop = arg.i;
     change_desktop(arg);
+    alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
+    wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
     update_current();
 
     // To catch maprequest and destroynotify (if other wm running)
