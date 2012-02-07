@@ -1,6 +1,7 @@
 // bar.c [ 0.3.6 ]
 
 /* ************************** Status Bar *************************** */
+static int sb_end;
 void setup_status_bar() {
     int i;
     XGCValues values;
@@ -25,6 +26,7 @@ void setup_status_bar() {
     sb_width += 4;
     if(sb_width < sb_height) sb_width = sb_height;
     sb_desks = (DESKTOPS*sb_width)+2;
+    sb_end = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
 }
 
 void status_bar() {
@@ -121,7 +123,7 @@ void update_bar() {
 
 void update_output(int messg) {
     int text_length, text_start, i, j=2, k=0;
-    int sb_end, text_space;
+    int text_space;
     char output[256];
     char *win_name;
 
@@ -142,15 +144,14 @@ void update_output(int messg) {
         if(strncmp(&output[i], "&", 1) == 0)
             i += 2;
     }
-    sb_end = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
-    text_space = sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)+20);
+    text_space = 2+(sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)+20))/XTextWidth(fontbar, " ", 1);
     if(text_space > 0)
         text_start = sb_end+(sw-(sb_desks+sb_end+XTextWidth(fontbar, output, k)+20));
     else
         text_start = sb_end;
 
-    for(i=0;i<text_space;i++)
-        XDrawImageString(dis, sb_area, theme[1].gc, sb_end+i, fontbar->ascent+1, " ", 1);
+    for(i=1;i<text_space;i++)
+        XDrawImageString(dis, sb_area, theme[1].gc, sb_end+XTextWidth(fontbar, " ", i), fontbar->ascent+1, " ", 1);
     k = 0;
     for(i=0;i<text_length;i++) {
         k++;
