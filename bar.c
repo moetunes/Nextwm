@@ -44,7 +44,7 @@ void status_bar() {
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+2)+bdw,sb_height,2,theme[3].color,theme[1].color);
 
-    XSelectInput(dis, sb_area, ExposureMask);
+    XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask);
     XMapRaised(dis, sb_area);
     status_text("");
     update_bar();

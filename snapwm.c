@@ -137,6 +137,7 @@ static void update_bar();
 static void update_config();
 static void update_current();
 static void update_output(int messg);
+static void warp_pointer();
 
 // Include configuration file (need struct key)
 #include "config.h"
@@ -148,6 +149,7 @@ static int bdw;             // border width
 static int bool_quit;
 static int clicktofocus;
 static int current_desktop;
+static int dowarp;
 static int followmouse;
 static int growth;
 static int master_size;
@@ -300,11 +302,7 @@ void remove_window(Window w, int dr) {
             save_desktop(current_desktop);
             tile();
             update_current();
-            // Move cursor to the center of the current window
-            if(FOLLOW_MOUSE == 0 && head != NULL) {
-                XGetWindowAttributes(dis, current->win, &attr);
-                XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
-            }
+            warp_pointer();
             return;
         }
     }
@@ -407,11 +405,7 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
-    // Move cursor to the center of the current window
-    if(FOLLOW_MOUSE == 0 && head != NULL) {
-        XGetWindowAttributes(dis, current->win, &attr);
-        XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
-    }
+    warp_pointer();
     // Map all windows
     if(transient != NULL) XMapWindow(dis,transient->win);
     if(head != NULL) {
@@ -749,6 +743,14 @@ void keypress(XEvent *e) {
     }
 }
 
+void warp_pointer() {
+    // Move cursor to the center of the current window
+    if(FOLLOW_MOUSE == 0 && dowarp < 1 && head != NULL) {
+        XGetWindowAttributes(dis, current->win, &attr);
+        XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
+    }
+}
+
 void configurenotify(XEvent *e) {
     // Do nothing for the moment
 }
@@ -869,17 +871,22 @@ void destroynotify(XEvent *e) {
 }
 
 void enternotify(XEvent *e) {
-    client *c;
+    client *c; int i;
     XCrossingEvent *ev = &e->xcrossing;
 
     if(followmouse == 0) {
         if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
             return;
         if(transient != NULL) return;
+        for(i=0;i<DESKTOPS;i++)
+            if(sb_bar[i].sb_win == ev->window) dowarp = 1;
+        if(ev->window == sb_area) dowarp = 1;
+        if(ev->window == root) dowarp = 0;
         for(c=head;c;c=c->next)
            if(ev->window == c->win) {
                 current = c;
                 update_current();
+                dowarp = 0;
                 return;
        }
    }
@@ -1077,7 +1084,7 @@ void setup() {
     update_current();
 
     // To catch maprequest and destroynotify (if other wm running)
-    XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
+    XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask|EnterWindowMask);
     XSetErrorHandler(xerror);
     logger("\033[0;32mWe're up and running!");
 }
