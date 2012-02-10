@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.6 ]
+ /* snapwm.c [ 0.3.7 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a

@@ -1,4 +1,4 @@
-// bar.c [ 0.3.6 ]
+// bar.c [ 0.3.7 ]
 
 /* ************************** Status Bar *************************** */
 static int sb_end;
@@ -82,22 +82,6 @@ void getwindowname() {
     } else status_text("");
 }
 
-void status_text(const char *sb_text) {
-    int text_length, text_start;
-
-    if(sb_text == NULL) sb_text = "snapwm";
-    if(head == NULL) sb_text = "snapwm";
-    if(strlen(sb_text) >= 35)
-        text_length = 35;
-    else
-        text_length = strlen(sb_text);
-    text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
-
-    XClearArea(dis, sb_area,0,0,XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40)), sb_height, False);
-    XDrawString(dis, sb_area, theme[0].gc, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
-    XDrawString(dis, sb_area, theme[0].gc, text_start, fontbar->ascent+1, sb_text, text_length);
-}
-
 void update_bar() {
     int i;
     char busylabel[20];
@@ -119,6 +103,24 @@ void update_bar() {
             XClearWindow(dis, sb_bar[i].sb_win);
             XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
         }
+}
+
+void status_text(const char *sb_text) {
+    int text_length, text_start, text_blank, i;
+
+    if(sb_text == NULL) sb_text = "snapwm";
+    if(head == NULL) sb_text = "snapwm";
+    if(strlen(sb_text) >= 35)
+        text_length = 35;
+    else
+        text_length = strlen(sb_text);
+    text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
+    text_blank = 40-text_length;
+
+    XDrawImageString(dis, sb_area, theme[0].gc, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
+    for(i=0;i<text_blank;i++)
+        XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", 1+i+(strlen(theme[mode].modename))), fontbar->ascent+1, " ", 1);
+    XDrawImageString(dis, sb_area, theme[0].gc, text_start, fontbar->ascent+1, sb_text, text_length);
 }
 
 void update_output(int messg) {

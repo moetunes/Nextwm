@@ -1,4 +1,4 @@
-// readrc.c [ 0.3.6 ]
+// readrc.c [ 0.3.7 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -16,6 +16,8 @@ void read_rcfile() {
         return;
     } else {
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
+            /* Check for comments */
+            if(buffer[0] == '#') continue;
             /* Now look for info */
             if(strstr(buffer, "THEME" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -67,7 +69,6 @@ void read_rcfile() {
                 mode = atoi(dummy);
                 for(i=0;i<DESKTOPS;i++)
                     desktops[i].mode = mode;
-                //Arg a = {.i = mode}; switch_mode(a);
                 for(i=0;i<81;i++) dummy[i] = '\0'; continue;
             }
             if(STATUS_BAR == 0) {
