@@ -1,3 +1,7 @@
+11/2/12
+  Fixed occasional flicker from focused windows' name in the bar
+  Fine tuned fullscreen mode
+
 7/2/12
   When changing desktops move cursor to center of current window before mapping
 
@@ -24,6 +28,7 @@
   Changing border width does not affect the bar
 
 16/1/12
+  In the rc file a line starting with a hash (#) is ignored
   Added more options to the rc file
   Fix for mode not displaying correctly at startup if now window is opened
 

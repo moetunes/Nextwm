@@ -655,7 +655,7 @@ void switch_mode(const Arg arg) {
 
     if(mode == arg.i) return;
     growth = 0;
-    if(mode == 1 && head != NULL && head->next != NULL) {
+    if(mode == 1 && head != NULL) {
         XUnmapWindow(dis, current->win);
         for(c=head;c;c=c->next)
             XMapWindow(dis, c->win);
@@ -663,7 +663,7 @@ void switch_mode(const Arg arg) {
 
     mode = arg.i;
     if(mode == 0 || mode == 3) master_size = (sw*msize)/100;
-    if(mode == 1 && head != NULL && head->next != NULL)
+    if(mode == 1 && head != NULL)
         for(c=head;c;c=c->next)
             XUnmapWindow(dis, c->win);
 
