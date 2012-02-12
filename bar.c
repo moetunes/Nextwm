@@ -19,7 +19,7 @@ void setup_status_bar() {
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+1);
+        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+2);
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
@@ -89,7 +89,7 @@ void update_bar() {
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
-                strcpy(busylabel, "*"); strcat(busylabel, sb_bar[i].label);
+                sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
                 XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
@@ -99,9 +99,13 @@ void update_bar() {
                 XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         } else {
+            if(desktops[i].head != NULL)
+                sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
+            else
+                sprintf(busylabel, "%s", sb_bar[i].label);
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, sb_bar[i].label, strlen(sb_bar[i].label));
+            XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, busylabel, strlen(busylabel));
         }
 }
 

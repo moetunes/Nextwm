@@ -911,6 +911,9 @@ void buttonpressed(XEvent *e) {
             if(i != current_desktop && sb_bar[i].sb_win == ev->window) {
                 Arg a = {.i = i};
                 change_desktop(a);
+            } else {
+                if(i == current_desktop && sb_bar[i].sb_win == ev->window)
+                    next_win();
             }
     }
 }
