@@ -668,8 +668,10 @@ void switch_mode(const Arg arg) {
             XUnmapWindow(dis, c->win);
 
     if(mode == 2) master_size = (sh*msize)/100;
+    save_desktop(current_desktop);
     tile();
     update_current();
+    if(STATUS_BAR == 0 && show_bar == 0) update_bar();
 }
 
 void resize_master(const Arg arg) {
