@@ -302,7 +302,7 @@ void remove_window(Window w, int dr) {
             save_desktop(current_desktop);
             tile();
             update_current();
-            warp_pointer();
+            if(desktops[current_desktop].numwins > 1) warp_pointer();
             return;
         }
     }
