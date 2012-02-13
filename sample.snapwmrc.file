@@ -1,7 +1,7 @@
 # lines starting with a hash are ignored
 # theme colours are : focused  window border and desktop in switcher
-#             unfocused  window border and desktop in switcher
-#              desktop in switcher with opened windows
+#             unfocused  window border and desktop in switcher and bar background
+#             unfocused desktop in switcher with opened windows
 #              the bars border
 #              the focused window name font in the status bar/also for external text
 #              the desktop switcher font/also for external text

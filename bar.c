@@ -99,7 +99,7 @@ void update_bar() {
                 XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             }
         } else {
-            if(desktops[i].mode == 1) sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
+            if(desktops[i].mode == 1 && desktops[i].numwins > 1) sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
             else sprintf(busylabel, " %s", sb_bar[i].label);
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
