@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.7 ]
+ /* snapwm.c [ 0.3.8 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -56,6 +56,7 @@ struct client{
     // Prev and next client
     client *next;
     client *prev;
+    client *prev_current;
 
     // The window
     Window win;
@@ -225,6 +226,7 @@ void add_window(Window w, int tw) {
             for(t=head;t->next;t=t->next); // Start at the last in the stack
             c->next = NULL;
             c->prev = t;
+            c->prev_current = current;
             c->win = w;
             t->next = c;
         }
@@ -232,6 +234,7 @@ void add_window(Window w, int tw) {
             t=head;
             c->prev = NULL;
             c->next = t;
+            c->prev_current = current;
             c->win = w;
             t->prev = c;
             head = c;
@@ -280,19 +283,24 @@ void remove_window(Window w, int dr) {
                 return;
             }
 
+            if(desktops[current_desktop].numwins < 3)
+                c->prev_current = NULL;
             if(c->prev == NULL) {
                 head = c->next;
                 c->next->prev = NULL;
-                current = c->next;
+                current = head->prev_current;
+                //current = c->next;
             }
             else if(c->next == NULL) {
                 c->prev->next = NULL;
-                current = c->prev;
+                current = head->prev_current;
+                //current = c->prev;
             }
             else {
                 c->prev->next = c->next;
                 c->next->prev = c->prev;
-                current = c->prev;
+                current = head->prev_current;
+                //current = c->prev;
             }
 
             if(dr == 0) free(c);
@@ -317,6 +325,7 @@ void next_win() {
         else
             c = current->next;
 
+        c->prev_current = current;
         current = c;
         if(mode == 1) tile();
         update_current();
@@ -332,6 +341,7 @@ void prev_win() {
         else
             c = current->prev;
 
+        c->prev_current = current;
         current = c;
         if(mode == 1) tile();
         update_current();

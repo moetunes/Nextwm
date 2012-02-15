@@ -1,4 +1,4 @@
-// bar.c [ 0.3.7 ]
+// bar.c [ 0.3.8 ]
 
 /* ************************** Status Bar *************************** */
 static int sb_end;
@@ -19,7 +19,7 @@ void setup_status_bar() {
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+2);
+        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label));
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
