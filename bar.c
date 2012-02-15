@@ -19,7 +19,7 @@ void setup_status_bar() {
 
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label));
+        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+2);
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
@@ -88,7 +88,7 @@ void update_bar() {
 
     for(i=0;i<DESKTOPS;i++)
         if(i != current_desktop) {
-            sprintf(busylabel, " %s", sb_bar[i].label);
+            sprintf(busylabel, "%s", sb_bar[i].label);
             if(desktops[i].head != NULL) {
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
@@ -96,14 +96,14 @@ void update_bar() {
             } else {
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
-                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, busylabel, strlen(busylabel));
+                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             }
         } else {
             if(desktops[i].mode == 1 && desktops[i].numwins > 1) sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
-            else sprintf(busylabel, " %s", sb_bar[i].label);
+            else sprintf(busylabel, "%s", sb_bar[i].label);
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);
-            XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-sb_bar[i].width)/2, fontbar->ascent+1, busylabel, strlen(busylabel));
+            XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
         }
 }
 
