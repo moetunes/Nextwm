@@ -288,13 +288,13 @@ void remove_window(Window w, int dr) {
             if(c->prev == NULL) {
                 head = c->next;
                 c->next->prev = NULL;
-                current = head->prev_current;
-                //current = c->next;
+                if(c->prev_current == NULL) current = c->next;
+                else current = c->prev_current;
             }
             else if(c->next == NULL) {
                 c->prev->next = NULL;
-                current = head->prev_current;
-                //current = c->prev;
+                if(c->prev_current == NULL) current = c->prev;
+                else current = c->prev_current;
             }
             else {
                 c->prev->next = c->next;
