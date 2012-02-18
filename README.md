@@ -51,7 +51,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
  All accessible with keyboard shortcuts defined in the config.h file.
  
- * The window W at the top of the stack can be resized on a per desktop basis.
+ * The window *W* at the top of the stack can be resized on a per desktop basis.
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
  * There is a bar with a desktop switcher and status bar and which can show external text.
  * The rc file is reloadable 'on the run'.
@@ -60,8 +60,16 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-16/1/12
-	In the rc file, lines starting with a hash are ignored.
+19/2/12
+
+  * Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
+  * Option to show number of windows open in the desktop switcher in the config and rc file
+
+12/2/12
+
+  * Added number of open windows to focused desktop in fullscreen mode
+  * Clicking on the current desktop in the switcher will focus the next window
+
 
 
 ###Status
@@ -82,9 +90,10 @@ There are more options in the config file than the original catwm.
   * Colours and font are read from an rc file and can be updated with a keyboard shortcut.
   * Text (e.g. conky) can be piped into the status bar from .xinitrc.
   * Unfocused windows have an alpha value so can be transparent if e.g. cairo-compmgr is used
-  * Lots of things can be changed in the running wm from the rc file
-		e.g. Whether the bar is at the top or bottom
-			 font, colours, border width, default mode etc (see the sample rc file).
+  * Lots of things can be changed in the running wm from the rc file.
+	* e.g. Whether the bar is at the top or bottom
+	* font, colours, border width, default mode etc (see the sample rc file).
+  * In the rc file, lines starting with a hash are ignored.
 
 
 ###Installation
