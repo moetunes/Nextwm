@@ -1,9 +1,9 @@
-// bar.c [ 0.3.8 ]
+// bar.c [ 0.3.9 ]
 
 /* ************************** Status Bar *************************** */
 static int sb_end;
 void setup_status_bar() {
-    int i;
+    int i, extra_width;
     XGCValues values;
 
     logger(" \033[0;33mStatus Bar called ...");
@@ -17,9 +17,11 @@ void setup_status_bar() {
         theme[i].gc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
 
+    if(showopen < 1) extra_width = 2;
+    else extra_width = 0;
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+2);
+        sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+extra_width);
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
@@ -89,7 +91,8 @@ void update_bar() {
     for(i=0;i<DESKTOPS;i++) {
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
-                if(desktops[i].numwins > 1) sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
+                if(showopen < 1 && desktops[i].numwins > 1)
+                    sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
                 else sprintf(busylabel, "%s", sb_bar[i].label);
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
                 XClearWindow(dis, sb_bar[i].sb_win);
@@ -101,7 +104,8 @@ void update_bar() {
                 //XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             }
         } else {
-            if(desktops[i].mode == 1 && desktops[i].numwins > 1) sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
+            if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1)
+                sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
             else sprintf(busylabel, "%s", sb_bar[i].label);
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
             XClearWindow(dis, sb_bar[i].sb_win);

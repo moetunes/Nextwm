@@ -1,3 +1,7 @@
+19/2/12
+  Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
+  Option to show number of windows open in the desktop switcher in the config and rc file
+
 12/2/12
   Added number of open windows to focused desktop in fullscreen mode
   Clicking on the current desktop in the switcher will focus the next window

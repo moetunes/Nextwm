@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.3.8 ]
+ /* config.h for snapwm.c [ 0.3.9 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -41,6 +41,7 @@
 #define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
 #define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
 #define SHOW_BAR        0  /* 1=Don't 0=Have the bar shown at startup */
+#define SHOW_NUM_OPEN   1  /* 1=Dont' 0=Show the number of open windows in the switcher */
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
 static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };

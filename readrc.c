@@ -1,4 +1,4 @@
-// readrc.c [ 0.3.8 ]
+// readrc.c [ 0.3.9 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -69,6 +69,11 @@ void read_rcfile() {
                 mode = atoi(dummy);
                 for(i=0;i<DESKTOPS;i++)
                     desktops[i].mode = mode;
+                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+            }
+            if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                showopen = atoi(dummy);
                 for(i=0;i<81;i++) dummy[i] = '\0'; continue;
             }
             if(STATUS_BAR == 0) {
@@ -180,6 +185,7 @@ void update_config() {
             desktops[i].master_size = (sw*msize)/100;
     }
     select_desktop(current_desktop);
+    Arg a = {.i = mode}; switch_mode(a);
     tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();

@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.8 ]
+ /* snapwm.c [ 0.3.9 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -164,6 +164,7 @@ static int sh;
 static int sw;
 static int screen;
 static int show_bar;
+static int showopen;        // whether the desktop switcher shows number of open windows
 static int topbar;
 static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
@@ -875,7 +876,10 @@ void destroynotify(XEvent *e) {
             if(ev->window == c->win) {
                 remove_window(ev->window, 0);
                 select_desktop(tmp);
-                if(STATUS_BAR == 0) update_bar();
+                if(STATUS_BAR == 0) {
+                    update_bar();
+                    getwindowname();
+                }
                 return;
             }
     }
@@ -1048,6 +1052,7 @@ void setup() {
     followmouse = FOLLOW_MOUSE;
     clicktofocus = CLICK_TO_FOCUS;
     topbar = TOP_BAR;
+    showopen = SHOW_NUM_OPEN;
 
     // Read in RCFILE
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
