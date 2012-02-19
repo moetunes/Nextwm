@@ -1,6 +1,9 @@
 19/2/12
   Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
   Option to show number of windows open in the desktop switcher in the config and rc file
+  Fix for windows not mapping when changing default mode from Fullscreen in the rc file
+  New window has mouse warped to it if FOLLOW_MOUSE is 0
+  prev_current is updated if mouse moves to new window
 
 12/2/12
   Added number of open windows to focused desktop in fullscreen mode

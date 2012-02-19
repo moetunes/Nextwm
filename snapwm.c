@@ -300,7 +300,7 @@ void remove_window(Window w, int dr) {
             else {
                 c->prev->next = c->next;
                 c->next->prev = c->prev;
-                current = head->prev_current;
+                current = c->prev_current;
                 //current = c->prev;
             }
 
@@ -854,6 +854,7 @@ void maprequest(XEvent *e) {
 
     add_window(ev->window, 0);
     XMapWindow(dis,ev->window);
+    warp_pointer();
     tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
@@ -900,6 +901,7 @@ void enternotify(XEvent *e) {
         if(ev->window == root) dowarp = 0;
         for(c=head;c;c=c->next)
            if(ev->window == c->win) {
+                c->prev_current = current;
                 current = c;
                 update_current();
                 dowarp = 0;
