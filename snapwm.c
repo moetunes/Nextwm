@@ -280,7 +280,7 @@ void remove_window(Window w, int dr) {
                 current = NULL;
                 desktops[current_desktop].numwins = 0;
                 save_desktop(current_desktop);
-                if(STATUS_BAR == 0) status_text("");
+                if(STATUS_BAR == 0) getwindowname();
                 return;
             }
 
@@ -330,6 +330,7 @@ void next_win() {
         current = c;
         if(mode == 1) tile();
         update_current();
+        warp_pointer();
     }
 }
 
@@ -346,6 +347,7 @@ void prev_win() {
         current = c;
         if(mode == 1) tile();
         update_current();
+        warp_pointer();
     }
 }
 
@@ -656,7 +658,7 @@ void update_current() {
         if(head != NULL)
             getwindowname();
         else
-            status_text("");
+            getwindowname();
     }
     XSync(dis, False);
 }
