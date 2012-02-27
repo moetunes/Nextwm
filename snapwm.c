@@ -56,7 +56,6 @@ struct client{
     // Prev and next client
     client *next;
     client *prev;
-    client *prev_current;
 
     // The window
     Window win;
@@ -227,7 +226,6 @@ void add_window(Window w, int tw) {
             for(t=head;t->next;t=t->next); // Start at the last in the stack
             c->next = NULL;
             c->prev = t;
-            c->prev_current = current;
             c->win = w;
             t->next = c;
         }
@@ -235,7 +233,6 @@ void add_window(Window w, int tw) {
             t=head;
             c->prev = NULL;
             c->next = t;
-            c->prev_current = current;
             c->win = w;
             t->prev = c;
             head = c;
@@ -284,30 +281,23 @@ void remove_window(Window w, int dr) {
                 return;
             }
 
-            if(desktops[current_desktop].numwins < 3)
-                c->prev_current = NULL;
             if(c->prev == NULL) {
                 head = c->next;
                 c->next->prev = NULL;
-                if(c->prev_current == NULL) current = c->next;
-                else current = c->prev_current;
+                current = c->next;
             }
             else if(c->next == NULL) {
                 c->prev->next = NULL;
-                if(c->prev_current == NULL) current = c->prev;
-                else current = c->prev_current;
+                current = c->prev;
             }
             else {
                 c->prev->next = c->next;
                 c->next->prev = c->prev;
-                current = c->prev_current;
-                //current = c->prev;
+                current = c->prev;
             }
 
             if(dr == 0) free(c);
             desktops[current_desktop].numwins -= 1;
-            if(head->next == NULL && mode != 2) master_size = (sw*msize)/100;
-            if(head->next == NULL && mode == 2) master_size = (sh*msize)/100;
             save_desktop(current_desktop);
             tile();
             update_current();
@@ -326,8 +316,8 @@ void next_win() {
         else
             c = current->next;
 
-        c->prev_current = current;
         current = c;
+        save_desktop(current_desktop);
         if(mode == 1) tile();
         update_current();
         warp_pointer();
@@ -337,17 +327,20 @@ void next_win() {
 void prev_win() {
     client *c;
 
-    if(current != NULL && head != NULL) {
-        if(current->prev == NULL)
-            for(c=head;c->next;c=c->next);
-        else
-            c = current->prev;
+    if(head->next == NULL) return;
+    for(c=head;c;c=c->next) {
+        if(c->win == current->win) {
+            if(current->prev == NULL)
+                for(c=head;c->next;c=c->next);
+            else
+                c = current->prev;
 
-        c->prev_current = current;
-        current = c;
-        if(mode == 1) tile();
-        update_current();
-        warp_pointer();
+            current = c;
+            save_desktop(current_desktop);
+            if(mode == 1) tile();
+            update_current();
+            warp_pointer();
+        }
     }
 }
 
@@ -418,7 +411,6 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
-    warp_pointer();
     // Map all windows
     if(transient != NULL) XMapWindow(dis,transient->win);
     if(head != NULL) {
@@ -431,6 +423,7 @@ void change_desktop(const Arg arg) {
 
     tile();
     update_current();
+    warp_pointer();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -903,7 +896,6 @@ void enternotify(XEvent *e) {
         if(ev->window == root) dowarp = 0;
         for(c=head;c;c=c->next)
            if(ev->window == c->win) {
-                c->prev_current = current;
                 current = c;
                 update_current();
                 dowarp = 0;

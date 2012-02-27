@@ -1,3 +1,6 @@
+28/2/12
+  Removed remembering previous current window as not woking properly
+
 19/2/12
   Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
   Option to show number of windows open in the desktop switcher in the config and rc file
