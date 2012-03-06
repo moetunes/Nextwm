@@ -848,9 +848,9 @@ void maprequest(XEvent *e) {
             }
 
     add_window(ev->window, 0);
+    tile();
     XMapWindow(dis,ev->window);
     warp_pointer();
-    tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -1005,16 +1005,15 @@ void quit() {
     logger("\033[0;34mYou Quit : Thanks for using!");
     for(i=0;i<DESKTOPS;++i) {
         select_desktop(i);
-        for(c=head;c;c=c->next) {
-            XUnmapWindow(dis, c->win);
+        for(c=head;c;c=c->next)
             kill_client();
-        }
     }
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<5;i++)
         XFreeGC(dis, theme[i].gc);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
+    sleep(1);
     bool_quit = 1;
 }
 

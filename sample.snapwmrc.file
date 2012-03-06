@@ -16,6 +16,8 @@ UF_WIN_ALPHA 65
 FOLLOWMOUSE 0
 CLICKTOFOCUS 1
 TOPBAR 0
+SHOW_BAR 0
+SHOWNUMOPEN 1
 MODENAME [V],[F],[H],[G],
 DESKTOP_NAMES one,two,three,four,five,six,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
