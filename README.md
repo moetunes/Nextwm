@@ -42,7 +42,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
     -------------
     |      | W  |
-    |      |    |
+    |Master|    |
     |------|----|
     |      |    |
     -------------
@@ -53,7 +53,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
  
  * The window *W* at the top of the stack can be resized on a per desktop basis.
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
- * There is a bar with a desktop switcher and status bar and which can show external text.
+ * There is a bar with a desktop switcher, space to show the focused window's name and space to show external text.
  * The rc file is reloadable 'on the run'.
 
 

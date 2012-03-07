@@ -209,8 +209,19 @@ void add_window(Window w, int tw) {
     }
 
     if(tw == 1) { // For the transient window
-        c->win = w;
-        transient = c;
+        if(transient == NULL) {
+            c->prev = NULL;
+            c->next = NULL;
+            c->win = w;
+            transient = c;
+        } else {
+            t=transient;
+            c->prev = NULL;
+            c->next = t;
+            c->win = w;
+            t->prev = c;
+            transient = c;
+        }
         save_desktop(current_desktop);
         return;
     }
@@ -220,8 +231,7 @@ void add_window(Window w, int tw) {
         c->prev = NULL;
         c->win = w;
         head = c;
-    }
-    else {
+    } else {
         if(attachaside == 0) {
             for(t=head;t->next;t=t->next); // Start at the last in the stack
             c->next = NULL;
@@ -256,41 +266,45 @@ void add_window(Window w, int tw) {
 void remove_window(Window w, int dr) {
     client *c;
 
-    if(transient != NULL && w == transient->win) {
-        c = transient;
-        transient = NULL;
-        free(c);
-        save_desktop(current_desktop);
-        update_current();
-        return;
+    if(transient != NULL) {
+        for(c=transient;c;c=c->next) {
+            if(c->win == w) {
+                if(c->prev == NULL && c->next == NULL) transient = NULL;
+                else if(c->prev == NULL) {
+                    transient = c->next;
+                    c->next->prev = NULL;
+                }
+                else if(c->next == NULL) {
+                    c->prev->next = NULL;
+                }
+                else {
+                    c->prev->next = c->next;
+                    c->next->prev = c->prev;
+                }
+                free(c);
+                save_desktop(current_desktop);
+                update_current();
+                return;
+            }
+        }
     }
 
-    // CHANGE THIS UGLY CODE
     for(c=head;c;c=c->next) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
             else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
             XUnmapWindow(dis, c->win);
             if(c->prev == NULL && c->next == NULL) {
-                free(head);
                 head = NULL;
                 current = NULL;
-                desktops[current_desktop].numwins = 0;
-                save_desktop(current_desktop);
-                if(STATUS_BAR == 0) getwindowname();
-                return;
-            }
-
-            if(c->prev == NULL) {
+            } else if(c->prev == NULL) {
                 head = c->next;
                 c->next->prev = NULL;
                 current = c->next;
-            }
-            else if(c->next == NULL) {
+            } else if(c->next == NULL) {
                 c->prev->next = NULL;
                 current = c->prev;
-            }
-            else {
+            } else {
                 c->prev->next = c->next;
                 c->next->prev = c->prev;
                 current = c->prev;
@@ -302,6 +316,7 @@ void remove_window(Window w, int dr) {
             tile();
             update_current();
             if(desktops[current_desktop].numwins > 1) warp_pointer();
+            if(STATUS_BAR == 0) getwindowname();
             return;
         }
     }
@@ -403,7 +418,10 @@ void change_desktop(const Arg arg) {
     previous_desktop = current_desktop;
 
     // Unmap all window
-    if(transient != NULL) XUnmapWindow(dis,transient->win);
+    if(transient != NULL)
+        for(c=transient;c;c=c->next)
+            XUnmapWindow(dis,c->win);
+
     if(head != NULL)
         for(c=head;c;c=c->next)
             XUnmapWindow(dis,c->win);
@@ -412,13 +430,14 @@ void change_desktop(const Arg arg) {
     select_desktop(arg.i);
 
     // Map all windows
-    if(transient != NULL) XMapWindow(dis,transient->win);
+    if(transient != NULL)
+        for(c=transient;c;c=c->next)
+            XMapWindow(dis,c->win);
+
     if(head != NULL) {
-        if(mode != 1) {
+        if(mode != 1)
             for(c=head;c;c=c->next)
                 XMapWindow(dis,c->win);
-        } else
-            XMapWindow(dis, current->win);
     }
 
     tile();
@@ -554,65 +573,45 @@ void tile() {
                 int ht = 0;
 
                 for(c=head;c;c=c->next) ++x;
-
                 for(c=head;c;c=c->next) {
                     ++n;
                     if(x >= 7) {
-                        wdt = (sw/3) - bdw;
-                        ht  = (sh/3) - bdw;
-                        if((n == 1) || (n == 4) || (n == 7))
-                            xpos = 0;
-                        if((n == 2) || (n == 5) || (n == 8))
-                            xpos = (sw/3) + bdw;
-                        if((n == 3) || (n == 6) || (n == 9))
-                            xpos = (2*(sw/3)) + bdw;
-                        if((n == 4) || (n == 7))
-                            y += (sh/3) + bdw;
-                        if((n == x) && (n == 7))
-                            wdt = sw - bdw;
-                        if((n == x) && (n == 8))
-                            wdt = 2*sw/3 - bdw;
-                    } else
-                    if(x >= 5) {
-                        wdt = (sw/3) - bdw;
-                        ht  = (sh/2) - bdw;
-                        if((n == 1) || (n == 4))
-                            xpos = 0;
-                        if((n == 2) || (n == 5))
-                            xpos = (sw/3) + bdw;
-                        if((n == 3) || (n == 6))
-                            xpos = (2*(sw/3)) + bdw;
-                        if(n == 4)
-                            y += (sh/2); // + bdw;
-                        if((n == x) && (n == 5))
-                            wdt = 2*sw/3 - bdw;
-
+                        wdt = (sw/3) - BORDER_WIDTH;
+                        ht  = (sh/3) - BORDER_WIDTH;
+                        if((n == 1) || (n == 4) || (n == 7)) xpos = 0;
+                        if((n == 2) || (n == 5) || (n == 8)) xpos = (sw/3) + BORDER_WIDTH;
+                        if((n == 3) || (n == 6) || (n == 9)) xpos = (2*(sw/3)) + BORDER_WIDTH;
+                        if((n == 4) || (n == 7)) y += (sh/3) + BORDER_WIDTH;
+                        if((n == x) && (n == 7)) wdt = sw - BORDER_WIDTH;
+                        if((n == x) && (n == 8)) wdt = 2*sw/3 - BORDER_WIDTH;
+                    } else if(x >= 5) {
+                        wdt = (sw/3) - BORDER_WIDTH;
+                        ht  = (sh/2) - BORDER_WIDTH;
+                        if((n == 1) || (n == 4)) xpos = 0;
+                        if((n == 2) || (n == 5)) xpos = (sw/3) + BORDER_WIDTH;
+                        if((n == 3) || (n == 6)) xpos = (2*(sw/3)) + BORDER_WIDTH;
+                        if(n == 4) y += (sh/2); // + BORDER_WIDTH;
+                        if((n == x) && (n == 5)) wdt = 2*sw/3 - BORDER_WIDTH;
                     } else {
                         if(x > 2) {
-                            if((n == 1) || (n == 2))
-                                ht = (sh/2) + growth - bdw;
-                            if(n >= 3)
-                                ht = (sh/2) - growth - 2*bdw;
-                        }
-                        else
-                            ht = sh - bdw;
+                            if((n == 1) || (n == 2)) ht = (sh/2) + growth - BORDER_WIDTH;
+                            if(n >= 3) ht = (sh/2) - growth - 2*BORDER_WIDTH;
+                        } else ht = sh - BORDER_WIDTH;
                         if((n == 1) || (n == 3)) {
                             xpos = 0;
-                            wdt = master_size - bdw;
+                            wdt = master_size - BORDER_WIDTH;
                         }
                         if((n == 2) || (n == 4)) {
-                            xpos = master_size+bdw;
-                            wdt = (sw - master_size) - 2*bdw;
+                            xpos = master_size+BORDER_WIDTH;
+                            wdt = (sw - master_size) - 2*BORDER_WIDTH;
                         }
-                        if(n == 3)
-                            y += (sh/2) + growth + bdw;
-                        if((n == x) && (n == 3))
-                            wdt = sw - bdw;
+                        if(n == 3) y += (sh/2) + growth + BORDER_WIDTH;
+                        if((n == x) && (n == 3)) wdt = sw - BORDER_WIDTH;
                     }
                     XMoveResizeWindow(dis,c->win,xpos,y,wdt,ht);
                 }
+                break;
             }
-            break;
             default:
                 break;
         }
@@ -629,11 +628,11 @@ void update_current() {
         else
             XSetWindowBorderWidth(dis,c->win,bdw);
 
-        if(current == c) {
+        if(current == c && transient == NULL) {
             // "Enable" current window
             if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
             XSetWindowBorder(dis,c->win,theme[0].color);
-            if(transient == NULL) XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
+            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
@@ -682,16 +681,10 @@ void switch_mode(const Arg arg) {
 
 void resize_master(const Arg arg) {
     if(arg.i > 0) {
-        if((mode != 2 && sw-master_size > 70) || (mode == 2 && sh-master_size > 70)) {
+        if((mode != 2 && sw-master_size > 70) || (mode == 2 && sh-master_size > 70))
             master_size += arg.i;
-            tile();
-        }
-    } else {
-        if(master_size > 70) {
-            master_size += arg.i;
-            tile();
-        }
-    }
+    } else if(master_size > 70) master_size += arg.i;
+    tile();
 }
 
 void resize_stack(const Arg arg) {
@@ -772,14 +765,10 @@ void configurerequest(XEvent *e) {
     wc.x = ev->x;
     if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
     wc.y = ev->y + y;
-    if(ev->width < sw-bdw)
-        wc.width = ev->width;
-    else
-        wc.width = sw+bdw;
-    if(ev->height < sh-bdw)
-        wc.height = ev->height;
-    else
-        wc.height = sh+bdw;
+    if(ev->width < sw-bdw) wc.width = ev->width;
+    else wc.width = sw+bdw;
+    if(ev->height < sh-bdw) wc.height = ev->height;
+    else wc.height = sh+bdw;
     wc.border_width = ev->border_width;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
@@ -790,7 +779,6 @@ void configurerequest(XEvent *e) {
 
 void maprequest(XEvent *e) {
     XMapRequestEvent *ev = &e->xmaprequest;
-    XWindowAttributes attr;
 
     XGetWindowAttributes(dis, ev->window, &attr);
     if(attr.override_redirect == True) return;
@@ -807,8 +795,7 @@ void maprequest(XEvent *e) {
 
     Window trans = None;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-        add_window(ev->window, 1);
-        XMapWindow(dis, ev->window);
+        add_window(ev->window, 1); XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].color);
         update_current();
@@ -832,17 +819,13 @@ void maprequest(XEvent *e) {
                     XMapWindow(dis, ev->window);
                     tile();
                     update_current();
-                } else {
-                    select_desktop(tmp);
-                }
+                } else select_desktop(tmp);
                 if(convenience[i].followwin != 0) {
                     Arg a = {.i = convenience[i].preferredd-1};
                     change_desktop(a);
                 }
-                if(ch.res_class)
-                    XFree(ch.res_class);
-                if(ch.res_name)
-                    XFree(ch.res_name);
+                if(ch.res_class) XFree(ch.res_class);
+                if(ch.res_name) XFree(ch.res_name);
                 if(STATUS_BAR == 0) update_bar();
                 return;
             }
@@ -856,14 +839,16 @@ void maprequest(XEvent *e) {
 }
 
 void destroynotify(XEvent *e) {
-    int i = 0;
-    int tmp = current_desktop;
+    int i = 0, tmp = current_desktop;
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
 
-    if(transient != NULL && ev->window == transient->win) {
-        remove_window(ev->window, 0);
-        return;
+    if(transient != NULL) {
+        for(c=transient;c;c=c->next)
+            if(ev->window == c->win) {
+                remove_window(ev->window, 0);
+                return;
+            }
     }
     save_desktop(tmp);
     for(i=0;i<TABLENGTH(desktops);++i) {
@@ -944,8 +929,7 @@ void propertynotify(XEvent *e) {
 
 void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
     XUnmapEvent *ev = &e->xunmap;
-    int i = 0;
-    int tmp = current_desktop;
+    int i = 0, tmp = current_desktop;
     client *c;
 
     if(ev->send_event == 1) {
@@ -993,9 +977,7 @@ void kill_client() {
         ke.xclient.data.l[0] = XInternAtom(dis, "WM_DELETE_WINDOW", True);
         ke.xclient.data.l[1] = CurrentTime;
         XSendEvent(dis, current->win, False, NoEventMask, &ke);
-    } else {
-        XKillClient(dis, current->win);
-    }
+    } else XKillClient(dis, current->win);
     remove_window(current->win, 0);
 }
 
@@ -1072,12 +1054,11 @@ void setup() {
     // List of client
     head = NULL;
     current = NULL;
+    transient = NULL;
 
     // Master size
-    if(mode == 2)
-        master_size = (sh*msize)/100;
-    else
-        master_size = (sw*msize)/100;
+    if(mode == 2) master_size = (sh*msize)/100;
+    else master_size = (sw*msize)/100;
 
     // Set up all desktop
     int i;
@@ -1088,6 +1069,7 @@ void setup() {
         desktops[i].numwins = 0;
         desktops[i].head = head;
         desktops[i].current = current;
+        desktops[i].transient = transient;
     }
 
     // Select first dekstop by default
@@ -1115,9 +1097,7 @@ void sigchld(int unused) {
 void spawn(const Arg arg) {
     if(fork() == 0) {
         if(fork() == 0) {
-            if(dis)
-                close(ConnectionNumber(dis));
-
+            if(dis) close(ConnectionNumber(dis));
             setsid();
             execvp((char*)arg.com[0],(char**)arg.com);
         }
@@ -1166,5 +1146,5 @@ int main(int argc, char **argv) {
     // Close display
     XCloseDisplay(dis);
 
-    return 0;
+    exit(0);
 }
