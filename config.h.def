@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.3.9 ]
+ /* config.h for snapwm.c [ 0.4.0 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -48,14 +48,14 @@ static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", };
 
 // Applications to a specific desktop
 static const Convenience convenience[] = { \
-    /*  class     desktop follow */
-    { "Thunar",       2,    1 },
+    /*  class     desktop follow 1=Don't 0=Change the desktop*/
+    { "Thunar",       2,    0 },
     //{ "Leafpad",      2,    1 },
     { "Firefox",      3,    0 },
-    { "Links",        3,    1 },
-    { "MPlayer",      4,    1 },
-    { "Thunderbird",  5,    0 },
-    { "Pysol",        6,    1 },
+    { "Links",        3,    0 },
+    { "MPlayer",      4,    0 },
+    { "Thunderbird",  5,    1 },
+    { "Pysol",        6,    0 },
 };
 
 const char* dmenucmd[]      = {"dmenu_run","-i","-nb","#666622","-nf","white",NULL};

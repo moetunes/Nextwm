@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.3.9 ]
+ /* snapwm.c [ 0.4.0 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -829,7 +829,7 @@ void maprequest(XEvent *e) {
                     tile();
                     update_current();
                 } else select_desktop(tmp);
-                if(convenience[i].followwin != 0) {
+                if(convenience[i].followwin == 0) {
                     Arg a = {.i = convenience[i].preferredd-1};
                     change_desktop(a);
                 }
