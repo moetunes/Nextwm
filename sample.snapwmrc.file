@@ -10,6 +10,7 @@ THEME #443311,#002030,#004050,#001020,#999999,#777755,#339933,#aa6644,#ffffff,
 BORDERWIDTH 2
 MASTERSIZE 52
 ATTACHASIDE 1
+TOPSTACK 1
 DEFAULTMODE 0
 # For semi transparent unfocused windows if using a compositor e.g. cairo-compmgr
 UF_WIN_ALPHA 65

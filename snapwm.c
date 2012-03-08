@@ -36,6 +36,7 @@
 #include <locale.h>
 #include <string.h>
 
+#define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
 
 typedef union {
@@ -165,6 +166,7 @@ static int screen;
 static int show_bar;
 static int showopen;        // whether the desktop switcher shows number of open windows
 static int topbar;
+static int top_stack;
 static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
@@ -227,29 +229,36 @@ void add_window(Window w, int tw) {
     }
 
     if(head == NULL) {
-        c->next = NULL;
-        c->prev = NULL;
-        c->win = w;
-        head = c;
+        c->next = NULL; c->prev = NULL;
+        c->win = w; head = c;
     } else {
         if(attachaside == 0) {
-            for(t=head;t->next;t=t->next); // Start at the last in the stack
-            c->next = NULL;
-            c->prev = t;
-            c->win = w;
-            t->next = c;
-        }
-        else {
+            if(top_stack == 0) {
+                if(head->next == NULL) {
+                    c->prev = head; c->next = NULL;
+                } else {
+                    t = head->next;
+                    c->prev = t->prev; c->next = t;
+                    t->prev = c;
+                }
+                c->win = w; head->next = c;
+            } else {
+                for(t=head;t->next;t=t->next); // Start at the last in the stack
+                c->next = NULL; c->prev = t;
+                c->win = w; t->next = c;
+            }
+        } else {
             t=head;
             c->prev = NULL;
             c->next = t;
             c->win = w;
             t->prev = c;
-            head = c;
+            head = c; current = c;
+            warp_pointer();
         }
     }
 
-    current = c;
+    current = head;
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
@@ -833,7 +842,6 @@ void maprequest(XEvent *e) {
     add_window(ev->window, 0);
     tile();
     XMapWindow(dis,ev->window);
-    warp_pointer();
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -1026,6 +1034,7 @@ void setup() {
     ufalpha = UF_ALPHA;
     bdw = BORDER_WIDTH;
     attachaside = ATTACH_ASIDE;
+    top_stack = TOP_STACK;
     followmouse = FOLLOW_MOUSE;
     clicktofocus = CLICK_TO_FOCUS;
     topbar = TOP_BAR;

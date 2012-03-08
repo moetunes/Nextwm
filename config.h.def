@@ -25,20 +25,19 @@
 #define CONFIG_H
 
 #define RCFILE "/home/pnewm/.snapwmrc"
-#define UF_ALPHA 75
-
-#define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
+#define UF_ALPHA 75 /* Percentage transparency for unfocused windows - 100 to turn off */
 
 /* Mod (Mod1 == alt) (Mod4 == Super/windows) */
 #define MOD1            Mod1Mask
 #define MOD4            Mod4Mask
 #define MASTER_SIZE     55
 #define BORDER_WIDTH    2
-#define ATTACH_ASIDE    1  /* 0=TRUE, 1=New window is master */
+#define ATTACH_ASIDE    1  /* 1=Don't 0=Place new window in the stack */
+#define TOP_STACK       0  /* 1=Don't 0=Place new window at the top of the stack when using ATTACH_ASIDE*/
 #define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
 #define CLICK_TO_FOCUS  1  /* 1=Don't 0=Focus an unfocused window when clicked */
-#define STATUS_BAR      0  /* 1=Don't 0=Show a statusbar at the bottom */
+#define STATUS_BAR      0  /* 1=Don't 0=Make the bar */
 #define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
 #define SHOW_BAR        0  /* 1=Don't 0=Have the bar shown at startup */
 #define SHOW_NUM_OPEN   1  /* 1=Dont' 0=Show the number of open windows in the switcher */
@@ -67,6 +66,7 @@ const char* firefoxcmd[]    = {"firefox",NULL};
 const char* webcmd[]        = {"links","-g",NULL};
 const char* luakitcmd[]     = {"/home/pnewm/.bin/launchbrowser",NULL};
 const char* mailcmd[]       = {"thunderbird",NULL };
+// Using a script makes changing commands easy
 const char* voldowncmd[]    = {"/home/pnewm/.bin/voldown",NULL};
 const char* volupcmd[]      = {"/home/pnewm/.bin/volup",NULL};
 const char* prevoldowncmd[] = {"/home/pnewm/.bin/prevoldown",NULL};
@@ -78,7 +78,7 @@ const char* shutdowncmd[]   = {"sudo","shutdown","-h","now",NULL};
 
 // Avoid multiple paste
 #define DESKTOPCHANGE(K,N) \
-    {  MOD1,             K,              change_desktop, {.i = N}}, \
+    {  MOD1,             K,        change_desktop, {.i = N}}, \
     {  MOD1|ShiftMask,   K,        follow_client_to_desktop, {.i = N}}, \
     {  MOD4|ShiftMask,   K,        client_to_desktop, {.i = N}},
 

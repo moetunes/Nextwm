@@ -60,15 +60,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-19/2/12
+8/3/12
 
-  * Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
-  * Option to show number of windows open in the desktop switcher in the config and rc file
-
-12/2/12
-
-  * Added number of open windows to focused desktop in fullscreen mode
-  * Clicking on the current desktop in the switcher will focus the next window
+  * Added option in the config and rc files for opening new window at the 
+  top or bottom of the stack when using attach aside
 
 
 
@@ -94,6 +89,9 @@ There are more options in the config file than the original catwm.
 	* e.g. Whether the bar is at the top or bottom
 	* font, colours, border width, default mode etc (see the sample rc file).
   * In the rc file, lines starting with a hash are ignored.
+  * Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
+  * Option to show number of windows open in the desktop switcher in the config and rc file
+  * Clicking on the current desktop in the switcher will focus the next window
 
 
 ###Installation

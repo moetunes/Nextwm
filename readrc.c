@@ -55,6 +55,11 @@ void read_rcfile() {
                 attachaside = atoi(dummy);
                 for(i=0;i<81;i++) dummy[i] = '\0'; continue;
             }
+            if(strstr(buffer, "TOPSTACK" ) != NULL) {
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                top_stack = atoi(dummy);
+                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+            }
             if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 followmouse = atoi(dummy);
@@ -72,12 +77,12 @@ void read_rcfile() {
                     desktops[i].mode = new_mode;
                 for(i=0;i<81;i++) dummy[i] = '\0'; continue;
             }
-            if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                showopen = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
-            }
             if(STATUS_BAR == 0) {
+                if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
+                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                    showopen = atoi(dummy);
+                    for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                }
                 if(strstr(buffer, "TOPBAR" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     topbar = atoi(dummy);

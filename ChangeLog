@@ -1,3 +1,7 @@
+8/3/12
+  Added option in config.h and rc file to have new window opened at the
+   top or bottom of the stack when using attach aside
+
 7/3/12
   Handles multiple transient windows properly now
 
