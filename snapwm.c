@@ -899,15 +899,6 @@ void buttonpressed(XEvent *e) {
     client *c;
     XButtonPressedEvent *ev = &e->xbutton;
 
-    // change focus with LMB
-    if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
-        for(c=head;c;c=c->next)
-            if(ev->window == c->win) {
-                current = c;
-                update_current();
-                return;
-            }
-
     if(STATUS_BAR == 0) {
         int i;
         for(i=0;i<DESKTOPS;i++)
@@ -918,7 +909,17 @@ void buttonpressed(XEvent *e) {
                 if(i == current_desktop && sb_bar[i].sb_win == ev->window)
                     next_win();
             }
+        return;
     }
+
+    // change focus with LMB
+    if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
+        for(c=head;c;c=c->next)
+            if(ev->window == c->win) {
+                current = c;
+                update_current();
+                return;
+            }
 }
 
 void propertynotify(XEvent *e) {
@@ -1001,7 +1002,7 @@ void quit() {
         XFreeGC(dis, theme[i].gc);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
-    sleep(1);
+    //sleep(1);
     bool_quit = 1;
 }
 
