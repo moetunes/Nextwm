@@ -335,6 +335,7 @@ void next_win() {
     client *c;
 
     if(current != NULL && head != NULL) {
+        if(mode == 1) XUnmapWindow(dis, current->win);
         if(current->next == NULL)
             c = head;
         else
@@ -352,20 +353,17 @@ void prev_win() {
     client *c;
 
     if(head->next == NULL) return;
-    for(c=head;c;c=c->next) {
-        if(c->win == current->win) {
-            if(current->prev == NULL)
-                for(c=head;c->next;c=c->next);
-            else
-                c = current->prev;
+    if(mode == 1) XUnmapWindow(dis, current->win);
+    if(current->prev == NULL)
+        for(c=head;c->next;c=c->next);
+    else
+        c = current->prev;
 
-            current = c;
-            save_desktop(current_desktop);
-            if(mode == 1) tile();
-            update_current();
-            warp_pointer();
-        }
-    }
+    current = c;
+    save_desktop(current_desktop);
+    if(mode == 1) tile();
+    update_current();
+    warp_pointer();
 }
 
 void move_down() {
@@ -560,8 +558,8 @@ void tile() {
                 }
                 break;
             case 1: /* Fullscreen */
-                XMapWindow(dis, current->win);
                 XMoveResizeWindow(dis,current->win,0,y,sw+2*bdw,sh+2*bdw);
+                XMapWindow(dis, current->win);
                 break;
             case 2: /* Horizontal */
             	// Master window
@@ -841,7 +839,7 @@ void maprequest(XEvent *e) {
 
     add_window(ev->window, 0);
     tile();
-    XMapWindow(dis,ev->window);
+    if(mode != 1) XMapWindow(dis,ev->window);
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
