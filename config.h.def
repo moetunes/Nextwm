@@ -25,11 +25,17 @@
 #define CONFIG_H
 
 #define RCFILE "/home/pnewm/.snapwmrc"
-#define UF_ALPHA 75 /* Percentage transparency for unfocused windows - 100 to turn off */
+#define STATUS_BAR      0  /* 1=Don't 0=Make the bar */
 
 /* Mod (Mod1 == alt) (Mod4 == Super/windows) */
 #define MOD1            Mod1Mask
 #define MOD4            Mod4Mask
+#define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
+
+// The settings from here to defaultfont[] are in the rc file, which has precedence,
+// so if the rc file all has these 15 options they don't have to be changed.
+
+#define UF_ALPHA 75 /* Percentage transparency for unfocused windows - 100 to turn off */
 #define MASTER_SIZE     55
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 1=Don't 0=Place new window in the stack */
@@ -37,14 +43,14 @@
 #define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
 #define CLICK_TO_FOCUS  1  /* 1=Don't 0=Focus an unfocused window when clicked */
-#define STATUS_BAR      0  /* 1=Don't 0=Make the bar */
 #define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
 #define SHOW_BAR        0  /* 1=Don't 0=Have the bar shown at startup */
 #define SHOW_NUM_OPEN   1  /* 1=Dont' 0=Show the number of open windows in the switcher */
-#define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 
+static const char *defaultdesktopnames[] = { "1", "2", "3", "4", "5", "6", };
 static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };
 static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", };
+static const char defaultfont[] = "-*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*";
 
 // Applications to a specific desktop
 static const Convenience convenience[] = { \

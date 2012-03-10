@@ -107,8 +107,6 @@ void read_rcfile() {
                     if (!fontbar) {
                         fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
                         fontbar = XLoadQueryFont(dis, "fixed");
-                    //} else {
-                      //  logger("\033[0;32m fontbar Loaded");
                     }
                     sb_height = fontbar->ascent+fontbar->descent+2;
                     continue;
@@ -119,10 +117,12 @@ void read_rcfile() {
                     dummy2 = strdup(dummy);
                     for(i=0;i<DESKTOPS;i++) {
                         dummy3 = strsep(&dummy2, ",");
-                        if(strlen(dummy3) < 1)
-                            sb_bar[i].label = strdup("?");
-                        else
-                            sb_bar[i].label = strdup(dummy3);
+                        if(!(dummy3)) {
+                            if(!(defaultdesktopnames[i]))
+                                sb_bar[i].label = strdup("?");
+                            else sb_bar[i].label = strdup(defaultdesktopnames[i]);
+                        } else sb_bar[i].label = strdup(dummy3);
+                        if(strlen(sb_bar[i].label) < 1) sb_bar[i].label = strdup("?");
                     }
                     continue;
                 }
@@ -150,10 +150,16 @@ void set_defaults() {
     if(STATUS_BAR == 0) {
         for(i=0;i<4;i++)
             theme[i].modename = strdup(defaultmodename[i]);
-        for(i=0;i<DESKTOPS;i++)
-            sb_bar[i].label = strdup("?");
-        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m no preferred font: *%s* using default fixed\n", fontbarname);
-        fontbar = XLoadQueryFont(dis, "fixed");
+        for(i=0;i<DESKTOPS;i++) {
+            if(!(defaultdesktopnames[i]))
+                sb_bar[i].label = strdup("?");
+            else sb_bar[i].label = strdup(defaultdesktopnames[i]);
+        }
+        fontbar = XLoadQueryFont(dis, defaultfont);
+        if (!fontbar) {
+            fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
+            fontbar = XLoadQueryFont(dis, "fixed");
+        }
         sb_height = fontbar->ascent+fontbar->descent+2;
         sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
         sw = XDisplayWidth(dis,screen)- bdw;

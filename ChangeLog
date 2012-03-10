@@ -1,3 +1,7 @@
+10/3/12
+  Added error checking for desktop names in the switcher
+  Added option for the default font in the config.h
+
 8/3/12
   Added option in config.h and rc file to have new window opened at the
    top or bottom of the stack when using attach aside
