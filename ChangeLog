@@ -1,3 +1,6 @@
+25/3/12
+  Fix for firefox menu disappearing after deleting an entry
+
 10/3/12
   Added error checking for desktop names in the switcher
   Added option for the default font in the config.h

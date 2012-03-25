@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.0 ]
+ /* snapwm.c [ 0.4.1 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -22,7 +22,8 @@
  */
 
 #include <X11/Xlib.h>
-#include <X11/keysym.h>
+#include <X11/XKBlib.h>
+//#include <X11/keysym.h>
 /* If you have a multimedia keyboard uncomment the following line */
 //#include <X11/XF86keysym.h>
 #include <X11/Xproto.h>
@@ -233,6 +234,7 @@ void add_window(Window w, int tw) {
         c->win = w; head = c;
     } else {
         if(attachaside == 0) {
+            dowarp = 1;
             if(top_stack == 0) {
                 if(head->next == NULL) {
                     c->prev = head; c->next = NULL;
@@ -253,12 +255,12 @@ void add_window(Window w, int tw) {
             c->next = t;
             c->win = w;
             t->prev = c;
-            head = c; current = c;
-            warp_pointer();
+            head = c;
         }
     }
 
     current = head;
+    warp_pointer();
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
@@ -292,7 +294,6 @@ void remove_window(Window w, int dr) {
                 }
                 free(c);
                 save_desktop(current_desktop);
-                update_current();
                 return;
             }
         }
@@ -410,6 +411,7 @@ void swap_master() {
         save_desktop(current_desktop);
         tile();
         update_current();
+        warp_pointer();
     }
 }
 
@@ -464,24 +466,7 @@ void rotate_desktop(const Arg arg) {
 }
 
 void follow_client_to_desktop(const Arg arg) {
-    client *tmp = current;
-    int tmp2 = current_desktop;
-
-    if(arg.i == current_desktop || current == NULL)
-        return;
-
-    // Add client to desktop
-    select_desktop(arg.i);
-    add_window(tmp->win, 0);
-    save_desktop(arg.i);
-
-    // Remove client from current desktop
-    select_desktop(tmp2);
-    XUnmapWindow(dis,tmp->win);
-    remove_window(tmp->win, 0);
-    save_desktop(tmp2);
-    tile();
-    update_current();
+    client_to_desktop(arg);
     change_desktop(arg);
 }
 
@@ -501,9 +486,6 @@ void client_to_desktop(const Arg arg) {
     select_desktop(tmp2);
     XUnmapWindow(dis,tmp->win);
     remove_window(tmp->win, 0);
-    save_desktop(tmp2);
-    tile();
-    update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -597,7 +579,7 @@ void tile() {
                         if((n == 1) || (n == 4)) xpos = 0;
                         if((n == 2) || (n == 5)) xpos = (sw/3) + BORDER_WIDTH;
                         if((n == 3) || (n == 6)) xpos = (2*(sw/3)) + BORDER_WIDTH;
-                        if(n == 4) y += (sh/2); // + BORDER_WIDTH;
+                        if(n == 4) y += (sh/2);
                         if((n == x) && (n == 5)) wdt = 2*sw/3 - BORDER_WIDTH;
                     } else {
                         if(x > 2) {
@@ -742,7 +724,7 @@ void keypress(XEvent *e) {
     KeySym keysym;
     XKeyEvent *ev = &e->xkey;
 
-    keysym = XKeycodeToKeysym(dis, (KeyCode)ev->keycode, 0);
+    keysym = XkbKeycodeToKeysym(dis, (KeyCode)ev->keycode, 0, 0);
     for(i = 0; i < len; i++) {
         if(keysym == keys[i].keysym && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)) {
             if(keys[i].function)
@@ -792,11 +774,12 @@ void maprequest(XEvent *e) {
 
     // For fullscreen mplayer (and maybe some other program)
     client *c;
-
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
+            int y = 0;
+            if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
             XMapWindow(dis,ev->window);
-            XMoveResizeWindow(dis,c->win,0,0,sw,sh);
+            XMoveResizeWindow(dis,c->win,0,y,sw,sh);
             return;
         }
 
@@ -975,7 +958,6 @@ void kill_client() {
         for (i=0;i<n;i++)
             if (protocols[i] == wm_delete_window) can_delete = 1;
 
-    //XFree(protocols);
     if(can_delete == 1) {
         ke.type = ClientMessage;
         ke.xclient.window = current->win;
@@ -1002,7 +984,6 @@ void quit() {
         XFreeGC(dis, theme[i].gc);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
-    //sleep(1);
     bool_quit = 1;
 }
 

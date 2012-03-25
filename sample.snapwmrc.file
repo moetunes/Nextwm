@@ -15,7 +15,6 @@ DEFAULTMODE 0
 # For semi transparent unfocused windows if using a compositor e.g. cairo-compmgr
 UF_WIN_ALPHA 65
 FOLLOWMOUSE 0
-CLICKTOFOCUS 1
 TOPBAR 0
 SHOW_BAR 0
 SHOWNUMOPEN 1
