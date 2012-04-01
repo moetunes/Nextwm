@@ -169,6 +169,7 @@ static int showopen;        // whether the desktop switcher shows number of open
 static int topbar;
 static int top_stack;
 static int ufalpha;
+static int windownamelength;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 unsigned int numlockmask;        /* dynamic key lock mask */
@@ -1017,6 +1018,7 @@ void setup() {
     top_stack = TOP_STACK;
     followmouse = FOLLOW_MOUSE;
     clicktofocus = CLICK_TO_FOCUS;
+    windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
 

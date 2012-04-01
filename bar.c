@@ -28,7 +28,8 @@ void setup_status_bar() {
     sb_width += 4;
     if(sb_width < sb_height) sb_width = sb_height;
     sb_desks = (DESKTOPS*sb_width)+2;
-    sb_end = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+40));
+    sb_end = XTextWidth(fontbar, " ", (strlen(theme[mode].modename)+4+windownamelength));
+    //printf("\tSB END == %d\n", sb_end);
 }
 
 void status_bar() {
@@ -111,21 +112,23 @@ void update_bar() {
 }
 
 void status_text(const char *sb_text) {
-    int text_length, text_start, text_blank, i;
+    int text_length, text_start, blank_start, text_total, i;
 
     if(sb_text == NULL) sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
-    if(strlen(sb_text) >= 35)
-        text_length = 35;
+    if(strlen(sb_text) >= windownamelength)
+        text_length = windownamelength;
     else
         text_length = strlen(sb_text);
-    text_start = 10+(XTextWidth(fontbar, theme[mode].modename, strlen(theme[mode].modename)))+(XTextWidth(fontbar, " ", 35))-(XTextWidth(fontbar, sb_text, text_length));
-    text_blank = 40-text_length;
+    text_total = sb_end/XTextWidth(fontbar, " ", 1);
+    text_start = text_total - text_length;
+    blank_start = strlen(theme[mode].modename)+4;
 
-    XDrawImageString(dis, sb_area, theme[0].gc, 5, fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
-    for(i=0;i<text_blank;i++)
-        XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", 1+i+(strlen(theme[mode].modename))), fontbar->ascent+1, " ", 1);
-    XDrawImageString(dis, sb_area, theme[0].gc, text_start, fontbar->ascent+1, sb_text, text_length);
+    XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", 2), fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
+    for(i=blank_start;i<text_start;i++)
+        XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", i), fontbar->ascent+1, " ", 1);
+    XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", text_start), fontbar->ascent+1, sb_text, text_length);
+    //XDrawImageString(dis, sb_area, theme[0].gc, sb_end, fontbar->ascent+1, "H", 1);
 }
 
 void update_output(int messg) {
@@ -151,22 +154,22 @@ void update_output(int messg) {
         if(strncmp(&output[i], "&", 1) == 0)
             i += 2;
     }
-    text_space = 2+(sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)+20))/XTextWidth(fontbar, " ", 1);
+    text_space = (sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)))/XTextWidth(fontbar, " ", 1);
     if(text_space > 0)
-        text_start = sb_end+(sw-(sb_desks+sb_end+XTextWidth(fontbar, output, k)+20));
+        text_start = sb_end+XTextWidth(fontbar, " ", text_space);
     else
         text_start = sb_end;
 
-    for(i=1;i<text_space;i++)
+    for(i=0;i<text_space;i++)
         XDrawImageString(dis, sb_area, theme[1].gc, sb_end+XTextWidth(fontbar, " ", i), fontbar->ascent+1, " ", 1);
     k = 0;
     for(i=0;i<text_length;i++) {
-        k++;
         if(strncmp(&output[i], "&", 1) == 0) {
             j = output[i+1]-'0';
             i += 2;
         }
         XDrawImageString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
+        k++;
     }
     output[0] ='\0';
     XSync(dis, False);

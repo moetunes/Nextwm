@@ -83,6 +83,11 @@ void read_rcfile() {
                     showopen = atoi(dummy);
                     for(i=0;i<81;i++) dummy[i] = '\0'; continue;
                 }
+                if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
+                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                    windownamelength = atoi(dummy);
+                    for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                }
                 if(strstr(buffer, "TOPBAR" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     topbar = atoi(dummy);

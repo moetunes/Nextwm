@@ -46,6 +46,7 @@
 #define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
 #define SHOW_BAR        0  /* 1=Don't 0=Have the bar shown at startup */
 #define SHOW_NUM_OPEN   1  /* 1=Dont' 0=Show the number of open windows in the switcher */
+#define WINDOW_NAME_LENGTH 35 /* Character length for the current window's name in the bar */
 
 static const char *defaultdesktopnames[] = { "1", "2", "3", "4", "5", "6", };
 static const char *defaultcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };

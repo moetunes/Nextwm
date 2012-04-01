@@ -1,3 +1,8 @@
+1/4/12
+  Added switching clicktofocus to the rc file
+  Added adjusting the displayed length of the current window's name in the bar
+    to the config and the rc file
+
 25/3/12
   Fix for firefox menu disappearing after deleting an entry
 
