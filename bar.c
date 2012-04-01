@@ -122,7 +122,7 @@ void status_text(const char *sb_text) {
         text_length = strlen(sb_text);
     text_total = sb_end/XTextWidth(fontbar, " ", 1);
     text_start = text_total - text_length;
-    blank_start = strlen(theme[mode].modename)+4;
+    blank_start = strlen(theme[mode].modename)+2;
 
     XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", 2), fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
     for(i=blank_start;i<text_start;i++)
