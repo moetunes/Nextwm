@@ -1,4 +1,4 @@
-// bar.c [ 0.4.1 ]
+// bar.c [ 0.4.2 ]
 
 /* ************************** Status Bar *************************** */
 static int sb_end;
@@ -120,7 +120,7 @@ void status_text(const char *sb_text) {
         text_length = windownamelength;
     else
         text_length = strlen(sb_text);
-    text_total = sb_end/XTextWidth(fontbar, " ", 1);
+    text_total = (strlen(theme[mode].modename)+4+windownamelength); //sb_end/XTextWidth(fontbar, " ", 1);
     text_start = text_total - text_length;
     blank_start = strlen(theme[mode].modename)+2;
 

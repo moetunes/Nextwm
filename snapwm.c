@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.1 ]
+ /* snapwm.c [ 0.4.2 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -417,6 +417,7 @@ void swap_master() {
 }
 
 /* **************************** Desktop Management ************************************* */
+
 void change_desktop(const Arg arg) {
     client *c;
 
@@ -773,12 +774,12 @@ void maprequest(XEvent *e) {
     XGetWindowAttributes(dis, ev->window, &attr);
     if(attr.override_redirect == True) return;
 
+    int y=0;
+    if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
     // For fullscreen mplayer (and maybe some other program)
     client *c;
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
-            int y = 0;
-            if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
             XMapWindow(dis,ev->window);
             XMoveResizeWindow(dis,c->win,0,y,sw,sh);
             return;
@@ -786,7 +787,10 @@ void maprequest(XEvent *e) {
 
     Window trans = None;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-        add_window(ev->window, 1); XMapWindow(dis, ev->window);
+        add_window(ev->window, 1); 
+        if((attr.y + attr.height) > sh)
+            XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
+        XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].color);
         update_current();
