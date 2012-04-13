@@ -37,7 +37,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
     |-----------|
     | W |   |   |
     -------------
-    
+
  *Grid tiling mode:*
 
     -------------
@@ -46,6 +46,16 @@ It allows the "normal" method of tiling window managers(with the new window as t
     |------|----|
     |      |    |
     -------------
+
+ *Stacking mode:*
+
+    -------------
+    | ___       |
+    ||___|      |
+    |     ____  |
+    |    |____| |
+    -------------
+
 
  *Fullscreen mode*(which you'll know when you see it)
 
@@ -60,10 +70,9 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-8/3/12
+13/4/12
 
-  * Added option in the config and rc files for opening new window at the 
-  top or bottom of the stack when using attach aside
+  * Added a stacking window mode
 
 
 
@@ -92,6 +101,8 @@ There are more options in the config file than the original catwm.
   * Desktop switcher can show number of open windows on unfocused desktops and in fullscreen mode
   * Option to show number of windows open in the desktop switcher in the config and rc file
   * Clicking on the current desktop in the switcher will focus the next window
+  * Added option in the config and rc files for opening new window at the 
+  top or bottom of the stack when using attach aside
 
 
 ###Installation

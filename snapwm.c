@@ -493,9 +493,8 @@ void change_desktop(const Arg arg) {
 
     if(head != NULL) {
         if(mode != 1) {
-            XMapWindow(dis,current->win);
             for(c=head;c;c=c->next)
-                if(c != current) XMapWindow(dis,c->win);
+                XMapWindow(dis,c->win);
         }
     }
 
@@ -684,6 +683,7 @@ void update_current() {
         else {
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].color);
+            XLowerWindow(dis,c->win);
             if(clicktofocus == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
     }
@@ -928,25 +928,25 @@ void destroynotify(XEvent *e) {
 }
 
 void enternotify(XEvent *e) {
+    if(followmouse != 0) return;
+
     client *c; int i;
     XCrossingEvent *ev = &e->xcrossing;
 
-    if(followmouse == 0) {
-        if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
+    if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
+        return;
+    if(ev->focus == True) return;
+    if(transient != NULL) return;
+    for(i=0;i<DESKTOPS;i++)
+        if(sb_bar[i].sb_win == ev->window) dowarp = 1;
+    if(ev->window == sb_area) dowarp = 1;
+    for(c=head;c;c=c->next)
+       if(ev->window == c->win) {
+            current = c;
+            update_current();
+            dowarp = 0;
             return;
-        if(transient != NULL) return;
-        for(i=0;i<DESKTOPS;i++)
-            if(sb_bar[i].sb_win == ev->window) dowarp = 1;
-        if(ev->window == sb_area) dowarp = 1;
-        if(ev->window == root) dowarp = 0;
-        for(c=head;c;c=c->next)
-           if(ev->window == c->win) {
-                current = c;
-                update_current();
-                dowarp = 0;
-                return;
        }
-   }
 }
 
 void buttonpress(XEvent *e) {
@@ -993,7 +993,7 @@ void buttonrelease(XEvent *e) {
     XButtonEvent *ev = &e->xbutton;
 
     XUngrabPointer(dis, CurrentTime);
-    if(mode == 4)
+    if(mode == 4) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
                 XGetWindowAttributes(dis, c->win, &attr);
@@ -1002,6 +1002,8 @@ void buttonrelease(XEvent *e) {
                 c->width = attr.width;
                 c->height = attr.height;
             }
+        update_current();
+    }
 }
 
 void propertynotify(XEvent *e) {
