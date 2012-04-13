@@ -391,7 +391,7 @@ void prev_win() {
 }
 
 void move_down(const Arg arg) {
-    if(mode == 3 && current != NULL) {
+    if(mode == 4 && current != NULL) {
         current->y += arg.i;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
         return;
@@ -410,7 +410,7 @@ void move_down(const Arg arg) {
 }
 
 void move_up(const Arg arg) {
-    if(mode == 3 && current != NULL) {
+    if(mode == 4 && current != NULL) {
         current->y += arg.i;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
         return;
@@ -428,14 +428,14 @@ void move_up(const Arg arg) {
 }
 
 void move_left(const Arg arg) {
-    if(mode == 3 && current != NULL) {
+    if(mode == 4 && current != NULL) {
         current->x += arg.i;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
     }
 }
 
 void move_right(const Arg arg) {
-    if(mode == 3 && current != NULL) {
+    if(mode == 4 && current != NULL) {
         current->x += arg.i;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
     }
@@ -725,7 +725,7 @@ void switch_mode(const Arg arg) {
 }
 
 void resize_master(const Arg arg) {
-    if(mode == 3 && current != NULL) {
+    if(mode == 4 && current != NULL) {
         current->width += arg.i;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
     } else if(arg.i > 0) {
@@ -736,7 +736,7 @@ void resize_master(const Arg arg) {
 }
 
 void resize_stack(const Arg arg) {
-    if(mode == 3 && current != NULL) {
+    if(mode == 4 && current != NULL) {
         current->height += arg.i;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height+arg.i);
     } else if(desktops[current_desktop].numwins > 2) {

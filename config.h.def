@@ -40,7 +40,7 @@
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 1=Don't 0=Place new window in the stack */
 #define TOP_STACK       0  /* 1=Don't 0=Place new window at the top of the stack when using ATTACH_ASIDE*/
-#define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=Grid 4=Stacking*/
+#define DEFAULT_MODE    4  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=Grid 4=Stacking*/
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
 #define CLICK_TO_FOCUS  1  /* 1=Don't 0=Focus an unfocused window when clicked */
 #define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
