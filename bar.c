@@ -1,4 +1,4 @@
-// bar.c [ 0.4.2 ]
+// bar.c [ 0.4.3 ]
 
 /* ************************** Status Bar *************************** */
 static int sb_end;
@@ -45,7 +45,7 @@ void status_bar() {
         XMapRaised(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+2)+bdw,sb_height,2,theme[3].color,theme[1].color);
+             sw-(sb_desks+2),sb_height,2,theme[3].color,theme[1].color);
 
     XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask);
     XMapRaised(dis, sb_area);
@@ -154,7 +154,7 @@ void update_output(int messg) {
         if(strncmp(&output[i], "&", 1) == 0)
             i += 2;
     }
-    text_space = (sw-(sb_desks+sb_end+XTextWidth(fontbar, " ", k)))/XTextWidth(fontbar, " ", 1);
+    text_space = (sw-(sb_desks+sb_end+bdw+XTextWidth(fontbar, " ", k)))/XTextWidth(fontbar, " ", 1);
     if(text_space > 0)
         text_start = sb_end+XTextWidth(fontbar, " ", text_space);
     else

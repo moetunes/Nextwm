@@ -1,3 +1,6 @@
+7/4/12
+  Fix for transient windows going off the screen
+
 1/4/12
   Added switching clicktofocus to the rc file
   Added adjusting the displayed length of the current window's name in the bar

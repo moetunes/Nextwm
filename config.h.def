@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.4.2 ]
+ /* config.h for snapwm.c [ 0.4.3 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -40,7 +40,7 @@
 #define BORDER_WIDTH    2
 #define ATTACH_ASIDE    1  /* 1=Don't 0=Place new window in the stack */
 #define TOP_STACK       0  /* 1=Don't 0=Place new window at the top of the stack when using ATTACH_ASIDE*/
-#define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=grid*/
+#define DEFAULT_MODE    0  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=Grid 4=Stacking*/
 #define FOLLOW_MOUSE    0  /* 1=Don't 0=Focus the window the mouse just entered */
 #define CLICK_TO_FOCUS  1  /* 1=Don't 0=Focus an unfocused window when clicked */
 #define TOP_BAR         0  /* 1=Don't 0=Have the bar at the top instead of the bottom */
@@ -106,13 +106,16 @@ static key keys[] = {
     {  MOD1,             XK_Up,         spawn,             {.com = volupcmd}},
     {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
 // alt + shift + shortcut
-    {  MOD1|ShiftMask,   XK_j,          move_up,           {NULL}},
-    {  MOD1|ShiftMask,   XK_k,          move_down,         {NULL}},
+    {  MOD1|ShiftMask,   XK_j,          move_up,           {.i = -10}},
+    {  MOD1|ShiftMask,   XK_k,          move_down,         {.i = 10}},
+    {  MOD1|ShiftMask,   XK_o,          move_left,         {.i = -10}},
+    {  MOD1|ShiftMask,   XK_p,          move_right,        {.i = 10}},
     {  MOD1|ShiftMask,   XK_Return,     swap_master,       {NULL}},
     {  MOD1|ShiftMask,   XK_g,          switch_mode,       {.i = 3}}, // grid
     {  MOD1|ShiftMask,   XK_h,          switch_mode,       {.i = 2}}, // horizontal
     {  MOD1|ShiftMask,   XK_f,          switch_mode,       {.i = 1}}, // fullscreen
     {  MOD1|ShiftMask,   XK_v,          switch_mode,       {.i = 0}}, // vertical
+    {  MOD1|ShiftMask,   XK_c,          switch_mode,       {.i = 4}}, // stacking
 // Control + alt + shortcut
     {  MOD1|ControlMask, XK_q,          quit,              {NULL}},
     {  MOD1|ControlMask, XK_r,          spawn,             {.com = rebootcmd}},
