@@ -20,7 +20,7 @@ WINDOWNAMELENGTH 35
 TOPBAR 0
 SHOW_BAR 0
 SHOWNUMOPEN 1
-MODENAME [V],[F],[H],[G],
+MODENAME [V],[F],[H],[G],[C],
 DESKTOP_NAMES one,two,three,four,five,six,
 FONTNAME "-*-clean-*-*-*-*-14-*-*-*-*-*-*-*"
 # "-misc-*-*-*-*-*-15-*-*-*-*-*-*-*"
