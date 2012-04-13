@@ -155,6 +155,7 @@ static Display *dis;
 static int attachaside;
 static int bdw;             // border width
 static int bool_quit;
+static int check_enter;
 static int clicktofocus;
 static int current_desktop;
 static int dowarp;
@@ -358,19 +359,18 @@ void remove_window(Window w, int dr) {
 void next_win() {
     client *c;
 
-    if(current != NULL && head != NULL) {
-        if(mode == 1) XUnmapWindow(dis, current->win);
-        if(current->next == NULL)
-            c = head;
-        else
-            c = current->next;
+    if(head->next == NULL) return;
+    if(mode == 1) XUnmapWindow(dis, current->win);
+    if(current->next == NULL)
+        c = head;
+    else
+        c = current->next;
 
-        current = c;
-        save_desktop(current_desktop);
-        if(mode == 1) tile();
-        update_current();
-        warp_pointer();
-    }
+    current = c;
+    save_desktop(current_desktop);
+    if(mode == 1) tile();
+    update_current();
+    warp_pointer();
 }
 
 void prev_win() {
@@ -487,6 +487,7 @@ void change_desktop(const Arg arg) {
     select_desktop(arg.i);
 
     // Map all windows
+    check_enter = 1;
     if(transient != NULL)
         for(c=transient;c;c=c->next)
             XMapWindow(dis,c->win);
@@ -935,7 +936,10 @@ void enternotify(XEvent *e) {
 
     if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
         return;
-    if(ev->focus == True) return;
+    if(check_enter == 1 && ev->focus == True) {
+        check_enter = 0;
+        return;
+    }
     if(transient != NULL) return;
     for(i=0;i<DESKTOPS;i++)
         if(sb_bar[i].sb_win == ev->window) dowarp = 1;
@@ -1121,6 +1125,7 @@ void setup() {
     windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
+    check_enter = 0;
 
     // Read in RCFILE
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
