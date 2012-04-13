@@ -155,7 +155,6 @@ static Display *dis;
 static int attachaside;
 static int bdw;             // border width
 static int bool_quit;
-static int check_enter;
 static int clicktofocus;
 static int current_desktop;
 static int dowarp;
@@ -257,6 +256,7 @@ void add_window(Window w, int tw) {
         c->next = NULL; c->prev = NULL;
         c->win = w; head = c;
     } else {
+        if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, -10);
         if(attachaside == 0) {
             dowarp = 1;
             if(top_stack == 0) {
@@ -284,7 +284,6 @@ void add_window(Window w, int tw) {
     }
 
     current = head;
-    warp_pointer();
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
@@ -323,6 +322,7 @@ void remove_window(Window w, int dr) {
         }
     }
 
+    XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, -10);
     for(c=head;c;c=c->next) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
@@ -349,7 +349,7 @@ void remove_window(Window w, int dr) {
             save_desktop(current_desktop);
             tile();
             update_current();
-            if(desktops[current_desktop].numwins > 1) warp_pointer();
+            warp_pointer();
             if(STATUS_BAR == 0) getwindowname();
             return;
         }
@@ -485,9 +485,9 @@ void change_desktop(const Arg arg) {
 
     // Take "properties" from the new desktop
     select_desktop(arg.i);
+    if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, -10);
 
     // Map all windows
-    check_enter = 1;
     if(transient != NULL)
         for(c=transient;c;c=c->next)
             XMapWindow(dis,c->win);
@@ -804,10 +804,14 @@ void keypress(XEvent *e) {
 
 void warp_pointer() {
     // Move cursor to the center of the current window
-    if(FOLLOW_MOUSE == 0 && dowarp < 1 && head != NULL) {
+    if(FOLLOW_MOUSE != 0) return;
+    if(dowarp < 1 && head != NULL) {
         XGetWindowAttributes(dis, current->win, &attr);
         XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
+        return;
     }
+    if(dowarp < 1 && head == NULL)
+        XWarpPointer(dis, None, root, 0, 0, 0, 0, sw/2, sh/2);
 }
 
 void configurenotify(XEvent *e) {
@@ -896,6 +900,7 @@ void maprequest(XEvent *e) {
     tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     update_current();
+    warp_pointer();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -908,6 +913,7 @@ void destroynotify(XEvent *e) {
         for(c=transient;c;c=c->next)
             if(ev->window == c->win) {
                 remove_window(ev->window, 0);
+                update_current();
                 return;
             }
     }
@@ -936,14 +942,16 @@ void enternotify(XEvent *e) {
 
     if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
         return;
-    if(check_enter == 1 && ev->focus == True) {
-        check_enter = 0;
-        return;
-    }
     if(transient != NULL) return;
     for(i=0;i<DESKTOPS;i++)
-        if(sb_bar[i].sb_win == ev->window) dowarp = 1;
-    if(ev->window == sb_area) dowarp = 1;
+        if(sb_bar[i].sb_win == ev->window) {
+            dowarp = 1;
+            return;
+        }
+    if(ev->window == sb_area) {
+        dowarp = 1;
+        return;
+    }
     for(c=head;c;c=c->next)
        if(ev->window == c->win) {
             current = c;
@@ -1125,7 +1133,7 @@ void setup() {
     windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
-    check_enter = 0;
+    dowarp = 0;
 
     // Read in RCFILE
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
