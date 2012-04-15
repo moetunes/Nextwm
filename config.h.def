@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.4.3 ]
+ /* config.h for snapwm.c [ 0.4.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -63,6 +63,13 @@ static const Convenience convenience[] = { \
     { "MPlayer",      4,    0 },
     { "Thunderbird",  5,    1 },
     { "Pysol",        6,    0 },
+};
+
+static const Positional positional[] = { \
+    /* class  x  y  width  height */
+    { "Thunar", 100,100,800,400 },
+    { "URxvt", 100,400,570,270 },
+    { "Xchat", 320,60,950,500 }
 };
 
 const char* dmenucmd[]      = {"dmenu_run","-i","-nb","#666622","-nf","white",NULL};

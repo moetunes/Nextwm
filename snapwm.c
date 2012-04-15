@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.3 ]
+ /* snapwm.c [ 0.4.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -79,6 +79,11 @@ typedef struct {
     int preferredd;
     int followwin;
 } Convenience;
+
+typedef struct {
+    const char *class;
+    int x, y, width, height;
+} Positional;
 
 typedef struct {
     Window sb_win;
@@ -242,8 +247,22 @@ void add_window(Window w, int tw) {
     }
 
     if(tw == 0) {
-        XGetWindowAttributes(dis, w, &attr);
-        XMoveWindow(dis, w,sw/2-(attr.width/2),sh/2-(attr.height/2));
+        XClassHint chh = {0};
+        static unsigned int len2 = sizeof positional / sizeof positional[0];
+        int i, j=0;
+        if(XGetClassHint(dis, w, &chh)) {
+            for(i=0;i<len2;i++)
+                if(strcmp(chh.res_class, positional[i].class) == 0) {
+                    XMoveResizeWindow(dis,w,positional[i].x,positional[i].y,positional[i].width,positional[i].height);
+                    j++;
+                }
+            if(chh.res_class) XFree(chh.res_class);
+            if(chh.res_name) XFree(chh.res_name);
+        } 
+        if(j < 1) {
+            XGetWindowAttributes(dis, w, &attr);
+            XMoveWindow(dis, w,sw/2-(attr.width/2),sh/2-(attr.height/2));
+        }
         XGetWindowAttributes(dis, w, &attr);
         c->x = attr.x;
         if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0 && attr.y < sb_height+4) c->y = sb_height+4;
@@ -322,7 +341,7 @@ void remove_window(Window w, int dr) {
         }
     }
 
-    XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, -10);
+    XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2 + 10);
     for(c=head;c;c=c->next) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
@@ -875,6 +894,8 @@ void maprequest(XEvent *e) {
     if(XGetClassHint(dis, ev->window, &ch))
         for(i=0;i<len;i++)
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
+                if(ch.res_class) XFree(ch.res_class);
+                if(ch.res_name) XFree(ch.res_name);
                 save_desktop(tmp);
                 select_desktop(convenience[i].preferredd-1);
                 for(c=head;c;c=c->next)
@@ -882,19 +903,19 @@ void maprequest(XEvent *e) {
                         ++j;
                 if(j < 1) add_window(ev->window, 0);
                 if(tmp == convenience[i].preferredd-1) {
-                    XMapWindow(dis, ev->window);
                     tile();
+                    XMapWindow(dis, ev->window);
                     update_current();
                 } else select_desktop(tmp);
                 if(convenience[i].followwin == 0) {
                     Arg a = {.i = convenience[i].preferredd-1};
                     change_desktop(a);
                 }
-                if(ch.res_class) XFree(ch.res_class);
-                if(ch.res_name) XFree(ch.res_name);
                 if(STATUS_BAR == 0) update_bar();
                 return;
             }
+    if(ch.res_class) XFree(ch.res_class);
+    if(ch.res_name) XFree(ch.res_name);
 
     add_window(ev->window, 0);
     tile();
@@ -1180,7 +1201,7 @@ void setup() {
     update_current();
 
     // To catch maprequest and destroynotify (if other wm running)
-    XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask|EnterWindowMask);
+    XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
     XSetErrorHandler(xerror);
     logger("\033[0;32mWe're up and running!");
 }
