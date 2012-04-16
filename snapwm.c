@@ -248,7 +248,7 @@ void add_window(Window w, int tw) {
 
     if(tw == 0) {
         XClassHint chh = {0};
-        static unsigned int len2 = sizeof positional / sizeof positional[0];
+        unsigned int len2 = sizeof positional / sizeof positional[0];
         int i, j=0;
         if(XGetClassHint(dis, w, &chh)) {
             for(i=0;i<len2;i++)
@@ -378,7 +378,8 @@ void remove_window(Window w, int dr) {
 void next_win() {
     client *c;
 
-    if(head->next == NULL) return;
+    if(desktops[current_desktop].numwins < 2) return;
+    //if(head->next == NULL) return;
     if(mode == 1) XUnmapWindow(dis, current->win);
     if(current->next == NULL)
         c = head;
@@ -395,7 +396,8 @@ void next_win() {
 void prev_win() {
     client *c;
 
-    if(head->next == NULL) return;
+    if(desktops[current_desktop].numwins < 2) return;
+    //if(head->next == NULL) return;
     if(mode == 1) XUnmapWindow(dis, current->win);
     if(current->prev == NULL)
         for(c=head;c->next;c=c->next);
