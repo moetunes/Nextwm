@@ -112,6 +112,7 @@ static key keys[] = {
     {  MOD1,             XK_Return,     spawn,             {.com = urxvtcmd}},
     {  MOD1,             XK_Up,         spawn,             {.com = volupcmd}},
     {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
+    {  MOD1,             XK_a,          rotate_mode,       {.i = 1}},
 // alt + shift + shortcut
     {  MOD1|ShiftMask,   XK_j,          move_up,           {.i = -10}},
     {  MOD1|ShiftMask,   XK_k,          move_down,         {.i = 10}},

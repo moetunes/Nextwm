@@ -131,6 +131,7 @@ static void read_rcfile();
 static void resize_master(const Arg arg);
 static void resize_stack(const Arg arg);
 static void rotate_desktop(const Arg arg);
+static void rotate_mode(const Arg arg);
 static void save_desktop(int i);
 static void select_desktop(int i);
 static void setup();
@@ -367,8 +368,8 @@ void remove_window(Window w, int dr) {
             desktops[current_desktop].numwins -= 1;
             save_desktop(current_desktop);
             tile();
-            update_current();
             warp_pointer();
+            update_current();
             if(STATUS_BAR == 0) getwindowname();
             return;
         }
@@ -389,8 +390,8 @@ void next_win() {
     current = c;
     save_desktop(current_desktop);
     if(mode == 1) tile();
-    update_current();
     warp_pointer();
+    update_current();
 }
 
 void prev_win() {
@@ -407,8 +408,8 @@ void prev_win() {
     current = c;
     save_desktop(current_desktop);
     if(mode == 1) tile();
-    update_current();
     warp_pointer();
+    update_current();
 }
 
 void move_down(const Arg arg) {
@@ -478,8 +479,8 @@ void swap_master() {
         }
         save_desktop(current_desktop);
         tile();
-        update_current();
         warp_pointer();
+        update_current();
     }
 }
 
@@ -521,8 +522,8 @@ void change_desktop(const Arg arg) {
     }
 
     tile();
-    update_current();
     warp_pointer();
+    update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -532,8 +533,13 @@ void last_desktop() {
 }
 
 void rotate_desktop(const Arg arg) {
-    Arg a = {.i = (current_desktop + TABLENGTH(desktops) + arg.i) % TABLENGTH(desktops)};
+    Arg a = {.i = (current_desktop + DESKTOPS + arg.i) % DESKTOPS};
      change_desktop(a);
+}
+
+void rotate_mode(const Arg arg) {
+    Arg a = {.i = (mode + 5 + arg.i) % 5};
+     switch_mode(a);
 }
 
 void follow_client_to_desktop(const Arg arg) {
@@ -830,8 +836,7 @@ void warp_pointer() {
         XGetWindowAttributes(dis, current->win, &attr);
         XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
         return;
-    }
-    if(dowarp < 1 && head == NULL)
+    } else if(dowarp < 1 && head == NULL)
         XWarpPointer(dis, None, root, 0, 0, 0, 0, sw/2, sh/2);
 }
 
@@ -890,7 +895,7 @@ void maprequest(XEvent *e) {
     }
 
     XClassHint ch = {0};
-    static unsigned int len = sizeof convenience / sizeof convenience[0];
+    unsigned int len = sizeof convenience / sizeof convenience[0];
     int i=0, j=0;
     int tmp = current_desktop;
     if(XGetClassHint(dis, ev->window, &ch))
@@ -922,8 +927,8 @@ void maprequest(XEvent *e) {
     add_window(ev->window, 0);
     tile();
     if(mode != 1) XMapWindow(dis,ev->window);
-    update_current();
     warp_pointer();
+    update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
