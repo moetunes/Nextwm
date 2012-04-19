@@ -163,6 +163,7 @@ static int bdw;             // border width
 static int bool_quit;
 static int clicktofocus;
 static int current_desktop;
+static int doresize;
 static int dowarp;
 static int followmouse;
 static int growth;
@@ -276,7 +277,7 @@ void add_window(Window w, int tw) {
         c->next = NULL; c->prev = NULL;
         c->win = w; head = c;
     } else {
-        if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, -10);
+        if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2);
         if(attachaside == 0) {
             dowarp = 1;
             if(top_stack == 0) {
@@ -310,9 +311,9 @@ void add_window(Window w, int tw) {
     save_desktop(current_desktop);
     // for folow mouse and statusbar updates
     if(followmouse == 0 && STATUS_BAR == 0)
-        XSelectInput(dis, c->win, EnterWindowMask|PropertyChangeMask);
+        XSelectInput(dis, c->win, PointerMotionMask|PropertyChangeMask);
     else if(followmouse == 0)
-        XSelectInput(dis, c->win, EnterWindowMask);
+        XSelectInput(dis, c->win, PointerMotionMask);
     else if(STATUS_BAR == 0)
         XSelectInput(dis, c->win, PropertyChangeMask);
 }
@@ -390,8 +391,8 @@ void next_win() {
     current = c;
     save_desktop(current_desktop);
     if(mode == 1) tile();
-    warp_pointer();
     update_current();
+    warp_pointer();
 }
 
 void prev_win() {
@@ -408,8 +409,8 @@ void prev_win() {
     current = c;
     save_desktop(current_desktop);
     if(mode == 1) tile();
-    warp_pointer();
     update_current();
+    warp_pointer();
 }
 
 void move_down(const Arg arg) {
@@ -506,8 +507,8 @@ void change_desktop(const Arg arg) {
             XUnmapWindow(dis,c->win);
 
     // Take "properties" from the new desktop
+    if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2);
     select_desktop(arg.i);
-    if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, -10);
 
     // Map all windows
     if(transient != NULL)
@@ -832,7 +833,8 @@ void keypress(XEvent *e) {
 void warp_pointer() {
     // Move cursor to the center of the current window
     if(FOLLOW_MOUSE != 0) return;
-    if(dowarp < 1 && head != NULL) {
+    if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2);
+    if(dowarp < 1 && current != NULL) {
         XGetWindowAttributes(dis, current->win, &attr);
         XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
         return;
@@ -965,12 +967,8 @@ void destroynotify(XEvent *e) {
 void enternotify(XEvent *e) {
     if(followmouse != 0) return;
 
-    client *c; int i;
+    int i;
     XCrossingEvent *ev = &e->xcrossing;
-
-    if((ev->mode != NotifyNormal || ev->detail == NotifyInferior) && ev->window != root)
-        return;
-    if(transient != NULL) return;
     for(i=0;i<DESKTOPS;i++)
         if(sb_bar[i].sb_win == ev->window) {
             dowarp = 1;
@@ -980,13 +978,6 @@ void enternotify(XEvent *e) {
         dowarp = 1;
         return;
     }
-    for(c=head;c;c=c->next)
-       if(ev->window == c->win) {
-            current = c;
-            update_current();
-            dowarp = 0;
-            return;
-       }
 }
 
 void buttonpress(XEvent *e) {
@@ -1011,13 +1002,24 @@ void buttonpress(XEvent *e) {
             PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
             GrabModeAsync, None, None, CurrentTime);
     XGetWindowAttributes(dis, ev->subwindow, &attr);
-    starter = e->xbutton;
+    starter = e->xbutton; doresize = 1;
 }
 
 void motionnotify(XEvent *e) {
     int xdiff, ydiff;
+    client *c;
     XMotionEvent *ev = &e->xmotion;
 
+    if(ev->window != current->win) {
+        for(c=head;c;c=c->next)
+           if(ev->window == c->win) {
+                current = c;
+                update_current();
+                dowarp = 0;
+                return;
+           }
+    }
+    if(doresize < 1) return;
     while(XCheckTypedEvent(dis, MotionNotify, e));
     xdiff = ev->x_root - starter.x_root;
     ydiff = ev->y_root - starter.y_root;
@@ -1043,6 +1045,7 @@ void buttonrelease(XEvent *e) {
                 c->height = attr.height;
             }
         update_current();
+        doresize = 0;
     }
 }
 
@@ -1161,7 +1164,7 @@ void setup() {
     windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
-    dowarp = 0;
+    dowarp = doresize = 0;
 
     // Read in RCFILE
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
