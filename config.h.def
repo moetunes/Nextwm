@@ -38,6 +38,7 @@
 #define UF_ALPHA        75 /* Percentage transparency for unfocused windows - 100 to turn off */
 #define MASTER_SIZE     55
 #define BORDER_WIDTH    2
+#define RESIZEMOVEKEY   MOD1
 #define ATTACH_ASIDE    1  /* 1=Don't 0=Place new window in the stack */
 #define TOP_STACK       0  /* 1=Don't 0=Place new window at the top of the stack when using ATTACH_ASIDE*/
 #define DEFAULT_MODE    4  /* 0=Vertical, 1=Fullscreen 2=Horizontal 3=Grid 4=Stacking*/
