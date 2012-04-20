@@ -1,3 +1,6 @@
+21/4/12
+  Seperated the bar and window colours in the config.h and rc files
+
 20/4/12
   Added option in the config to choose which mod key is used when
    moving/resizing in stacking mode

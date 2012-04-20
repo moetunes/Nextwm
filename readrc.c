@@ -20,17 +20,17 @@ void read_rcfile() {
             /* Check for comments */
             if(buffer[0] == '#') continue;
             /* Now look for info */
-            if(strstr(buffer, "THEME" ) != NULL) {
+            if(strstr(buffer, "WINDOWTHEME" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
-                for(i=0;i<9;i++) {
+                for(i=0;i<2;i++) {
                     dummy3 = strsep(&dummy2, ",");
                     if(getcolor(dummy3) == 1) {
-                        theme[i].color = getcolor(defaultcolor[i]);
+                        theme[i].wincolor = getcolor(defaultwincolor[i]);
                         logger("Default colour");
                     } else
-                        theme[i].color = getcolor(dummy3);
+                        theme[i].wincolor = getcolor(dummy3);
                 }
                 for(i=0;i<81;i++) dummy[i] = '\0';
                 continue;
@@ -78,6 +78,21 @@ void read_rcfile() {
                 for(i=0;i<81;i++) dummy[i] = '\0'; continue;
             }
             if(STATUS_BAR == 0) {
+                if(strstr(buffer, "BARTHEME" ) != NULL) {
+                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                    dummy[strlen(dummy)-1] = '\0';
+                    dummy2 = strdup(dummy);
+                    for(i=0;i<9;i++) {
+                        dummy3 = strsep(&dummy2, ",");
+                        if(getcolor(dummy3) == 1) {
+                            theme[i].barcolor = getcolor(defaultbarcolor[i]);
+                            logger("Default colour");
+                        } else
+                            theme[i].barcolor = getcolor(dummy3);
+                    }
+                    for(i=0;i<81;i++) dummy[i] = '\0';
+                    continue;
+                }
                 if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     showopen = atoi(dummy);
@@ -150,9 +165,11 @@ void set_defaults() {
     int i;
 
     logger("\033[0;32m Setting default values");
-    for(i=0;i<9;i++)
-        theme[i].color = getcolor(defaultcolor[i]);
+    for(i=0;i<2;i++)
+        theme[i].wincolor = getcolor(defaultwincolor[i]);
     if(STATUS_BAR == 0) {
+        for(i=0;i<9;i++)
+            theme[i].barcolor = getcolor(defaultbarcolor[i]);
         for(i=0;i<4;i++)
             theme[i].modename = strdup(defaultmodename[i]);
         for(i=0;i<DESKTOPS;i++) {
@@ -188,11 +205,11 @@ void update_config() {
     if(STATUS_BAR == 0) {
         setup_status_bar();
         for(i=0;i<DESKTOPS;i++) {
-            XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].color);
+            XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].barcolor);
             XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-2,sb_height);
         }
-        XSetWindowBorder(dis,sb_area,theme[3].color);
-        XSetWindowBackground(dis, sb_area, theme[1].color);
+        XSetWindowBorder(dis,sb_area,theme[3].barcolor);
+        XSetWindowBackground(dis, sb_area, theme[1].barcolor);
         XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2)+bdw,sb_height);
     }
     for(i=0;i<DESKTOPS;i++) {

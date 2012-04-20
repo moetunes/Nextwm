@@ -72,7 +72,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Added a stacking window mode
+  * Seperated the window and bar colours in the config.h and rc files
 
 
 
@@ -103,6 +103,7 @@ There are more options in the config file than the original catwm.
   * Clicking on the current desktop in the switcher will focus the next window
   * Added option in the config and rc files for opening new window at the 
   top or bottom of the stack when using attach aside
+  * Added a stacking window mode
 
 
 ###Installation

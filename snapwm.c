@@ -92,7 +92,7 @@ typedef struct {
 } Barwin;
 
 typedef struct {
-    unsigned long color;
+    unsigned long barcolor, wincolor;
     const char *modename;
     GC gc;
 } Theme;
@@ -703,14 +703,14 @@ void update_current() {
         if(current == c && transient == NULL) {
             // "Enable" current window
             if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
-            XSetWindowBorder(dis,c->win,theme[0].color);
+            XSetWindowBorder(dis,c->win,theme[0].wincolor);
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
         }
         else {
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
-            XSetWindowBorder(dis,c->win,theme[1].color);
+            XSetWindowBorder(dis,c->win,theme[1].wincolor);
             XLowerWindow(dis,c->win);
             if(clicktofocus == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
@@ -888,7 +888,7 @@ void maprequest(XEvent *e) {
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
         XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
-        XSetWindowBorder(dis,ev->window,theme[0].color);
+        XSetWindowBorder(dis,ev->window,theme[0].wincolor);
         update_current();
         return;
     }
@@ -1183,6 +1183,7 @@ void setup() {
 
     // Read in RCFILE
     if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
+    set_defaults();
     read_rcfile();
     if(STATUS_BAR == 0) {
         show_bar = STATUS_BAR;
@@ -1190,7 +1191,7 @@ void setup() {
         status_bar();
         update_output(1);
         if(SHOW_BAR > 0) toggle_bar();
-    } else set_defaults();
+    }
 
     // Shortcuts
     grabkeys();

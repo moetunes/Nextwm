@@ -9,8 +9,8 @@ void setup_status_bar() {
     logger(" \033[0;33mStatus Bar called ...");
 
     for(i=0;i<5;i++) {
-        values.background = theme[1].color;
-        values.foreground = theme[i+4].color;
+        values.background = theme[1].barcolor;
+        values.foreground = theme[i+4].barcolor;
         values.line_width = 2;
         values.line_style = LineSolid;
         values.font = fontbar->fid;
@@ -39,13 +39,13 @@ void status_bar() {
     else y = sh+bdw;
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
-                                            sb_width-2,sb_height,2,theme[3].color,theme[0].color);
+                                            sb_width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask);
         XMapRaised(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+2),sb_height,2,theme[3].color,theme[1].color);
+             sw-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapRaised(dis, sb_area);
@@ -95,16 +95,16 @@ void update_bar() {
                 if(showopen < 1 && desktops[i].numwins > 1)
                     sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
                 else sprintf(busylabel, "%s", sb_bar[i].label);
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].color);
+                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].barcolor);
             } else {
                 sprintf(busylabel, "%s", sb_bar[i].label);
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].color);
+                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].barcolor);
             }
         } else {
             if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1)
                 sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
             else sprintf(busylabel, "%s", sb_bar[i].label);
-            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].color);
+            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].barcolor);
         }
         XClearWindow(dis, sb_bar[i].sb_win);
         XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
