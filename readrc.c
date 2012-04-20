@@ -4,7 +4,7 @@ static int new_mode;
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
     FILE *rcfile ;
-    char buffer[80]; /* Way bigger that neccessary */
+    char buffer[100]; /* Way bigger that neccessary */
     char dummy[80];
     char *dummy2;
     char *dummy3;
