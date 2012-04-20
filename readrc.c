@@ -1,4 +1,4 @@
-// readrc.c [ 0.4.4 ]
+// readrc.c [ 0.4.5 ]
 
 static int new_mode;
 /* *********************** Read Config File ************************ */

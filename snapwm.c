@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.4 ]
+ /* snapwm.c [ 0.4.5 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -998,11 +998,13 @@ void buttonpress(XEvent *e) {
             }
     }
     if(ev->subwindow == None) return;
-    XGrabPointer(dis, ev->subwindow, True,
+    if(mode == 4) {
+        XGrabPointer(dis, ev->subwindow, True,
             PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
             GrabModeAsync, None, None, CurrentTime);
-    XGetWindowAttributes(dis, ev->subwindow, &attr);
-    starter = e->xbutton; doresize = 1;
+        XGetWindowAttributes(dis, ev->subwindow, &attr);
+        starter = e->xbutton; doresize = 1;
+    }
 }
 
 void motionnotify(XEvent *e) {
@@ -1045,8 +1047,8 @@ void buttonrelease(XEvent *e) {
                 c->height = attr.height;
             }
         update_current();
-        doresize = 0;
     }
+    doresize = 0;
 }
 
 void propertynotify(XEvent *e) {
