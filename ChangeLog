@@ -1,3 +1,11 @@
+20/4/12
+  Added option in the config to choose which mod key is used when
+   moving/resizing in stacking mode
+  Fix for focus swapping between overlapping windows in stacking mode
+
+13/4/12
+  Added stacking mode
+
 7/4/12
   Fix for transient windows going off the screen
 

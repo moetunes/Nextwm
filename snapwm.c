@@ -115,6 +115,7 @@ static void grabkeys();
 static void keypress(XEvent *e);
 static void kill_client();
 static void last_desktop();
+static void leavenotify(XEvent *e);
 static void logger(const char* e);
 static void maprequest(XEvent *e);
 static void motionnotify(XEvent *e);
@@ -203,6 +204,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
     [KeyPress] = keypress,
     [MapRequest] = maprequest,
     [EnterNotify] = enternotify,
+    [LeaveNotify] = leavenotify,
     [UnmapNotify] = unmapnotify,
     [ButtonPress] = buttonpress,
     [MotionNotify] = motionnotify,
@@ -277,7 +279,6 @@ void add_window(Window w, int tw) {
         c->next = NULL; c->prev = NULL;
         c->win = w; head = c;
     } else {
-        if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2);
         if(attachaside == 0) {
             dowarp = 1;
             if(top_stack == 0) {
@@ -343,7 +344,6 @@ void remove_window(Window w, int dr) {
         }
     }
 
-    XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2 + 10);
     for(c=head;c;c=c->next) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
@@ -507,7 +507,6 @@ void change_desktop(const Arg arg) {
             XUnmapWindow(dis,c->win);
 
     // Take "properties" from the new desktop
-    if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2);
     select_desktop(arg.i);
 
     // Map all windows
@@ -833,13 +832,11 @@ void keypress(XEvent *e) {
 void warp_pointer() {
     // Move cursor to the center of the current window
     if(FOLLOW_MOUSE != 0) return;
-    if(dowarp < 1) XWarpPointer(dis, None, root, 0, 0, 0, 0, sw, sh/2);
     if(dowarp < 1 && current != NULL) {
         XGetWindowAttributes(dis, current->win, &attr);
         XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
         return;
-    } else if(dowarp < 1 && head == NULL)
-        XWarpPointer(dis, None, root, 0, 0, 0, 0, sw/2, sh/2);
+    }
 }
 
 void configurenotify(XEvent *e) {
@@ -976,6 +973,22 @@ void enternotify(XEvent *e) {
         }
     if(ev->window == sb_area) {
         dowarp = 1;
+        return;
+    }
+}
+
+void leavenotify(XEvent *e) {
+    if(followmouse != 0) return;
+
+    int i;
+    XCrossingEvent *ev = &e->xcrossing;
+    for(i=0;i<DESKTOPS;i++)
+        if(sb_bar[i].sb_win == ev->window) {
+            dowarp = 0;
+            return;
+        }
+    if(ev->window == sb_area) {
+        dowarp = 0;
         return;
     }
 }

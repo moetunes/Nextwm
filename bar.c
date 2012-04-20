@@ -41,13 +41,13 @@ void status_bar() {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
                                             sb_width-2,sb_height,2,theme[3].color,theme[0].color);
 
-        XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask);
+        XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask);
         XMapRaised(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+2),sb_height,2,theme[3].color,theme[1].color);
 
-    XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask);
+    XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapRaised(dis, sb_area);
     status_text("");
     update_bar();
