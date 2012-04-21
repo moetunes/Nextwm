@@ -1,4 +1,4 @@
-// bar.c [ 0.4.5 ]
+// bar.c [ 0.4.6 ]
 
 /* ************************** Status Bar *************************** */
 static int sb_end;
@@ -152,7 +152,8 @@ void update_output(int messg) {
     for(i=0;i<text_length;i++) {
         k++;
         if(strncmp(&output[i], "&", 1) == 0)
-            i += 2;
+            if(output[i+1]-'0' < 10 && output[i+1]-'0' > 0)
+                i += 2;
     }
     text_space = (sw-(sb_desks+sb_end+bdw+XTextWidth(fontbar, " ", k)))/XTextWidth(fontbar, " ", 1);
     if(text_space > 0)
@@ -165,8 +166,10 @@ void update_output(int messg) {
     k = 0;
     for(i=0;i<text_length;i++) {
         if(strncmp(&output[i], "&", 1) == 0) {
-            j = output[i+1]-'0';
-            i += 2;
+            if(output[i+1]-'0' < 10 && output[i+1]-'0' > 0) {
+                j = output[i+1]-'0';
+                i += 2;
+            }
         }
         XDrawImageString(dis, sb_area, theme[j].gc, text_start+XTextWidth(fontbar, " ", k), fontbar->ascent+1, &output[i], 1);
         k++;

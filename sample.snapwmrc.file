@@ -7,7 +7,7 @@
 #             the desktop switcher font/also for external text
 #             three more colours for the external text
 # windowtheme colours are : focused window border and unfocused window border
-BARTHEME #443311,#002030,#004050,#001020,#999999,#777755,#339933,#aa6644,#ffffff,
+BARTHEME #443311,#002030,#0.4.60,#001020,#999999,#777755,#339933,#aa6644,#ffffff,
 WINDOWTHEME #443311,#002030,
 BORDERWIDTH 2
 MASTERSIZE 52
