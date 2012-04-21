@@ -82,13 +82,28 @@ void read_rcfile() {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
-                    for(i=0;i<9;i++) {
+                    for(i=0;i<4;i++) {
                         dummy3 = strsep(&dummy2, ",");
                         if(getcolor(dummy3) == 1) {
                             theme[i].barcolor = getcolor(defaultbarcolor[i]);
                             logger("Default colour");
                         } else
                             theme[i].barcolor = getcolor(dummy3);
+                    }
+                    for(i=0;i<81;i++) dummy[i] = '\0';
+                    continue;
+                }
+                if(strstr(buffer, "TEXTTHEME" ) != NULL) {
+                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                    dummy[strlen(dummy)-1] = '\0';
+                    dummy2 = strdup(dummy);
+                    for(i=0;i<7;i++) {
+                        dummy3 = strsep(&dummy2, ",");
+                        if(getcolor(dummy3) == 1) {
+                            theme[i].textcolor = getcolor(defaulttextcolor[i]);
+                            logger("Default colour");
+                        } else
+                            theme[i].textcolor = getcolor(dummy3);
                     }
                     for(i=0;i<81;i++) dummy[i] = '\0';
                     continue;
@@ -168,8 +183,10 @@ void set_defaults() {
     for(i=0;i<2;i++)
         theme[i].wincolor = getcolor(defaultwincolor[i]);
     if(STATUS_BAR == 0) {
-        for(i=0;i<9;i++)
+        for(i=0;i<4;i++)
             theme[i].barcolor = getcolor(defaultbarcolor[i]);
+        for(i=0;i<7;i++)
+            theme[i].textcolor = getcolor(defaulttextcolor[i]);
         for(i=0;i<4;i++)
             theme[i].modename = strdup(defaultmodename[i]);
         for(i=0;i<DESKTOPS;i++) {
@@ -220,7 +237,7 @@ void update_config() {
     }
     select_desktop(current_desktop);
     Arg a = {.i = new_mode}; switch_mode(a);
-    tile();
+    if(mode != 4) tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
     grabkeys();

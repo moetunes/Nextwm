@@ -92,7 +92,7 @@ typedef struct {
 } Barwin;
 
 typedef struct {
-    unsigned long barcolor, wincolor;
+    unsigned long barcolor, wincolor, textcolor;
     const char *modename;
     GC gc;
 } Theme;
@@ -368,7 +368,7 @@ void remove_window(Window w, int dr) {
             if(dr == 0) free(c);
             desktops[current_desktop].numwins -= 1;
             save_desktop(current_desktop);
-            tile();
+            if(mode != 4) tile();
             warp_pointer();
             update_current();
             if(STATUS_BAR == 0) getwindowname();
@@ -924,7 +924,7 @@ void maprequest(XEvent *e) {
     if(ch.res_name) XFree(ch.res_name);
 
     add_window(ev->window, 0);
-    tile();
+    if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     warp_pointer();
     update_current();
@@ -1139,7 +1139,7 @@ void quit() {
             kill_client();
     }
     XUngrabKey(dis, AnyKey, AnyModifier, root);
-    for(i=0;i<5;i++)
+    for(i=0;i<7;i++)
         XFreeGC(dis, theme[i].gc);
     XDestroySubwindows(dis, root);
     XSync(dis, False);

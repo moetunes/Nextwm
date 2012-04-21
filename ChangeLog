@@ -1,3 +1,7 @@
+22/4/12
+  Added check for stray ampersands in the external text
+  Seperated the font colours from the bar in the config.h and the rc files
+
 21/4/12
   Seperated the bar and window colours in the config.h and rc files
 

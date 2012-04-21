@@ -1,13 +1,19 @@
 # lines starting with a hash are ignored
-# bartheme colours are : focused desktop in switcher
-#             unfocused desktop in switcher and bar background
-#             unfocused desktop in switcher with opened windows
-#             the bars border
-#             the focused window name font in the status bar/also for external text
-#             the desktop switcher font/also for external text
-#             three more colours for the external text
-# windowtheme colours are : focused window border and unfocused window border
-BARTHEME #443311,#002030,#0.4.60,#001020,#999999,#777755,#339933,#aa6644,#ffffff,
+# bartheme colours are :
+#    focused desktop in switcher
+#    unfocused desktop in switcher and bar background
+#    unfocused desktop in switcher with opened windows
+#    the bars border
+# texttheme colours are :
+#    focused desktop font in switcher
+#    unfocused desktop font in switcher
+#    unfocused desktop with opened windows font in switcher
+#    the focused window name font in the status bar/also for external text
+#    three more colours for the external text
+# windowtheme colours are :
+#    focused window border and unfocused window border
+BARTHEME #443311,#002030,#004060,#001020,
+TEXTTHEME #000000,#ffffff,#999999,#777755,#339933,#aa6644,#ffffff,
 WINDOWTHEME #443311,#002030,
 BORDERWIDTH 2
 MASTERSIZE 52

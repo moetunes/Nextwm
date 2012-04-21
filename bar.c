@@ -8,9 +8,9 @@ void setup_status_bar() {
 
     logger(" \033[0;33mStatus Bar called ...");
 
-    for(i=0;i<5;i++) {
+    for(i=0;i<7;i++) {
         values.background = theme[1].barcolor;
-        values.foreground = theme[i+4].barcolor;
+        values.foreground = theme[i].textcolor;
         values.line_width = 2;
         values.line_style = LineSolid;
         values.font = fontbar->fid;
@@ -69,7 +69,7 @@ void toggle_bar() {
             XMapRaised(dis, sb_area);
         }
 
-        tile();
+        if(mode != 4) tile();
         update_current();
         update_bar();
     }
@@ -96,18 +96,22 @@ void update_bar() {
                     sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
                 else sprintf(busylabel, "%s", sb_bar[i].label);
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].barcolor);
+                XClearWindow(dis, sb_bar[i].sb_win);
+                XDrawString(dis, sb_bar[i].sb_win, theme[2].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             } else {
                 sprintf(busylabel, "%s", sb_bar[i].label);
                 XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].barcolor);
+                XClearWindow(dis, sb_bar[i].sb_win);
+                XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             }
         } else {
             if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1)
                 sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
             else sprintf(busylabel, "%s", sb_bar[i].label);
             XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].barcolor);
+            XClearWindow(dis, sb_bar[i].sb_win);
+            XDrawString(dis, sb_bar[i].sb_win, theme[0].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
         }
-        XClearWindow(dis, sb_bar[i].sb_win);
-        XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
     }
 }
 
@@ -124,10 +128,10 @@ void status_text(const char *sb_text) {
     text_start = text_total - text_length;
     blank_start = strlen(theme[mode].modename)+2;
 
-    XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", 2), fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
+    XDrawImageString(dis, sb_area, theme[3].gc, XTextWidth(fontbar, " ", 2), fontbar->ascent+1, theme[mode].modename, strlen(theme[mode].modename));
     for(i=blank_start;i<text_start;i++)
         XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", i), fontbar->ascent+1, " ", 1);
-    XDrawImageString(dis, sb_area, theme[0].gc, XTextWidth(fontbar, " ", text_start), fontbar->ascent+1, sb_text, text_length);
+    XDrawImageString(dis, sb_area, theme[3].gc, XTextWidth(fontbar, " ", text_start), fontbar->ascent+1, sb_text, text_length);
     //XDrawImageString(dis, sb_area, theme[0].gc, sb_end, fontbar->ascent+1, "H", 1);
 }
 
@@ -152,7 +156,7 @@ void update_output(int messg) {
     for(i=0;i<text_length;i++) {
         k++;
         if(strncmp(&output[i], "&", 1) == 0)
-            if(output[i+1]-'0' < 10 && output[i+1]-'0' > 0)
+            if(output[i+1]-'0' < 7 && output[i+1]-'0' > 0)
                 i += 2;
     }
     text_space = (sw-(sb_desks+sb_end+bdw+XTextWidth(fontbar, " ", k)))/XTextWidth(fontbar, " ", 1);
@@ -166,7 +170,7 @@ void update_output(int messg) {
     k = 0;
     for(i=0;i<text_length;i++) {
         if(strncmp(&output[i], "&", 1) == 0) {
-            if(output[i+1]-'0' < 10 && output[i+1]-'0' > 0) {
+            if(output[i+1]-'0' < 7 && output[i+1]-'0' > 0) {
                 j = output[i+1]-'0';
                 i += 2;
             }
