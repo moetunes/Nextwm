@@ -889,7 +889,7 @@ void maprequest(XEvent *e) {
         XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].wincolor);
-        update_current();
+        XSetWindowBorder(dis,current->win,theme[1].wincolor);
         return;
     }
 
