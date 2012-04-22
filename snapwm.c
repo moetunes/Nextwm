@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.6 ]
+ /* snapwm.c [ 0.4.7 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -715,10 +715,6 @@ void update_current() {
             if(clicktofocus == 0) XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
     }
-    if(transient != NULL) {
-        XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
-        XRaiseWindow(dis,transient->win);
-    }
     if(STATUS_BAR == 0 && show_bar == 0) {
         if(head != NULL)
             getwindowname();
@@ -889,6 +885,8 @@ void maprequest(XEvent *e) {
         XMapWindow(dis, ev->window);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].wincolor);
+        XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
+        XRaiseWindow(dis,ev->window);
         XSetWindowBorder(dis,current->win,theme[1].wincolor);
         return;
     }
