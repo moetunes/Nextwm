@@ -50,10 +50,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
  *Stacking mode:*
 
     -------------
-    | ___       |
-    ||___|      |
-    |     ____  |
-    |    |____| |
+    |   _______  |
+    |  |  ___  | |
+    |  | |___| | |
+    |  |_______| |
     -------------
 
 

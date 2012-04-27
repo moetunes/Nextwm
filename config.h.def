@@ -71,7 +71,7 @@ static const Convenience convenience[] = { \
 static const Positional positional[] = { \
     /* class  x  y  width  height */
     { "Thunar", 100,100,800,400 },
-    { "URxvt", 100,400,570,270 },
+    { "URxvt", 100,320,820,400 },
     { "Xchat", 320,60,950,500 }
 };
 

@@ -1,11 +1,10 @@
 // readrc.c [ 0.4.7 ]
 
-static int new_mode;
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
     FILE *rcfile ;
     char buffer[100]; /* Way bigger that neccessary */
-    char dummy[80];
+    char dummy[100];
     char *dummy2;
     char *dummy3;
     int i;
@@ -32,50 +31,50 @@ void read_rcfile() {
                     } else
                         theme[i].wincolor = getcolor(dummy3);
                 }
-                for(i=0;i<81;i++) dummy[i] = '\0';
+                for(i=0;i<101;i++) dummy[i] = '\0';
                 continue;
             }
             if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 ufalpha = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 bdw = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "MASTERSIZE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 msize = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 attachaside = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "TOPSTACK" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 top_stack = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 followmouse = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 clicktofocus = atoi(dummy);
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                new_mode = atoi(dummy);
+                mode = atoi(dummy);
                 for(i=0;i<DESKTOPS;i++)
-                    desktops[i].mode = new_mode;
-                for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                    desktops[i].mode = mode;
+                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
             }
             if(STATUS_BAR == 0) {
                 if(strstr(buffer, "BARTHEME" ) != NULL) {
@@ -90,7 +89,7 @@ void read_rcfile() {
                         } else
                             theme[i].barcolor = getcolor(dummy3);
                     }
-                    for(i=0;i<81;i++) dummy[i] = '\0';
+                    for(i=0;i<101;i++) dummy[i] = '\0';
                     continue;
                 }
                 if(strstr(buffer, "TEXTTHEME" ) != NULL) {
@@ -105,23 +104,23 @@ void read_rcfile() {
                         } else
                             theme[i].textcolor = getcolor(dummy3);
                     }
-                    for(i=0;i<81;i++) dummy[i] = '\0';
+                    for(i=0;i<101;i++) dummy[i] = '\0';
                     continue;
                 }
                 if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     showopen = atoi(dummy);
-                    for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                    for(i=0;i<101;i++) dummy[i] = '\0'; continue;
                 }
                 if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     windownamelength = atoi(dummy);
-                    for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                    for(i=0;i<101;i++) dummy[i] = '\0'; continue;
                 }
                 if(strstr(buffer, "TOPBAR" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     topbar = atoi(dummy);
-                    for(i=0;i<81;i++) dummy[i] = '\0'; continue;
+                    for(i=0;i<101;i++) dummy[i] = '\0'; continue;
                 }
                 if(strstr(buffer, "MODENAME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -236,8 +235,8 @@ void update_config() {
             desktops[i].master_size = (sw*msize)/100;
     }
     select_desktop(current_desktop);
-    Arg a = {.i = new_mode}; switch_mode(a);
-    if(mode != 4) tile();
+    Arg a = {.i = mode}; switch_mode(a);
+    tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
     grabkeys();

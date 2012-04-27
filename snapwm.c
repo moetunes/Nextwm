@@ -119,7 +119,7 @@ static void leavenotify(XEvent *e);
 static void logger(const char* e);
 static void maprequest(XEvent *e);
 static void motionnotify(XEvent *e);
-static void move_down();
+static void move_down(const Arg arg);
 static void move_up(const Arg arg);
 static void move_right(const Arg arg);
 static void move_left(const Arg arg);
@@ -218,7 +218,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
 // Desktop array
 static desktop desktops[DESKTOPS];
 static Barwin sb_bar[DESKTOPS];
-static Theme theme[5];
+static Theme theme[8];
 #include "bar.c"
 #include "readrc.c"
 
@@ -252,10 +252,9 @@ void add_window(Window w, int tw) {
 
     if(tw == 0) {
         XClassHint chh = {0};
-        unsigned int len2 = sizeof positional / sizeof positional[0];
         int i, j=0;
         if(XGetClassHint(dis, w, &chh)) {
-            for(i=0;i<len2;i++)
+            for(i=0;i<TABLENGTH(positional);i++)
                 if(strcmp(chh.res_class, positional[i].class) == 0) {
                     XMoveResizeWindow(dis,w,positional[i].x,positional[i].y,positional[i].width,positional[i].height);
                     j++;
@@ -811,13 +810,12 @@ void grabkeys() {
 }
 
 void keypress(XEvent *e) {
-    static unsigned int len = sizeof keys / sizeof keys[0];
     unsigned int i;
     KeySym keysym;
     XKeyEvent *ev = &e->xkey;
 
     keysym = XkbKeycodeToKeysym(dis, (KeyCode)ev->keycode, 0, 0);
-    for(i = 0; i < len; i++) {
+    for(i = 0; i < TABLENGTH(keys); i++) {
         if(keysym == keys[i].keysym && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)) {
             if(keys[i].function)
                 keys[i].function(keys[i].arg);
@@ -827,7 +825,7 @@ void keypress(XEvent *e) {
 
 void warp_pointer() {
     // Move cursor to the center of the current window
-    if(FOLLOW_MOUSE != 0) return;
+    if(followmouse != 0) return;
     if(dowarp < 1 && current != NULL) {
         XGetWindowAttributes(dis, current->win, &attr);
         XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
@@ -887,19 +885,14 @@ void maprequest(XEvent *e) {
         XSetWindowBorder(dis,ev->window,theme[0].wincolor);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         XRaiseWindow(dis,ev->window);
-        XSetWindowBorder(dis,current->win,theme[1].wincolor);
         return;
     }
 
     XClassHint ch = {0};
-    unsigned int len = sizeof convenience / sizeof convenience[0];
-    int i=0, j=0;
-    int tmp = current_desktop;
+    int i=0, j=0, tmp = current_desktop;
     if(XGetClassHint(dis, ev->window, &ch))
-        for(i=0;i<len;i++)
+        for(i=0;i<TABLENGTH(convenience);i++)
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
-                if(ch.res_class) XFree(ch.res_class);
-                if(ch.res_name) XFree(ch.res_name);
                 save_desktop(tmp);
                 select_desktop(convenience[i].preferredd-1);
                 for(c=head;c;c=c->next)
@@ -916,6 +909,8 @@ void maprequest(XEvent *e) {
                     change_desktop(a);
                 }
                 if(STATUS_BAR == 0) update_bar();
+                if(ch.res_class) XFree(ch.res_class);
+                if(ch.res_name) XFree(ch.res_name);
                 return;
             }
     if(ch.res_class) XFree(ch.res_class);
@@ -993,6 +988,7 @@ void leavenotify(XEvent *e) {
 
 void buttonpress(XEvent *e) {
     XButtonEvent *ev = &e->xbutton;
+    client *c;
 
     if(STATUS_BAR == 0) {
         int i;
@@ -1008,7 +1004,17 @@ void buttonpress(XEvent *e) {
                 }
             }
     }
+    // change focus with LMB
+    if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
+        for(c=head;c;c=c->next)
+            if(ev->window == c->win) {
+                current = c;
+                update_current();
+                return;
+            }
+
     if(ev->subwindow == None) return;
+
     if(mode == 4) {
         XGrabPointer(dis, ev->subwindow, True,
             PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
@@ -1167,6 +1173,7 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
+    mode = DEFAULT_MODE;
     msize = MASTER_SIZE;
     ufalpha = UF_ALPHA;
     bdw = BORDER_WIDTH;
@@ -1193,9 +1200,6 @@ void setup() {
 
     // Shortcuts
     grabkeys();
-
-    // Default stack
-    mode = DEFAULT_MODE;
 
     // For exiting
     bool_quit = 0;
