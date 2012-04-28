@@ -370,7 +370,10 @@ void remove_window(Window w, int dr) {
             if(mode != 4) tile();
             warp_pointer();
             update_current();
-            if(STATUS_BAR == 0) getwindowname();
+            if(STATUS_BAR == 0) {
+                update_bar();
+                getwindowname();
+            }
             return;
         }
     }
@@ -944,10 +947,6 @@ void destroynotify(XEvent *e) {
             if(ev->window == c->win) {
                 remove_window(ev->window, 0);
                 select_desktop(tmp);
-                if(STATUS_BAR == 0) {
-                    update_bar();
-                    getwindowname();
-                }
                 return;
             }
     }

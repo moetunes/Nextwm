@@ -79,18 +79,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Status
 ------
 
-There are more options in the config file than the original catwm.
-
-  * Fixed the window manager crashing on a bad window error.
-  * Fixed the keyboard shortcuts not working if numlock was on.
-  * Added some functions.
-  * Added an option to focus the window the mouse just moved to.
-  * Fixed a window being destroyed on another desktop creating ghost windows.
-  * Added ability to resize the window on the top of the stack
-  * Added having applications open on specified desktop
-  * Added a click to focus option
-  * Added ability to change back to last opened desktop.
-  * Added bar with desktop switcher and statusbar.
+  * Added bar with desktop switcher and statusbar to dminiwm.
   * Colours and font are read from an rc file and can be updated with a keyboard shortcut.
   * Text (e.g. conky) can be piped into the status bar from .xinitrc.
   * Unfocused windows have an alpha value so can be transparent if e.g. cairo-compmgr is used
