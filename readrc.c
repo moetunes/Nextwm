@@ -1,4 +1,4 @@
-// readrc.c [ 0.4.7 ]
+// readrc.c [ 0.4.8 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -136,13 +136,10 @@ void read_rcfile() {
                     continue;
                 }
                 if(strstr(buffer,"FONTNAME" ) != NULL) {
-                    strncpy(fontbarname, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
-                    fontbar = XLoadQueryFont(dis, fontbarname);
-                    if (!fontbar) {
-                        fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
-                        fontbar = XLoadQueryFont(dis, "fixed");
-                    }
-                    sb_height = fontbar->ascent+fontbar->descent+2;
+                    strncpy(font_list, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
+                    get_font();
+                    sb_height = font.height+2;
+                    font.fh = ((sb_height - font.height)/2) + font.ascent;
                     continue;
                 }
                 if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
@@ -175,6 +172,44 @@ void read_rcfile() {
     return;
 }
 
+void get_font() {
+	char *def, **missing;
+	int i, n;
+	XRectangle rect;
+
+	missing = NULL;
+	font.fontset = XCreateFontSet(dis, (char *)font_list, &missing, &n, &def);
+	if(missing) {
+		if(FONTS_ERROR < 1)
+            while(n--)
+                fprintf(stderr, "snapwm :: missing fontset: %s\n", missing[n]);
+		XFreeStringList(missing);
+	}
+	if(font.fontset) {
+		XFontStruct **xfonts;
+		char **font_names;
+
+		font.ascent = font.descent = 0;
+		n = XFontsOfFontSet(font.fontset, &xfonts, &font_names);
+		for(i = 0, font.ascent = 0, font.descent = 0; i < n; i++) {
+			if (font.ascent < (*xfonts)->ascent) font.ascent = (*xfonts)->ascent;
+            if (font.descent < (*xfonts)->descent) font.descent = (*xfonts)->descent;
+			xfonts++;
+		}
+		XmbTextExtents(font.fontset, " ", 1, NULL, &rect);
+		font.width = rect.width;
+	} else {
+		fprintf(stderr, "snapwm :: Font '%s' Not Found\nSSB :: Trying Font 'Fixed'\n", font_list);
+		if(!(font.font = XLoadQueryFont(dis, font_list))
+		&& !(font.font = XLoadQueryFont(dis, "fixed")))
+			fprintf(stderr, "SSB :: Error, cannot load font: '%s'\n", font_list);
+		font.ascent = font.font->ascent;
+		font.descent = font.font->descent;
+		font.width = XTextWidth(font.font, " ", 1);
+	}
+	font.height = font.ascent + font.descent;
+}
+
 void set_defaults() {
     int i;
 
@@ -193,12 +228,10 @@ void set_defaults() {
                 sb_bar[i].label = strdup("?");
             else sb_bar[i].label = strdup(defaultdesktopnames[i]);
         }
-        fontbar = XLoadQueryFont(dis, defaultfont);
-        if (!fontbar) {
-            fprintf(stderr,"\033[0;34m :: snapwm :\033[0;31m unable to load preferred fontbar: %s using fixed", fontbarname);
-            fontbar = XLoadQueryFont(dis, "fixed");
-        }
-        sb_height = fontbar->ascent+fontbar->descent+2;
+        strncpy(font_list, defaultfontlist, strlen(defaultfontlist));
+        get_font();
+        sb_height = font.height+2;
+        font.fh = ((sb_height - font.height)/2) + font.ascent;
         sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
         sw = XDisplayWidth(dis,screen)- bdw;
     } else {
@@ -212,9 +245,9 @@ void update_config() {
     int i, y;
     
     XUngrabKey(dis, AnyKey, AnyModifier, root);
-    XFreeFont(dis, fontbar);
-    fontbar = NULL;
-    for(i=0;i<81;i++) fontbarname[i] = '\0';
+    for(i=0;i<256;i++)
+        font_list[i] = '\0';
+    if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
     if(topbar == 0) y = 0;
     else y = sh+bdw;

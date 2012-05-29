@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.4.7 ]
+ /* config.h for snapwm.c [ 0.4.8 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,7 +25,8 @@
 #define CONFIG_H
 
 #define RCFILE "/home/pnewm/.snapwmrc"
-#define STATUS_BAR      0  /* 1=Don't 0=Make the bar */
+#define STATUS_BAR  0  /* 1=Don't 0=Make the bar */
+#define FONTS_ERROR 1  /* 1=Don't 0=Print errors about missing fonts */
 
 /* Mod (Mod1 == alt) (Mod4 == Super/windows) */
 #define MOD1            Mod1Mask
@@ -54,7 +55,7 @@ static const char *defaultbarcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#0000
 static const char *defaulttextcolor[] = { "#000000", "#ffffff", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };
 static const char *defaultwincolor[] = { "#ff0000", "#00ff00", };
 static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", "[4]", };
-static const char defaultfont[] = "-*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*";
+static const char defaultfontlist[] = "-*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*";
 
 // Applications to a specific desktop
 static const Convenience convenience[] = { \

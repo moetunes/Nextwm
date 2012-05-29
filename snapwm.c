@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.7 ]
+ /* snapwm.c [ 0.4.8 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,6 +21,8 @@
  *
  */
 
+#define _XOPEN_SOURCE 400
+#define _BSD_SOURCE
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 //#include <X11/keysym.h>
@@ -29,6 +31,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xlocale.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -36,6 +39,7 @@
 #include <sys/wait.h>
 #include <locale.h>
 #include <string.h>
+#include <wchar.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
@@ -86,14 +90,24 @@ typedef struct {
 } Positional;
 
 typedef struct {
+    XFontStruct *font;
+    XFontSet fontset;
+    int height;
+    int width;
+    unsigned int fh;            /* Y coordinate to draw characters */
+    unsigned int ascent;
+    unsigned int descent;
+} Iammanyfonts;
+
+typedef struct {
     Window sb_win;
-    const char *label;
+    char *label;
     int width;
 } Barwin;
 
 typedef struct {
     unsigned long barcolor, wincolor, textcolor;
-    const char *modename;
+    char *modename;
     GC gc;
 } Theme;
 
@@ -110,6 +124,7 @@ static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void follow_client_to_desktop(const Arg arg);
 static unsigned long getcolor(const char* color);
+static void get_font();
 static void getwindowname();
 static void grabkeys();
 static void keypress(XEvent *e);
@@ -142,7 +157,7 @@ static void sigchld(int unused);
 static void spawn(const Arg arg);
 static void start();
 static void status_bar();
-static void status_text(const char* sb_text);
+static void status_text(char* sb_text);
 static void swap_master();
 static void switch_mode(const Arg arg);
 static void tile();
@@ -153,6 +168,7 @@ static void update_config();
 static void update_current();
 static void update_output(int messg);
 static void warp_pointer();
+static unsigned int wc_size(char *string);
 
 // Include configuration file (need struct key)
 #include "config.h"
@@ -192,7 +208,7 @@ static Window sb_area;
 static client *head;
 static client *current;
 static client *transient;
-static char fontbarname[80];
+static char font_list[256];
 static XFontStruct *fontbar;
 static Atom alphaatom, wm_delete_window;
 static XWindowAttributes attr;
@@ -219,6 +235,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
 static desktop desktops[DESKTOPS];
 static Barwin sb_bar[DESKTOPS];
 static Theme theme[8];
+static Iammanyfonts font;
 #include "bar.c"
 #include "readrc.c"
 
@@ -1185,8 +1202,11 @@ void setup() {
     showopen = SHOW_NUM_OPEN;
     dowarp = doresize = 0;
 
+    char *loc;
+    loc = setlocale(LC_ALL, "");
+    if (!loc || !strcmp(loc, "C") || !strcmp(loc, "POSIX") || !XSupportsLocale())
+        fprintf(stderr, "SSB :: LOCALE FAILED\n");
     // Read in RCFILE
-    if(!setlocale(LC_CTYPE, "")) logger("\033[0;31mLocale failed");
     set_defaults();
     read_rcfile();
     if(STATUS_BAR == 0) {
