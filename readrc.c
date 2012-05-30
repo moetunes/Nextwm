@@ -1,4 +1,4 @@
-// readrc.c [ 0.4.8 ]
+// readrc.c [ 0.4.9 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -35,46 +35,31 @@ void read_rcfile() {
                 continue;
             }
             if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                ufalpha = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                ufalpha = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                bdw = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                bdw = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "MASTERSIZE" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                msize = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                msize = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                attachaside = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                attachaside = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "TOPSTACK" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                top_stack = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                top_stack = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                followmouse = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                followmouse = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                clicktofocus = atoi(dummy);
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                clicktofocus = atoi(strstr(buffer, " ")+1);
             }
             if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                mode = atoi(dummy);
+                mode = atoi(strstr(buffer, " ")+1);
                 for(i=0;i<DESKTOPS;i++)
-                    desktops[i].mode = mode;
-                for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                    if(desktops[i].head == NULL)
+                        desktops[i].mode = mode;
             }
             if(STATUS_BAR == 0) {
                 if(strstr(buffer, "BARTHEME" ) != NULL) {
@@ -108,19 +93,13 @@ void read_rcfile() {
                     continue;
                 }
                 if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    showopen = atoi(dummy);
-                    for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                    showopen = atoi(strstr(buffer, " ")+1);
                 }
                 if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    windownamelength = atoi(dummy);
-                    for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                    windownamelength = atoi(strstr(buffer, " ")+1);
                 }
                 if(strstr(buffer, "TOPBAR" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    topbar = atoi(dummy);
-                    for(i=0;i<101;i++) dummy[i] = '\0'; continue;
+                    topbar = atoi(strstr(buffer, " ")+1);
                 }
                 if(strstr(buffer, "MODENAME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -182,7 +161,7 @@ void get_font() {
 	if(missing) {
 		if(FONTS_ERROR < 1)
             while(n--)
-                fprintf(stderr, "snapwm :: missing fontset: %s\n", missing[n]);
+                fprintf(stderr, ":: snapwm :: missing fontset: %s\n", missing[n]);
 		XFreeStringList(missing);
 	}
 	if(font.fontset) {
@@ -199,10 +178,10 @@ void get_font() {
 		XmbTextExtents(font.fontset, " ", 1, NULL, &rect);
 		font.width = rect.width;
 	} else {
-		fprintf(stderr, "snapwm :: Font '%s' Not Found\nSSB :: Trying Font 'Fixed'\n", font_list);
+		fprintf(stderr, ":: snapwm :: Font '%s' Not Found\nSSB :: Trying Font 'Fixed'\n", font_list);
 		if(!(font.font = XLoadQueryFont(dis, font_list))
 		&& !(font.font = XLoadQueryFont(dis, "fixed")))
-			fprintf(stderr, "SSB :: Error, cannot load font: '%s'\n", font_list);
+			fprintf(stderr, ":: snapwm :: Error, cannot load font: '%s'\n", font_list);
 		font.ascent = font.font->ascent;
 		font.descent = font.font->descent;
 		font.width = XTextWidth(font.font, " ", 1);
@@ -260,6 +239,8 @@ void update_config() {
         XSetWindowBorder(dis,sb_area,theme[3].barcolor);
         XSetWindowBackground(dis, sb_area, theme[1].barcolor);
         XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2)+bdw,sb_height);
+        XGetWindowAttributes(dis, sb_area, &attr);
+        total_w = attr.width/font.width;
     }
     for(i=0;i<DESKTOPS;i++) {
         if(desktops[i].mode == 2)

@@ -72,7 +72,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Seperated the window and bar colours in the config.h and rc files
+  * Added support for multibyte fonts
 
 
 
@@ -93,6 +93,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Added option in the config and rc files for opening new window at the 
   top or bottom of the stack when using attach aside
   * Added a stacking window mode
+  * Seperated the window and bar colours in the config.h and rc files
 
 
 ###Installation

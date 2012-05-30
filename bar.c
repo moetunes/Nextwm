@@ -1,8 +1,8 @@
-// bar.c [ 0.4.8 ]
+// bar.c [ 0.4.9 ]
 
-/* ************************** Status Bar *************************** */
 static int total_w;
 static int pos;
+/* ************************** Status Bar *************************** */
 void setup_status_bar() {
     int i, extra_width;
     XGCValues values;
@@ -17,7 +17,7 @@ void setup_status_bar() {
         if(font.fontset)
             theme[i].gc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle,&values);
         else {
-            values.font = fontbar->fid;
+            values.font = font.font->fid;
             theme[i].gc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
         }
     }
@@ -26,8 +26,10 @@ void setup_status_bar() {
     else extra_width = 0;
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].width = (wc_size(sb_bar[i].label) + extra_width)*font.width;
-        //sb_bar[i].width = XTextWidth(fontbar, sb_bar[i].label, strlen(sb_bar[i].label)+extra_width);
+        if(font.fontset)
+            sb_bar[i].width = (wc_size(sb_bar[i].label) + extra_width)*font.width;
+        else
+            sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label)+extra_width);
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
@@ -54,7 +56,6 @@ void status_bar() {
     XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapRaised(dis, sb_area);
     XGetWindowAttributes(dis, sb_area, &attr);
-    //printf("SCREEN_WIDTH = %d\n", attr.width);
     total_w = attr.width/font.width;
     status_text("");
     update_bar();
@@ -93,41 +94,51 @@ void getwindowname() {
 }
 
 void update_bar() {
-    int i, j=0;
+    int i, j;
     char busylabel[20];
 
+    if(showopen > 0) j = 0;
+    else j = 2*font.width;
     for(i=0;i<DESKTOPS;i++) {
-        if(showopen == 0 && (desktops[i].numwins < 2 || i == current_desktop)) j = font.width;
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
-                if(showopen < 1 && desktops[i].numwins > 1)
+                if(showopen < 1 && desktops[i].numwins > 1) {
                     sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
-                else {
-                    j = font.width;
+                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width)/2, busylabel, strlen(busylabel));
+                } else {
                     sprintf(busylabel, "%s", sb_bar[i].label);
+                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width+j)/2, busylabel, strlen(busylabel));
                 }
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[2].barcolor);
-                XClearWindow(dis, sb_bar[i].sb_win);
-                XmbDrawString(dis, sb_bar[i].sb_win, font.fontset, theme[2].gc, (sb_width-sb_bar[i].width)/2, font.fh, busylabel, strlen(busylabel));
-                //XDrawString(dis, sb_bar[i].sb_win, theme[2].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
             } else {
                 sprintf(busylabel, "%s", sb_bar[i].label);
-                XSetWindowBackground(dis, sb_bar[i].sb_win, theme[1].barcolor);
-                XClearWindow(dis, sb_bar[i].sb_win);
-                XmbDrawString(dis, sb_bar[i].sb_win, font.fontset, theme[1].gc, ((sb_width-sb_bar[i].width)/2)+j, font.fh, busylabel, strlen(busylabel));
-                //XDrawString(dis, sb_bar[i].sb_win, theme[1].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
+                draw_desk(sb_bar[i].sb_win, 1, 1, (sb_width-sb_bar[i].width+j)/2, busylabel, strlen(busylabel));
             }
         } else {
-            if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1)
+            if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1) {
                 sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
-            else
+                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, busylabel, strlen(busylabel));
+            } else {
                 sprintf(busylabel, "%s", sb_bar[i].label);
-            XSetWindowBackground(dis, sb_bar[i].sb_win, theme[0].barcolor);
-            XClearWindow(dis, sb_bar[i].sb_win);
-            XmbDrawString(dis, sb_bar[i].sb_win, font.fontset, theme[0].gc, ((sb_width-sb_bar[i].width)/2)+j, font.fh, busylabel, strlen(busylabel));
-            //XDrawString(dis, sb_bar[i].sb_win, theme[0].gc, (sb_width-XTextWidth(fontbar, busylabel,strlen(busylabel)))/2, fontbar->ascent+1, busylabel, strlen(busylabel));
+                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width+j)/2, busylabel, strlen(busylabel));
+            }
         }
     }
+}
+
+void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len) {
+    XSetWindowBackground(dis, win, theme[barcolor].barcolor);
+    XClearWindow(dis, win);
+    if(font.fontset)
+        XmbDrawString(dis, win, font.fontset, theme[gc].gc, x, font.fh, string, len);
+    else
+        XDrawString(dis, win, theme[gc].gc, x, font.fh, string, len);
+}
+
+void draw_text(Window win, int gc, int x, char *string, int len) {
+    if(font.fontset)
+        XmbDrawImageString(dis, win, font.fontset, theme[gc].gc, x, font.fh, string, len);
+    else
+        XDrawImageString(dis, win, theme[gc].gc, x, font.fh, string, len);
 }
 
 void status_text(char *sb_text) {
@@ -139,14 +150,14 @@ void status_text(char *sb_text) {
         text_length = windownamelength;
     else
         text_length = wc_size(sb_text);
-    blank_start = wc_size(theme[mode].modename);
+    blank_start = wc_size(theme[mode].modename)+2;
     pos = blank_start+4+windownamelength;
     text_start = pos - text_length;
     
-    XmbDrawImageString(dis, sb_area, font.fontset, theme[3].gc, font.width*2, font.fh, theme[mode].modename, strlen(theme[mode].modename));
-    for(i=blank_start+2;i<text_start;i++)
-        XmbDrawImageString(dis, sb_area, font.fontset, theme[0].gc, font.width*i, font.fh, " ", 1);
-    XmbDrawImageString(dis, sb_area, font.fontset, theme[3].gc, font.width*text_start, font.fh, sb_text, text_length);
+    draw_text(sb_area, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
+    for(i=blank_start;i<text_start;i++) //strcat(blankstr, " ");
+        draw_text(sb_area, 0, font.width*i, " ", 1);
+    draw_text(sb_area, 3, font.width*text_start, sb_text, text_length);
 }
 
 void update_output(int messg) {
@@ -184,12 +195,10 @@ void update_output(int messg) {
     astring[k] = '\0';
     p_length = wc_size(astring);
     text_start = total_w - p_length;
-    //printf("out=%s,k=%d,n=%d\n", astring,k,n);
-    //printf("pos=%d,start=%d,length=%d,total=%d,desks=%d,swdth=%d\n", pos, text_start, n, total_w, sb_desks, sw/font.width);
     k = 0; // i=pos on screen k=pos in text
     for(i=pos;i<total_w;i++) {
         if(i < text_start || i > pos+text_start+p_length) {
-            XmbDrawImageString(dis, sb_area, font.fontset, theme[0].gc, i*font.width, font.fh, " ", 1);
+            draw_text(sb_area, 0, i*font.width, " ", 1);
 
         } else { 
             while(output[k] == '&') {
@@ -213,11 +222,7 @@ void update_output(int messg) {
             if(n < 1) return;
             astring[n] = '\0';
             wsize = wc_size(astring);
-            if(font.fontset)
-                XmbDrawImageString(dis, sb_area, font.fontset, theme[j].gc, i*font.width, font.fh, astring, n);
-                //XmbDrawImageString(dis, sb_area, font.fontset, theme[j].gc, (total_w-10)*font.width, font.fh, "####*####*", 10);
-           else
-                XDrawImageString(dis, sb_area, theme[1].gc, i*font.width, font.fh, astring, n);
+            draw_text(sb_area, j, i*font.width, astring, n);
             i += wsize-1;
             for(n=0;n<256;n++)
                 astring[n] = '\0';
@@ -235,17 +240,15 @@ unsigned int wc_size(char *string) {
 
     num = strlen(string);
     len = num * sizeof(wchar_t);
-    if(!(wp = (wchar_t *)malloc(1+len))) {
-        logger("WC Malloc Failed");
+    if(!(wp = (wchar_t *)malloc(1+len)))
         return num;
-    }
+
     wlen = mbstowcs(wp, string, len);
     wsize = wcswidth(wp, wlen);
     if(wsize < 1) {
         wsize = num;
         logger("\twsize fail");
     }
-    //printf("astr=%s,wsz=%d", string, wsize);
     free(wp);
     return wsize;
 }

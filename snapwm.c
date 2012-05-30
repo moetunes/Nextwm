@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.4.8 ]
+ /* snapwm.c [ 0.4.9 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -120,6 +120,8 @@ static void client_to_desktop(const Arg arg);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static void destroynotify(XEvent *e);
+static void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len);
+static void draw_text(Window win, int gc, int x, char *string, int len);
 static void enternotify(XEvent *e);
 static void expose(XEvent *e);
 static void follow_client_to_desktop(const Arg arg);
@@ -209,7 +211,6 @@ static client *head;
 static client *current;
 static client *transient;
 static char font_list[256];
-static XFontStruct *fontbar;
 static Atom alphaatom, wm_delete_window;
 static XWindowAttributes attr;
 static XButtonEvent starter;
