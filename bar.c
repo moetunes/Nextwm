@@ -245,10 +245,8 @@ unsigned int wc_size(char *string) {
 
     wlen = mbstowcs(wp, string, len);
     wsize = wcswidth(wp, wlen);
-    if(wsize < 1) {
+    if(wsize < 1)
         wsize = num;
-        logger("\twsize fail");
-    }
     free(wp);
     return wsize;
 }
