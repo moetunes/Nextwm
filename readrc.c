@@ -95,9 +95,6 @@ void read_rcfile() {
                 if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
                 }
-                if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
-                    windownamelength = atoi(strstr(buffer, " ")+1);
-                }
                 if(strstr(buffer, "TOPBAR" ) != NULL) {
                     topbar = atoi(strstr(buffer, " ")+1);
                 }
@@ -120,6 +117,9 @@ void read_rcfile() {
                     sb_height = font.height+2;
                     font.fh = ((sb_height - font.height)/2) + font.ascent;
                     continue;
+                }
+                if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
+                    windownamelength = (atoi(strstr(buffer, " ")+1)*font.width);
                 }
                 if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -154,7 +154,6 @@ void read_rcfile() {
 void get_font() {
 	char *def, **missing;
 	int i, n;
-	XRectangle rect;
 
 	missing = NULL;
 	font.fontset = XCreateFontSet(dis, (char *)font_list, &missing, &n, &def);
@@ -175,8 +174,8 @@ void get_font() {
             if (font.descent < (*xfonts)->descent) font.descent = (*xfonts)->descent;
 			xfonts++;
 		}
-		XmbTextExtents(font.fontset, " ", 1, NULL, &rect);
-		font.width = rect.width;
+		font.width = XmbTextEscapement(font.fontset, " ", 1);
+		//printf("FONTWIDTH = %d\n", font.width);
 	} else {
 		fprintf(stderr, ":: snapwm :: Font '%s' Not Found\nSSB :: Trying Font 'Fixed'\n", font_list);
 		if(!(font.font = XLoadQueryFont(dis, font_list))
@@ -240,7 +239,7 @@ void update_config() {
         XSetWindowBackground(dis, sb_area, theme[1].barcolor);
         XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2)+bdw,sb_height);
         XGetWindowAttributes(dis, sb_area, &attr);
-        total_w = attr.width/font.width;
+        total_w = attr.width;
     }
     for(i=0;i<DESKTOPS;i++) {
         if(desktops[i].mode == 2)

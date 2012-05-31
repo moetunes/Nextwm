@@ -27,7 +27,7 @@ void setup_status_bar() {
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
         if(font.fontset)
-            sb_bar[i].width = (wc_size(sb_bar[i].label) + extra_width)*font.width;
+            sb_bar[i].width = (wc_size(sb_bar[i].label) + extra_width);
         else
             sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label)+extra_width);
         if(sb_bar[i].width > sb_width)
@@ -56,7 +56,7 @@ void status_bar() {
     XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapRaised(dis, sb_area);
     XGetWindowAttributes(dis, sb_area, &attr);
-    total_w = attr.width/font.width;
+    total_w = attr.width;
     status_text("");
     update_bar();
 }
@@ -84,12 +84,26 @@ void toggle_bar() {
 }
 
 void getwindowname() {
-    char *win_name;
+    char win_name[256];
+    char *astring = "";
+    int status, text_length = 0;
+    XTextProperty text_prop;
 
     if(head != NULL) {
-        XFetchName(dis, current->win, &win_name);
+        status = XGetWMName(dis, current->win, &text_prop);
+        if (!status || !text_prop.value || !text_prop.nitems) {
+            strcpy(astring, "What's going on here then?");
+        } else {
+            astring = strdup((char *)text_prop.value);
+        }
+        while(astring[text_length] != '\0' && text_length < 256) {
+            win_name[text_length] = astring[text_length];
+            ++text_length;
+        }
+        win_name[text_length] = '\0';
         status_text(win_name);
-        XFree(win_name);
+
+        if(text_prop.value) XFree(text_prop.value);
     } else status_text("");
 }
 
@@ -142,22 +156,23 @@ void draw_text(Window win, int gc, int x, char *string, int len) {
 }
 
 void status_text(char *sb_text) {
-    int text_length, text_start, blank_start, i;
+    int text_length, text_start, blank_start, i, wsize;
 
     if(sb_text == NULL) sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
-    if(strlen(sb_text) >= windownamelength)
+    wsize = wc_size(sb_text);
+    if(wsize >= windownamelength)
         text_length = windownamelength;
     else
-        text_length = wc_size(sb_text);
-    blank_start = wc_size(theme[mode].modename)+2;
-    pos = blank_start+4+windownamelength;
+        text_length = wsize;
+    blank_start = wc_size(theme[mode].modename)+2*font.width;
+    pos = blank_start+(4*font.width)+windownamelength;
     text_start = pos - text_length;
     
     draw_text(sb_area, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
     for(i=blank_start;i<text_start;i++) //strcat(blankstr, " ");
         draw_text(sb_area, 0, font.width*i, " ", 1);
-    draw_text(sb_area, 3, font.width*text_start, sb_text, text_length);
+    draw_text(sb_area, 3, text_start, sb_text, strlen(sb_text));
 }
 
 void update_output(int messg) {
@@ -195,11 +210,12 @@ void update_output(int messg) {
     astring[k] = '\0';
     p_length = wc_size(astring);
     text_start = total_w - p_length;
+    //printf("PLENGTH = %d,TOTAL = %d,TEXTSTART = %d\n", p_length, total_w, text_start);
     k = 0; // i=pos on screen k=pos in text
     for(i=pos;i<total_w;i++) {
-        if(i < text_start || i > pos+text_start+p_length) {
-            draw_text(sb_area, 0, i*font.width, " ", 1);
-
+        if(i < text_start) {
+            draw_text(sb_area, 0, i, " ", 1);
+            i += font.width-1;
         } else { 
             while(output[k] == '&') {
                 if(output[k+1]-'0' < 7 && output[k+1]-'0' > 0) {
@@ -222,12 +238,13 @@ void update_output(int messg) {
             if(n < 1) return;
             astring[n] = '\0';
             wsize = wc_size(astring);
-            draw_text(sb_area, j, i*font.width, astring, n);
+            draw_text(sb_area, j, i, astring, n);
             i += wsize-1;
             for(n=0;n<256;n++)
                 astring[n] = '\0';
         }
     }
+    //printf("\n");
 
     output[0] ='\0';
     XSync(dis, False);
@@ -235,18 +252,10 @@ void update_output(int messg) {
 }
 
 unsigned int wc_size(char *string) {
-    wchar_t *wp;
-    int num, len, wlen, wsize;
+    int num;
+    XRectangle rect;
 
     num = strlen(string);
-    len = num * sizeof(wchar_t);
-    if(!(wp = (wchar_t *)malloc(1+len)))
-        return num;
-
-    wlen = mbstowcs(wp, string, len);
-    wsize = wcswidth(wp, wlen);
-    if(wsize < 1)
-        wsize = num;
-    free(wp);
-    return wsize;
+    XmbTextExtents(font.fontset, string, num, NULL, &rect);
+    return rect.width;
 }

@@ -21,8 +21,6 @@
  *
  */
 
-#define _XOPEN_SOURCE 400
-#define _BSD_SOURCE
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 //#include <X11/keysym.h>
@@ -39,7 +37,6 @@
 #include <sys/wait.h>
 #include <locale.h>
 #include <string.h>
-#include <wchar.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
