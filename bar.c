@@ -84,26 +84,12 @@ void toggle_bar() {
 }
 
 void getwindowname() {
-    char win_name[256];
-    char *astring = "";
-    int status, text_length = 0;
-    XTextProperty text_prop;
+    char *win_name;
 
     if(head != NULL) {
-        status = XGetWMName(dis, current->win, &text_prop);
-        if (!status || !text_prop.value || !text_prop.nitems) {
-            strcpy(astring, "What's going on here then?");
-        } else {
-            astring = strdup((char *)text_prop.value);
-        }
-        while(astring[text_length] != '\0' && text_length < 256) {
-            win_name[text_length] = astring[text_length];
-            ++text_length;
-        }
-        win_name[text_length] = '\0';
+        XFetchName(dis, current->win, &win_name);
         status_text(win_name);
-
-        if(text_prop.value) XFree(text_prop.value);
+        XFree(win_name);
     } else status_text("");
 }
 
@@ -170,8 +156,8 @@ void status_text(char *sb_text) {
     text_start = pos - text_length;
     
     draw_text(sb_area, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
-    for(i=blank_start;i<text_start;i++) //strcat(blankstr, " ");
-        draw_text(sb_area, 0, font.width*i, " ", 1);
+    for(i=blank_start;i<text_start;i+=font.width)
+        draw_text(sb_area, 0, i, " ", 1);
     draw_text(sb_area, 3, text_start, sb_text, strlen(sb_text));
 }
 
