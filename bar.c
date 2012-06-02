@@ -145,7 +145,7 @@ void status_text(char *sb_text) {
     int text_length, text_start, blank_start, i, wsize, count = 0, wnl;
     char win_name[256];
 
-    if(sb_text == '\0') sb_text = "snapwm";
+    if(strlen(sb_text) < 1) sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
     while(sb_text[count] != '\0' && count < windownamelength) {
         win_name[count] = sb_text[count];
