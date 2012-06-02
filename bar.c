@@ -27,9 +27,9 @@ void setup_status_bar() {
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
         if(font.fontset)
-            sb_bar[i].width = (wc_size(sb_bar[i].label) + extra_width);
+            sb_bar[i].width = (wc_size(sb_bar[i].label) + (extra_width*font.width));
         else
-            sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label)+extra_width);
+            sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label)+(extra_width*font.width));
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
