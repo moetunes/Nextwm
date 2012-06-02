@@ -119,7 +119,7 @@ void read_rcfile() {
                     continue;
                 }
                 if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
-                    windownamelength = (atoi(strstr(buffer, " ")+1)*font.width);
+                    windownamelength = atoi(strstr(buffer, " ")+1);
                 }
                 if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);

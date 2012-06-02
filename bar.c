@@ -90,7 +90,7 @@ void getwindowname() {
         XFetchName(dis, current->win, &win_name);
         status_text(win_name);
         XFree(win_name);
-    } else status_text("");
+    } else status_text("snapwm");
 }
 
 void update_bar() {
@@ -142,23 +142,30 @@ void draw_text(Window win, int gc, int x, char *string, int len) {
 }
 
 void status_text(char *sb_text) {
-    int text_length, text_start, blank_start, i, wsize;
+    int text_length, text_start, blank_start, i, wsize, count = 0, wnl;
+    char win_name[256];
 
-    if(sb_text == NULL) sb_text = "snapwm";
+    if(sb_text == '\0') sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
-    wsize = wc_size(sb_text);
-    if(wsize >= windownamelength)
-        text_length = windownamelength;
+    while(sb_text[count] != '\0' && count < windownamelength) {
+        win_name[count] = sb_text[count];
+        count++;
+    }
+    win_name[count] = '\0';
+    wnl = windownamelength*font.width;
+    wsize = wc_size(win_name);
+    if(wsize >= wnl)
+        text_length = wnl;
     else
         text_length = wsize;
-    blank_start = wc_size(theme[mode].modename)+2*font.width;
-    pos = blank_start+(4*font.width)+windownamelength;
+    blank_start = wc_size(theme[mode].modename)+(2*font.width);
+    pos = blank_start+(2*font.width)+wnl;
     text_start = pos - text_length;
-    
+
     draw_text(sb_area, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
-    for(i=blank_start;i<text_start;i+=font.width)
+    for(i=blank_start;i<text_start;i+=font.width) //strcat(blankstr, " ");
         draw_text(sb_area, 0, i, " ", 1);
-    draw_text(sb_area, 3, text_start, sb_text, strlen(sb_text));
+    draw_text(sb_area, 3, text_start, win_name, count);
 }
 
 void update_output(int messg) {
@@ -196,10 +203,9 @@ void update_output(int messg) {
     astring[k] = '\0';
     p_length = wc_size(astring);
     text_start = total_w - p_length;
-    //printf("PLENGTH = %d,TOTAL = %d,TEXTSTART = %d\n", p_length, total_w, text_start);
     k = 0; // i=pos on screen k=pos in text
     for(i=pos;i<total_w;i++) {
-        if(i < text_start) {
+        if(i+font.width < text_start) {
             draw_text(sb_area, 0, i, " ", 1);
             i += font.width-1;
         } else { 
