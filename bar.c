@@ -238,7 +238,8 @@ void update_output(int messg) {
     }
     //printf("\n");
 
-    output[0] ='\0';
+    for(n=0;n<256;n++)
+        output[n] ='\0';
     XSync(dis, False);
     return;
 }
