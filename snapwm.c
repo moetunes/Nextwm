@@ -385,10 +385,8 @@ void remove_window(Window w, int dr) {
             if(mode != 4) tile();
             warp_pointer();
             update_current();
-            if(STATUS_BAR == 0) {
+            if(STATUS_BAR == 0)
                 update_bar();
-                getwindowname();
-            }
             return;
         }
     }
@@ -724,8 +722,7 @@ void update_current() {
             XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
             XRaiseWindow(dis,c->win);
             if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
-        }
-        else {
+        } else {
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].wincolor);
             XLowerWindow(dis,c->win);
@@ -736,7 +733,7 @@ void update_current() {
         if(head != NULL)
             getwindowname();
         else
-            getwindowname();
+            status_text("");
     }
     XSync(dis, False);
 }

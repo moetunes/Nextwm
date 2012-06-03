@@ -87,10 +87,11 @@ void getwindowname() {
     char *win_name;
 
     if(head != NULL) {
-        XFetchName(dis, current->win, &win_name);
-        status_text(win_name);
+        if(XFetchName(dis, current->win, &win_name) != 0)
+            status_text(win_name);
+        else status_text("");
         XFree(win_name);
-    } else status_text("snapwm");
+    }
 }
 
 void update_bar() {
