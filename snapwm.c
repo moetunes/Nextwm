@@ -859,7 +859,7 @@ void configurerequest(XEvent *e) {
     int y = 0;
 
     wc.x = ev->x;
-    if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
+    if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     wc.y = ev->y + y;
     if(ev->width < sw-bdw) wc.width = ev->width;
     else wc.width = sw+bdw;
@@ -880,7 +880,7 @@ void maprequest(XEvent *e) {
     if(attr.override_redirect == True) return;
 
     int y=0;
-    if(STATUS_BAR == 0 && topbar == 0) y = sb_height+4;
+    if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     // For fullscreen mplayer (and maybe some other program)
     client *c;
     for(c=head;c;c=c->next)

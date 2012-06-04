@@ -62,7 +62,7 @@ void status_bar() {
         XMapRaised(dis, sb_bar[i].sb_win);
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+4),sb_height,2,theme[3].barcolor,theme[1].barcolor);
+             sw-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapRaised(dis, sb_area);
@@ -218,6 +218,7 @@ void update_output(int messg) {
     astring[k] = '\0';
     p_length = wc_size(astring);
     text_start = total_w - p_length;
+    XFillRectangle(dis, area_sb, bggc, pos, 0, total_w-pos, sb_height+4);
     k = 0; // i=pos on screen k=pos in text
     for(i=pos;i<total_w;i++) {
         if(i+font.width < text_start) {
