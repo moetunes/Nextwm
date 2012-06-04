@@ -104,7 +104,7 @@ void getwindowname() {
             status_text(win_name);
         else status_text("");
         XFree(win_name);
-    }
+    } else status_text("");
 }
 
 void update_bar() {
