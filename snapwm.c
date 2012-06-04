@@ -1156,6 +1156,8 @@ void quit() {
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<7;i++)
         XFreeGC(dis, theme[i].gc);
+    XFreeGC(dis, bggc);
+    XFreePixmap(dis, area_sb);
     XDestroySubwindows(dis, root);
     XSync(dis, False);
     bool_quit = 1;
