@@ -1,3 +1,6 @@
+4/6/12
+  Added 'double buffer' for text in the bar
+
 30/5/12
   Added support for multibyte fonts
   When updating, don't change modes for desktops with open windows

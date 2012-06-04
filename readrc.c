@@ -1,4 +1,4 @@
-// readrc.c [ 0.4.9 ]
+// readrc.c [ 0.5.0 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -237,9 +237,14 @@ void update_config() {
         }
         XSetWindowBorder(dis,sb_area,theme[3].barcolor);
         XSetWindowBackground(dis, sb_area, theme[1].barcolor);
-        XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+2)+bdw,sb_height);
+        XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+4)+bdw,sb_height);
         XGetWindowAttributes(dis, sb_area, &attr);
         total_w = attr.width;
+        if(area_sb != 0) {
+            XFreePixmap(dis, area_sb);
+        }
+        area_sb = XCreatePixmap(dis, root, total_w, sb_height+4, DefaultDepth(dis, screen));
+        XFillRectangle(dis, area_sb, bggc, 0, 0, total_w, sb_height+4);
     }
     for(i=0;i<DESKTOPS;i++) {
         if(desktops[i].mode == 2)

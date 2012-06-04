@@ -72,7 +72,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Added support for multibyte fonts
+  * Added 'double buffer' for text in the bar
 
 
 
@@ -94,6 +94,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
   top or bottom of the stack when using attach aside
   * Added a stacking window mode
   * Seperated the window and bar colours in the config.h and rc files
+  * Added support for multibyte fonts
 
 
 ###Installation
