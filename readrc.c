@@ -1,4 +1,4 @@
-// readrc.c [ 0.5.0 ]
+// readrc.c [ 0.5.1 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {

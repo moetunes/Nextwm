@@ -1,12 +1,13 @@
-// bar.c [ 0.5.0 ]
+// bar.c [ 0.5.1 ]
 
+static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
 static GC bggc;
 static int total_w;
 static int pos;
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
-    int i, extra_width;
+    int i;
     XGCValues values;
 
     logger(" \033[0;33mStatus Bar called ...");
@@ -33,19 +34,17 @@ void setup_status_bar() {
         values.font = font.font->fid;
         bggc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
-    if(showopen < 1) extra_width = 2;
-    else extra_width = 0;
     sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
         if(font.fontset)
-            sb_bar[i].width = (wc_size(sb_bar[i].label) + (extra_width*font.width));
+            sb_bar[i].width = wc_size(sb_bar[i].label);
         else
-            sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label)+(extra_width*font.width));
+            sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label));
         if(sb_bar[i].width > sb_width)
             sb_width = sb_bar[i].width;
     }
     sb_width += 4;
-    if(sb_width < sb_height) sb_width = sb_height*3/2;
+    if(sb_width < sb_height*3/2) sb_width = sb_height*3/2;
     sb_desks = (DESKTOPS*sb_width)+2;
 }
 
@@ -108,32 +107,26 @@ void getwindowname() {
 }
 
 void update_bar() {
-    int i, j;
-    char busylabel[20];
+    int i;
 
-    if(showopen > 0) j = 0;
-    else j = 2*font.width;
     for(i=0;i<DESKTOPS;i++) {
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
                 if(showopen < 1 && desktops[i].numwins > 1) {
-                    sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
-                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width)/2, busylabel, strlen(busylabel));
+                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                    draw_numopen(i, 2);
                 } else {
-                    sprintf(busylabel, "%s", sb_bar[i].label);
-                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width+j)/2, busylabel, strlen(busylabel));
+                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 }
             } else {
-                sprintf(busylabel, "%s", sb_bar[i].label);
-                draw_desk(sb_bar[i].sb_win, 1, 1, (sb_width-sb_bar[i].width+j)/2, busylabel, strlen(busylabel));
+                draw_desk(sb_bar[i].sb_win, 1, 1, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         } else {
             if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1) {
-                sprintf(busylabel, "%d:%s", desktops[i].numwins, sb_bar[i].label);
-                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, busylabel, strlen(busylabel));
+                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                draw_numopen(i, 0);
             } else {
-                sprintf(busylabel, "%s", sb_bar[i].label);
-                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width+j)/2, busylabel, strlen(busylabel));
+                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         }
     }
@@ -146,6 +139,16 @@ void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len) {
         XmbDrawString(dis, win, font.fontset, theme[gc].gc, x, font.fh, string, len);
     else
         XDrawString(dis, win, theme[gc].gc, x, font.fh, string, len);
+}
+
+void draw_numopen(int cd, int gc) {
+    int i, x=0, y=sb_height-2;
+
+    for(i=0;i<6 && i<desktops[cd].numwins; i++) {
+        XFillRectangle(dis, sb_bar[cd].sb_win, theme[gc].gc, x, y, 2, 2);
+        x += 3;
+        if((x+3) >= sb_width) return;
+    }
 }
 
 void draw_text(Window win, int gc, int x, char *string, int len) {
