@@ -144,7 +144,7 @@ void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len) {
 void draw_numopen(int cd, int gc) {
     int i, x=0, y=sb_height-2;
 
-    for(i=0;i<6 && i<desktops[cd].numwins; i++) {
+    for(i=0;i<desktops[cd].numwins; i++) {
         XFillRectangle(dis, sb_bar[cd].sb_win, theme[gc].gc, x, y, 2, 2);
         x += 3;
         if((x+3) >= sb_width) return;
