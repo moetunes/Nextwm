@@ -1,4 +1,4 @@
-// readrc.c [ 0.5.1 ]
+// readrc.c [ 0.5.2 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -156,7 +156,8 @@ void get_font() {
 	int i, n;
 
 	missing = NULL;
-	font.fontset = XCreateFontSet(dis, (char *)font_list, &missing, &n, &def);
+	if(strlen(font_list) > 0)
+	    font.fontset = XCreateFontSet(dis, (char *)font_list, &missing, &n, &def);
 	if(missing) {
 		if(FONTS_ERROR < 1)
             while(n--)

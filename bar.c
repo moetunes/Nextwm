@@ -1,4 +1,4 @@
-// bar.c [ 0.5.1 ]
+// bar.c [ 0.5.2 ]
 
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
@@ -122,7 +122,7 @@ void update_bar() {
                 draw_desk(sb_bar[i].sb_win, 1, 1, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         } else {
-            if(showopen < 1 && desktops[i].mode == 1 && desktops[i].numwins > 1) {
+            if(showopen < 1 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numwins > 1) {
                 draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 draw_numopen(i, 0);
             } else {
