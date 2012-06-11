@@ -229,11 +229,8 @@ void update_output(int messg) {
             i += font.width-1;
         } else if(k <= text_length) { 
             while(output[k] == '&') {
-                if(output[k+1]-'0' < 7 && output[k+1]-'0' > 0) {
+                if(output[k+1]-'0' < 7 && output[k+1]-'0' >= 0) {
                     j = output[k+1]-'0';
-                    if(j > 1 || j < 7) {
-                        j--;
-                    } else  j = 2;
                     k += 2;
                 } else break;
             }
