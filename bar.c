@@ -153,15 +153,16 @@ void draw_numopen(int cd, int gc) {
 
 void draw_text(Window win, int gc, int x, char *string, int len) {
     if(font.fontset)
-        XmbDrawImageString(dis, win, font.fontset, theme[gc].gc, x, font.fh, string, len);
+        XmbDrawString(dis, win, font.fontset, theme[gc].gc, x, font.fh, string, len);
     else
-        XDrawImageString(dis, win, theme[gc].gc, x, font.fh, string, len);
+        XDrawString(dis, win, theme[gc].gc, x, font.fh, string, len);
 }
 
 void status_text(char *sb_text) {
-    int text_length, text_start, blank_start, i, wsize, count = 0, wnl;
+    int text_length, text_start, blank_start, wsize, count = 0, wnl;
     char win_name[256];
 
+    XFillRectangle(dis, area_sb, bggc, 0, 0, pos, sb_height+4);
     if(strlen(sb_text) < 1) sb_text = "snapwm";
     if(head == NULL) sb_text = "snapwm";
     while(sb_text[count] != '\0' && count < windownamelength) {
@@ -180,8 +181,6 @@ void status_text(char *sb_text) {
     text_start = pos - text_length;
 
     draw_text(area_sb, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
-    for(i=blank_start;i<text_start;i+=font.width) //strcat(blankstr, " ");
-        draw_text(area_sb, 0, i, " ", 1);
     draw_text(area_sb, 3, text_start, win_name, count);
     XCopyArea(dis, area_sb, sb_area, theme[1].gc, 0, 0, pos, sb_height+4, 0, 0);
 }
@@ -225,7 +224,7 @@ void update_output(int messg) {
     k = 0; // i=pos on screen k=pos in text
     for(i=pos;i<total_w;i++) {
         if(i+font.width < text_start) {
-            draw_text(area_sb, 0, i, " ", 1);
+            //draw_text(area_sb, 0, i, " ", 1);
             i += font.width-1;
         } else if(k <= text_length) { 
             while(output[k] == '&') {
