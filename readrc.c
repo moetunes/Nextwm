@@ -1,10 +1,10 @@
-// readrc.c [ 0.5.2 ]
+// readrc.c [ 0.5.3 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
     FILE *rcfile ;
-    char buffer[100]; /* Way bigger that neccessary */
-    char dummy[100];
+    char buffer[256]; /* Way bigger that neccessary */
+    char dummy[256];
     char *dummy2;
     char *dummy3;
     int i;
@@ -31,7 +31,7 @@ void read_rcfile() {
                     } else
                         theme[i].wincolor = getcolor(dummy3);
                 }
-                for(i=0;i<101;i++) dummy[i] = '\0';
+                for(i=0;i<256;i++) dummy[i] = '\0';
                 continue;
             }
             if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
@@ -74,7 +74,7 @@ void read_rcfile() {
                         } else
                             theme[i].barcolor = getcolor(dummy3);
                     }
-                    for(i=0;i<101;i++) dummy[i] = '\0';
+                    for(i=0;i<256;i++) dummy[i] = '\0';
                     continue;
                 }
                 if(strstr(buffer, "TEXTTHEME" ) != NULL) {
@@ -89,7 +89,7 @@ void read_rcfile() {
                         } else
                             theme[i].textcolor = getcolor(dummy3);
                     }
-                    for(i=0;i<101;i++) dummy[i] = '\0';
+                    for(i=0;i<256;i++) dummy[i] = '\0';
                     continue;
                 }
                 if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
@@ -176,7 +176,6 @@ void get_font() {
 			xfonts++;
 		}
 		font.width = XmbTextEscapement(font.fontset, " ", 1);
-		//printf("FONTWIDTH = %d\n", font.width);
 	} else {
 		fprintf(stderr, ":: snapwm :: Font '%s' Not Found\nSSB :: Trying Font 'Fixed'\n", font_list);
 		if(!(font.font = XLoadQueryFont(dis, font_list))

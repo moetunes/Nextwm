@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.5.2 ]
+ /* snapwm.c [ 0.5.3 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -398,10 +398,7 @@ void next_win() {
     if(desktops[current_desktop].numwins < 2) return;
     //if(head->next == NULL) return;
     if(mode == 1) XUnmapWindow(dis, current->win);
-    if(current->next == NULL)
-        c = head;
-    else
-        c = current->next;
+    c = (current->next == NULL) ? head : current->next;
 
     current = c;
     save_desktop(current_desktop);
@@ -416,10 +413,8 @@ void prev_win() {
     if(desktops[current_desktop].numwins < 2) return;
     //if(head->next == NULL) return;
     if(mode == 1) XUnmapWindow(dis, current->win);
-    if(current->prev == NULL)
-        for(c=head;c->next;c=c->next);
-    else
-        c = current->prev;
+    if(current->prev == NULL) for(c=head;c->next;c=c->next);
+    else c = current->prev;
 
     current = c;
     save_desktop(current_desktop);
@@ -442,7 +437,8 @@ void move_down(const Arg arg) {
     current->win = current->next->win;
     current->next->win = tmp;
     //keep the moved window activated
-    next_win();
+    //next_win();
+    update_current();
     save_desktop(current_desktop);
     tile();
 }
@@ -608,8 +604,7 @@ void tile() {
     int y = 0;
 
     // For a top bar
-    if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
-    else y = 0;
+    y = (STATUS_BAR == 0 && topbar == 0 && show_bar == 0) ? sb_height+4 : 0;
 
     // If only one window
     if(mode != 4 && head != NULL && head->next == NULL) {
@@ -730,10 +725,7 @@ void update_current() {
         }
     }
     if(STATUS_BAR == 0 && show_bar == 0) {
-        if(head != NULL)
-            getwindowname();
-        else
-            status_text("");
+        (head != NULL) ? getwindowname() : status_text("");
     }
     XSync(dis, False);
 }
@@ -861,10 +853,8 @@ void configurerequest(XEvent *e) {
     wc.x = ev->x;
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     wc.y = ev->y + y;
-    if(ev->width < sw-bdw) wc.width = ev->width;
-    else wc.width = sw+bdw;
-    if(ev->height < sh-bdw) wc.height = ev->height;
-    else wc.height = sh+bdw;
+    wc.width = (ev->width < sw-bdw) ? ev->width : sw+bdw;
+    wc.height = (ev->height < sh-bdw) ? ev->height : sh+bdw;
     wc.border_width = ev->border_width;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
@@ -886,7 +876,7 @@ void maprequest(XEvent *e) {
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
-            XMoveResizeWindow(dis,c->win,0,y,sw,sh-y);
+            XMoveResizeWindow(dis,c->win,0,y,sw+bdw,sh-y+bdw);
             return;
         }
 
@@ -1221,8 +1211,7 @@ void setup() {
     bool_quit = 0;
 
     // Master size
-    if(mode == 2) master_size = (sh*msize)/100;
-    else master_size = (sw*msize)/100;
+    master_size = (mode == 2) ? (sh*msize)/100 : (sw*msize)/100;
 
     // Set up all desktop
     int i;

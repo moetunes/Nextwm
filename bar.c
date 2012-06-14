@@ -1,4 +1,4 @@
-// bar.c [ 0.5.2 ]
+// bar.c [ 0.5.3 ]
 
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
@@ -51,8 +51,7 @@ void setup_status_bar() {
 void status_bar() {
     int i, y;
 
-    if(topbar == 0) y = 0;
-    else y = sh+bdw;
+    y = (topbar == 0) ? 0 : sh+bdw;
     for(i=0;i<DESKTOPS;i++) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
                                             sb_width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
@@ -99,9 +98,7 @@ void getwindowname() {
     char *win_name;
 
     if(head != NULL) {
-        if(XFetchName(dis, current->win, &win_name) != 0)
-            status_text(win_name);
-        else status_text("");
+        (XFetchName(dis, current->win, &win_name) != 0) ? status_text(win_name) : status_text("");
         XFree(win_name);
     } else status_text("");
 }
@@ -172,10 +169,7 @@ void status_text(char *sb_text) {
     win_name[count] = '\0';
     wnl = windownamelength*font.width;
     wsize = wc_size(win_name);
-    if(wsize >= wnl)
-        text_length = wnl;
-    else
-        text_length = wsize;
+    text_length = (wsize >= wnl) ? wnl : wsize;
     blank_start = wc_size(theme[mode].modename)+(2*font.width);
     pos = blank_start+(2*font.width)+wnl;
     text_start = pos - text_length;
