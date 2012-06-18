@@ -619,7 +619,7 @@ void tile() {
                 XMoveResizeWindow(dis,head->win,0,y,master_size - bdw,sh - bdw);
 
                 // Stack
-                for(c=head->next;c;c=c->next) ++n;
+                n = desktops[current_desktop].numwins-1;
                 XMoveResizeWindow(dis,head->next->win,master_size + bdw,y,sw-master_size-(2*bdw),(sh/n)+growth - bdw);
                 y += (sh/n)+growth;
                 for(c=head->next->next;c;c=c->next) {
@@ -636,7 +636,7 @@ void tile() {
                 XMoveResizeWindow(dis,head->win,0,y,sw-bdw,master_size - bdw);
 
                 // Stack
-                for(c=head->next;c;c=c->next) ++n;
+                n = desktops[current_desktop].numwins-1;
                 XMoveResizeWindow(dis,head->next->win,0,y+master_size + bdw,(sw/n)+growth-bdw,sh-master_size-(2*bdw));
                 x = (sw/n)+growth;
                 for(c=head->next->next;c;c=c->next) {
@@ -649,7 +649,7 @@ void tile() {
                 int wdt = 0;
                 int ht = 0;
 
-                for(c=head;c;c=c->next) ++x;
+                x = desktops[current_desktop].numwins;
                 for(c=head;c;c=c->next) {
                     ++n;
                     if(x >= 7) {
@@ -705,10 +705,7 @@ void update_current() {
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
     for(c=head;c;c=c->next) {
-        if((head->next == NULL) || (mode == 1))
-            XSetWindowBorderWidth(dis,c->win,0);
-        else
-            XSetWindowBorderWidth(dis,c->win,bdw);
+        ((head->next == NULL) || (mode == 1)) ? XSetWindowBorderWidth(dis,c->win,0) : XSetWindowBorderWidth(dis,c->win,bdw);
 
         if(current == c && transient == NULL) {
             // "Enable" current window
