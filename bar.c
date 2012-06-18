@@ -1,4 +1,4 @@
-// bar.c [ 0.5.3 ]
+// bar.c [ 0.5.4 ]
 
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;

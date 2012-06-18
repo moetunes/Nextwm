@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.5.3 ]
+ /* snapwm.c [ 0.5.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -208,6 +208,7 @@ static client *head;
 static client *current;
 static client *transient;
 static char font_list[256];
+static char RCFILE[100];
 static Atom alphaatom, wm_delete_window;
 static XWindowAttributes attr;
 static XButtonEvent starter;
@@ -1191,6 +1192,7 @@ void setup() {
     if (!loc || !strcmp(loc, "C") || !strcmp(loc, "POSIX") || !XSupportsLocale())
         fprintf(stderr, "SSB :: LOCALE FAILED\n");
     // Read in RCFILE
+    sprintf(RCFILE, "%s/.config/snapwm/rc.conf", getenv("HOME"));
     set_defaults();
     read_rcfile();
     if(STATUS_BAR == 0) {

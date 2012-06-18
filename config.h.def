@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.5.3 ]
+ /* config.h for snapwm.c [ 0.5.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,12 +19,12 @@
  *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  *  DEALINGS IN THE SOFTWARE.
  *
+ *  RC FILE set to $HOME/.config/snapwm/rc.conf
  */
 
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define RCFILE "/home/pnewm/.snapwmrc"
 #define STATUS_BAR  0  /* 1=Don't 0=Make the bar */
 #define FONTS_ERROR 1  /* 1=Don't 0=Print errors about missing fonts */
 
@@ -32,7 +32,7 @@
 #define MOD1            Mod1Mask
 #define MOD4            Mod4Mask
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
-#define LA_WINDOWNAME   0  /* 1=Dont't 0=Left align current window name in bar */
+#define LA_WINDOWNAME   1  /* 1=Dont't 0=Left align current window name in bar */
 
 // The settings from here to defaultfont[] are in the rc file, which has precedence,
 // so if the rc file all has these 15 options they don't have to be changed.
@@ -58,42 +58,22 @@ static const char *defaultwincolor[] = { "#ff0000", "#00ff00", };
 static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", "[4]", };
 static const char defaultfontlist[] = "-*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*";
 
-// Applications to a specific desktop
+// Open applications on a specific desktop. Examples given are commented out
 static const Convenience convenience[] = { \
     /*  class     desktop follow 1=Don't 0=Change the desktop*/
-    { "Thunar",       2,    0 },
-    //{ "Leafpad",      2,    1 },
-    { "Firefox",      3,    0 },
-    { "Links",        3,    0 },
-    { "MPlayer",      4,    0 },
-    { "Thunderbird",  5,    1 },
-    { "Pysol",        6,    0 },
+    //{ "Firefox",      3,    0 },
+    //{ "MPlayer",      4,    0 },
 };
 
+// In stacking mode set position and size for application
 static const Positional positional[] = { \
     /* class  x  y  width  height */
-    { "Thunar", 100,100,800,400 },
-    { "URxvt", 100,320,820,400 },
-    { "Xchat", 320,60,950,500 }
+    //{ "URxvt", 100,320,820,400 },
 };
 
-const char* dmenucmd[]      = {"dmenu_run","-i","-nb","#666622","-nf","white",NULL};
-const char* urxvtcmd[]      = {"urxvtc",NULL};
-const char* terminalcmd[]   = {"Terminal",NULL};
-const char* thunarcmd[]     = {"thunar",NULL};
-const char* firefoxcmd[]    = {"firefox",NULL};
-const char* webcmd[]        = {"links","-g",NULL};
-const char* luakitcmd[]     = {"/home/pnewm/.bin/launchbrowser",NULL};
-const char* mailcmd[]       = {"thunderbird",NULL };
 // Using a script makes changing commands easy
-const char* voldowncmd[]    = {"/home/pnewm/.bin/voldown",NULL};
-const char* volupcmd[]      = {"/home/pnewm/.bin/volup",NULL};
-const char* prevoldowncmd[] = {"/home/pnewm/.bin/prevoldown",NULL};
-const char* prevolupcmd[]   = {"/home/pnewm/.bin/prevolup",NULL};
-const char* vols_what[]     = {"/home/pnewm/.bin/volumes_what",NULL};
-// for reboot and shutdown
-const char* rebootcmd[]     = {"sudo","reboot",NULL};
-const char* shutdowncmd[]   = {"sudo","shutdown","-h","now",NULL};
+const char* dmenucmd[]      = {"dmenu_run","-i","-nb","#666622","-nf","white",NULL};
+const char* terminalcmd[]   = {"xterm",NULL};
 
 // Avoid multiple paste
 #define DESKTOPCHANGE(K,N) \
@@ -114,9 +94,6 @@ static key keys[] = {
     {  MOD1,             XK_o,          resize_stack,      {.i = -10}},
     {  MOD1,             XK_u,          update_config,     {NULL}},
     {  MOD1,             XK_Tab,        last_desktop,      {NULL}},
-    {  MOD1,             XK_Return,     spawn,             {.com = urxvtcmd}},
-    {  MOD1,             XK_Up,         spawn,             {.com = volupcmd}},
-    {  MOD1,             XK_Down,       spawn,             {.com = voldowncmd}},
     {  MOD1,             XK_a,          rotate_mode,       {.i = 1}},
 // alt + shift + shortcut
     {  MOD1|ShiftMask,   XK_j,          move_up,           {.i = -10}},
@@ -131,21 +108,11 @@ static key keys[] = {
     {  MOD1|ShiftMask,   XK_c,          switch_mode,       {.i = 4}}, // stacking
 // Control + alt + shortcut
     {  MOD1|ControlMask, XK_q,          quit,              {NULL}},
-    {  MOD1|ControlMask, XK_r,          spawn,             {.com = rebootcmd}},
-    {  MOD1|ControlMask, XK_s,          spawn,             {.com = shutdowncmd}},
 // Window key + shortcut
     {  MOD4,             XK_Right,      rotate_desktop,    {.i = 1}},
     {  MOD4,             XK_Left,       rotate_desktop,    {.i = -1}},
     {  MOD4,             XK_b,          toggle_bar,        {NULL}},
-    {  MOD4,             XK_e,          spawn,             {.com = mailcmd}},
-    {  MOD4,             XK_f,          spawn,             {.com = firefoxcmd}},
-    {  MOD4,             XK_w,          spawn,             {.com = webcmd}},
-    {  MOD4,             XK_l,          spawn,             {.com = luakitcmd}},
-    {  MOD4,             XK_h,          spawn,             {.com = thunarcmd}},
     {  MOD4,             XK_t,          spawn,             {.com = terminalcmd}},
-    {  MOD4,             XK_v,          spawn,             {.com = vols_what}},
-    {  MOD4,             XK_Up,         spawn,             {.com = prevolupcmd}},
-    {  MOD4,             XK_Down,       spawn,             {.com = prevoldowncmd}},
        DESKTOPCHANGE(   XK_1,                              0)
        DESKTOPCHANGE(   XK_2,                              1)
        DESKTOPCHANGE(   XK_3,                              2)

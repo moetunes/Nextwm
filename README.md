@@ -72,7 +72,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Added 'double buffer' for text in the bar
+  * Moved the RC FILE to $HOME/.config/snapwm/rc.conf
 
 
 
@@ -95,6 +95,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Added a stacking window mode
   * Seperated the window and bar colours in the config.h and rc files
   * Added support for multibyte fonts
+  * Added 'double buffer' for text in the bar
 
 
 ###Installation
