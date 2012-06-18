@@ -32,7 +32,7 @@
 #define MOD1            Mod1Mask
 #define MOD4            Mod4Mask
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
-#define LA_STATUS_TEXT  1
+#define LA_WINDOWNAME   0  /* 1=Dont't 0=Left align current window name in bar */
 
 // The settings from here to defaultfont[] are in the rc file, which has precedence,
 // so if the rc file all has these 15 options they don't have to be changed.

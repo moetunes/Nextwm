@@ -172,7 +172,7 @@ void status_text(char *sb_text) {
     text_length = (wsize >= wnl) ? wnl : wsize;
     blank_start = wc_size(theme[mode].modename)+(2*font.width);
     pos = blank_start+(2*font.width)+wnl;
-    text_start = (LA_STATUS_TEXT < 1) ? blank_start+(2*font.width) : pos - text_length;
+    text_start = (LA_WINDOWNAME < 1) ? blank_start+(2*font.width) : pos - text_length;
 
     draw_text(area_sb, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
     draw_text(area_sb, 3, text_start, win_name, count);
