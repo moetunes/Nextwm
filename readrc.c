@@ -11,7 +11,7 @@ void read_rcfile() {
 
     rcfile = fopen( RCFILE, "r" ) ;
     if ( rcfile == NULL ) {
-        fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RCFILE);
+        fprintf(stderr, "\033[0;34m:: snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RCFILE);
         set_defaults();
         return;
     } else {
@@ -199,7 +199,7 @@ void set_defaults() {
             theme[i].barcolor = getcolor(defaultbarcolor[i]);
         for(i=0;i<7;i++)
             theme[i].textcolor = getcolor(defaulttextcolor[i]);
-        for(i=0;i<4;i++)
+        for(i=0;i<5;i++)
             theme[i].modename = strdup(defaultmodename[i]);
         for(i=0;i<DESKTOPS;i++) {
             if(!(defaultdesktopnames[i]))
