@@ -61,6 +61,7 @@ static const char defaultfontlist[] = "-*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*
 // Open applications on a specific desktop. Examples given are commented out
 static const Convenience convenience[] = { \
     /*  class     desktop follow 1=Don't 0=Change the desktop*/
+    { "None",   0,   0 },
     //{ "Firefox",      3,    0 },
     //{ "MPlayer",      4,    0 },
 };
@@ -68,6 +69,7 @@ static const Convenience convenience[] = { \
 // In stacking mode set position and size for application
 static const Positional positional[] = { \
     /* class  x  y  width  height */
+    { "None",    0,  0,  0,  0 },
     //{ "URxvt", 100,320,820,400 },
 };
 

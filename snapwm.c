@@ -209,7 +209,7 @@ static client *head;
 static client *current;
 static client *transient;
 static char font_list[256];
-static char RCFILE[100];
+static char RC_FILE[100];
 static Atom alphaatom, wm_delete_window;
 static XWindowAttributes attr;
 static XButtonEvent starter;
@@ -1192,8 +1192,8 @@ void setup() {
     loc = setlocale(LC_ALL, "");
     if (!loc || !strcmp(loc, "C") || !strcmp(loc, "POSIX") || !XSupportsLocale())
         fprintf(stderr, "SSB :: LOCALE FAILED\n");
-    // Read in RCFILE
-    sprintf(RCFILE, "%s/.config/snapwm/rc.conf", getenv("HOME"));
+    // Read in RC_FILE
+    sprintf(RC_FILE, "%s/.config/snapwm/rc.conf", getenv("HOME"));
     set_defaults();
     read_rcfile();
     if(STATUS_BAR == 0) {
