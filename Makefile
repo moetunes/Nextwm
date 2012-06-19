@@ -1,4 +1,4 @@
-CFLAGS+= -Wall
+CFLAGS+= -g -std=c99 -pedantic -Wall
 LDADD+= -lX11
 LDFLAGS=
 EXEC=snapwm
