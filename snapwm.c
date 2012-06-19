@@ -243,11 +243,10 @@ static Iammanyfonts font;
 void add_window(Window w, int tw) {
     client *c,*t;
 
-    if(tw < 2) // For shifting windows between desktops
-        if(!(c = (client *)calloc(1,sizeof(client)))) {
-            logger("\033[0;31mError calloc!");
-            exit(1);
-        }
+    if(!(c = (client *)calloc(1,sizeof(client)))) {
+        logger("\033[0;31mError calloc!");
+        exit(1);
+    }
 
     if(tw == 1) { // For the transient window
         if(transient == NULL) {
@@ -569,11 +568,11 @@ void client_to_desktop(const Arg arg) {
 
     // Remove client from current desktop
     XUnmapWindow(dis,current->win);
-    remove_window(current->win, 1);
+    remove_window(current->win, 0);
 
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win, 2);
+    add_window(tmp->win, 0);
     save_desktop(arg.i);
 
     select_desktop(tmp2);
