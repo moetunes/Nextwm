@@ -11,7 +11,7 @@ CC=gcc
 all: $(EXEC)
 
 snapwm: snapwm.o
-	$(CC) $(LDFLAGS) -s -Os -o $@ $+ $(LDADD)
+	$(CC) $(LDFLAGS) -s -O2 -o $@ $+ $(LDADD)
 
 install: all
 	install -Dm 755 snapwm $(DESTDIR)$(BINDIR)/snapwm

@@ -3,8 +3,8 @@
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
 static GC bggc;
-static int total_w;
-static int pos;
+static unsigned int total_w;
+static unsigned int pos;
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
     int i;
@@ -156,7 +156,7 @@ void draw_text(Window win, int gc, int x, char *string, int len) {
 }
 
 void status_text(char *sb_text) {
-    int text_length, text_start, blank_start, wsize, count = 0, wnl;
+    unsigned int text_length, text_start, blank_start, wsize, count = 0, wnl;
     char win_name[256];
 
     XFillRectangle(dis, area_sb, bggc, 0, 0, pos, sb_height+4);

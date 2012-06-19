@@ -78,8 +78,8 @@ struct desktop{
 
 typedef struct {
     const char *class;
-    int preferredd;
-    int followwin;
+    unsigned int preferredd;
+    unsigned int followwin;
 } Convenience;
 
 typedef struct {
@@ -93,8 +93,8 @@ typedef struct {
     int height;
     int width;
     unsigned int fh;            /* Y coordinate to draw characters */
-    unsigned int ascent;
-    unsigned int descent;
+    int ascent;
+    int descent;
 } Iammanyfonts;
 
 typedef struct {
@@ -199,7 +199,7 @@ static int showopen;        // whether the desktop switcher shows number of open
 static int topbar;
 static int top_stack;
 static int ufalpha;
-static int windownamelength;
+static unsigned int windownamelength;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 unsigned int numlockmask;        /* dynamic key lock mask */
@@ -269,7 +269,7 @@ void add_window(Window w, int tw) {
 
     if(tw == 0) {
         XClassHint chh = {0};
-        int i, j=0;
+        unsigned int i, j=0;
         if(XGetClassHint(dis, w, &chh)) {
             for(i=0;i<TABLENGTH(positional);i++)
                 if(strcmp(chh.res_class, positional[i].class) == 0) {
@@ -783,7 +783,8 @@ void resize_stack(const Arg arg) {
 
 /* ********************** Keyboard Management ********************** */
 void grabkeys() {
-    int i, j;
+    unsigned int i;
+    int j;
     XModifierKeymap *modmap;
     KeyCode code;
 
@@ -893,7 +894,7 @@ void maprequest(XEvent *e) {
     }
 
     XClassHint ch = {0};
-    int i=0, j=0, tmp = current_desktop;
+    unsigned int i=0, j=0, tmp = current_desktop;
     if(XGetClassHint(dis, ev->window, &ch))
         for(i=0;i<TABLENGTH(convenience);i++)
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
@@ -929,7 +930,7 @@ void maprequest(XEvent *e) {
 }
 
 void destroynotify(XEvent *e) {
-    int i = 0, tmp = current_desktop;
+    unsigned int i = 0, tmp = current_desktop;
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
 
@@ -1082,7 +1083,7 @@ void propertynotify(XEvent *e) {
 
 void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
     XUnmapEvent *ev = &e->xunmap;
-    int i = 0, tmp = current_desktop;
+    unsigned int i = 0, tmp = current_desktop;
     client *c;
 
     if(ev->send_event == 1) {
@@ -1214,7 +1215,7 @@ void setup() {
     master_size = (mode == 2) ? (sh*msize)/100 : (sw*msize)/100;
 
     // Set up all desktop
-    int i;
+    unsigned int i;
     for(i=0;i<TABLENGTH(desktops);++i) {
         desktops[i].master_size = master_size;
         desktops[i].mode = mode;
@@ -1283,7 +1284,7 @@ void start() {
 }
 
 
-int main(int argc, char **argv) {
+int main() {
     // Open display
     if(!(dis = XOpenDisplay(NULL))) {
         logger("\033[0;31mCannot open display!");
