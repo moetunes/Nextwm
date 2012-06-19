@@ -566,16 +566,18 @@ void client_to_desktop(const Arg arg) {
     if(arg.i == current_desktop || current == NULL)
         return;
 
-    // Remove client from current desktop
-    XUnmapWindow(dis,current->win);
-    remove_window(current->win, 0);
-
     // Add client to desktop
     select_desktop(arg.i);
     add_window(tmp->win, 0);
     save_desktop(arg.i);
 
+    // Remove client from current desktop
     select_desktop(tmp2);
+    XUnmapWindow(dis,tmp->win);
+    remove_window(tmp->win, 0);
+    save_desktop(tmp2);
+    tile();
+    update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
