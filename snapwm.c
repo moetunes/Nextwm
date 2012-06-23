@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.5.4 ]
+ /* snapwm.c [ 0.5.5 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -320,7 +320,7 @@ void add_window(Window w, int tw) {
         }
     }
 
-    current = head;
+    current = c;
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
