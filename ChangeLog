@@ -1,3 +1,6 @@
+23/6/12
+  Use XFetchName for root window name in bar
+
 19/6/12
   Defined the RC FILE as $HOME/.config/snapwm/rc.conf
   Changed the config.h.def to be generic not as I use config.h

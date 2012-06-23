@@ -1,4 +1,4 @@
-// bar.c [ 0.5.4 ]
+// bar.c [ 0.5.5 ]
 
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
@@ -160,8 +160,7 @@ void status_text(char *sb_text) {
     char win_name[256];
 
     XFillRectangle(dis, area_sb, bggc, 0, 0, pos, sb_height+4);
-    if(strlen(sb_text) < 1) sb_text = "snapwm";
-    if(head == NULL) sb_text = "snapwm";
+    if(strlen(sb_text) < 1) sb_text = ":";
     while(sb_text[count] != '\0' && count < windownamelength) {
         win_name[count] = sb_text[count];
         count++;
@@ -184,24 +183,19 @@ void update_output(int messg) {
     unsigned int wsize, n;
     char output[256];
     char astring[256];
-    int status;
-    XTextProperty text_prop;
+    char *win_name;
 
-    status = XGetWMName(dis, root, &text_prop);
-    if (!status || !text_prop.value || !text_prop.nitems) {
-        strcpy(astring, "What's going on here then?");
-        if(messg == 0)
-            logger("\033[0;31m Failed to get status output. \n");
+    if(!(XFetchName(dis, root, &win_name))) {
+        strcpy(output, "&3snapwm 0.5.5 ");
+        text_length = 15;
     } else {
-        strncpy(astring, (char *)text_prop.value, 255);
+        while(win_name[text_length] != '\0' && text_length < 256) {
+            output[text_length] = win_name[text_length];
+            text_length++;
+        }
+        output[text_length] = '\0';
     }
-    while(astring[text_length] != '\0' && text_length < 256) {
-        output[text_length] = astring[text_length];
-        ++text_length;
-    }
-    output[text_length] = '\0';
-
-    if(text_prop.value) XFree(text_prop.value);
+    XFree(win_name);
 
     for(n=0;n<text_length;n++) {
         while(output[n] == '&') {
@@ -216,11 +210,8 @@ void update_output(int messg) {
     text_start = total_w - p_length;
     XFillRectangle(dis, area_sb, bggc, pos, 0, total_w-pos, sb_height+4);
     k = 0; // i=pos on screen k=pos in text
-    for(i=pos;i<total_w;i++) {
-        if(i+font.width < text_start) {
-            //draw_text(area_sb, 0, i, " ", 1);
-            i += font.width-1;
-        } else if(k <= text_length) { 
+    for(i=text_start;i<total_w;i++) {
+        if(k <= text_length) { 
             while(output[k] == '&') {
                 if(output[k+1]-'0' < 7 && output[k+1]-'0' >= 0) {
                     j = output[k+1]-'0';
