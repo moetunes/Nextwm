@@ -36,30 +36,39 @@ void read_rcfile() {
             }
             if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
                 bdw = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "MASTERSIZE" ) != NULL) {
                 msize = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
                 attachaside = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "TOPSTACK" ) != NULL) {
                 top_stack = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
                 followmouse = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
                 clicktofocus = atoi(strstr(buffer, " ")+1);
+                continue;
             }
             if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
                 mode = atoi(strstr(buffer, " ")+1);
                 for(i=0;i<DESKTOPS;i++)
                     if(desktops[i].head == NULL)
                         desktops[i].mode = mode;
+
+                continue;
             }
             if(STATUS_BAR == 0) {
                 if(strstr(buffer, "BARTHEME" ) != NULL) {
@@ -70,7 +79,7 @@ void read_rcfile() {
                         dummy3 = strsep(&dummy2, ",");
                         if(getcolor(dummy3) == 1) {
                             theme[i].barcolor = getcolor(defaultbarcolor[i]);
-                            logger("Default colour");
+                            logger("Default bar colour");
                         } else
                             theme[i].barcolor = getcolor(dummy3);
                     }
@@ -85,7 +94,7 @@ void read_rcfile() {
                         dummy3 = strsep(&dummy2, ",");
                         if(getcolor(dummy3) == 1) {
                             theme[i].textcolor = getcolor(defaulttextcolor[i]);
-                            logger("Default colour");
+                            logger("Default text colour");
                         } else
                             theme[i].textcolor = getcolor(dummy3);
                     }
@@ -94,9 +103,11 @@ void read_rcfile() {
                 }
                 if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
+                    continue;
                 }
                 if(strstr(buffer, "TOPBAR" ) != NULL) {
                     topbar = atoi(strstr(buffer, " ")+1);
+                    continue;
                 }
                 if(strstr(buffer, "MODENAME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -120,6 +131,7 @@ void read_rcfile() {
                 }
                 if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
                     windownamelength = atoi(strstr(buffer, " ")+1);
+                    continue;
                 }
                 if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -227,8 +239,7 @@ void update_config() {
         font_list[i] = '\0';
     if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
-    if(topbar == 0) y = 0;
-    else y = sh+bdw;
+    y = (topbar == 0) ? 0 : sh+bdw;
     if(STATUS_BAR == 0) {
         setup_status_bar();
         for(i=0;i<DESKTOPS;i++) {
@@ -247,10 +258,7 @@ void update_config() {
         XFillRectangle(dis, area_sb, bggc, 0, 0, total_w, sb_height+4);
     }
     for(i=0;i<DESKTOPS;i++) {
-        if(desktops[i].mode == 2)
-            desktops[i].master_size = (sh*msize)/100;
-        else
-            desktops[i].master_size = (sw*msize)/100;
+        desktops[i].master_size = (desktops[i].mode == 2) ? (sh*msize)/100 : (sw*msize)/100;
     }
     select_desktop(current_desktop);
     Arg a = {.i = mode}; switch_mode(a);

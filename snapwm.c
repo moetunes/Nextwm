@@ -320,7 +320,7 @@ void add_window(Window w, int tw) {
         }
     }
 
-    current = c;
+    current = head;
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
@@ -363,6 +363,7 @@ void remove_window(Window w, int dr) {
         if(c->win == w) {
             if(desktops[current_desktop].numwins < 4) growth = 0;
             else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
+            XUngrabButton(dis, AnyButton, AnyModifier, c->win);
             XUnmapWindow(dis, c->win);
             if(c->prev == NULL && c->next == NULL) {
                 head = NULL;
@@ -522,16 +523,16 @@ void change_desktop(const Arg arg) {
     select_desktop(arg.i);
 
     // Map all windows
-    if(transient != NULL)
-        for(c=transient;c;c=c->next)
-            XMapWindow(dis,c->win);
-
     if(head != NULL) {
         if(mode != 1) {
             for(c=head;c;c=c->next)
                 XMapWindow(dis,c->win);
         }
     }
+
+    if(transient != NULL)
+        for(c=transient;c;c=c->next)
+            XMapWindow(dis,c->win);
 
     tile();
     warp_pointer();
@@ -573,7 +574,6 @@ void client_to_desktop(const Arg arg) {
 
     // Remove client from current desktop
     select_desktop(tmp2);
-    XUnmapWindow(dis,tmp->win);
     remove_window(tmp->win, 0);
     save_desktop(tmp2);
     tile();
@@ -1006,14 +1006,18 @@ void buttonpress(XEvent *e) {
                 }
             }
     }
+
     // change focus with LMB
     if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
-        for(c=head;c;c=c->next)
+        for(c=head;c;c=c->next) {
             if(ev->window == c->win) {
                 current = c;
                 update_current();
+                XSendEvent(dis, PointerWindow, False, 0xfff, e);
+                XFlush(dis);
                 return;
             }
+        }
 
     if(ev->subwindow == None) return;
 
@@ -1055,6 +1059,11 @@ void buttonrelease(XEvent *e) {
     client *c;
     XButtonEvent *ev = &e->xbutton;
 
+    if(doresize < 1) {
+        XSendEvent(dis, PointerWindow, False, 0xfff, e);
+        XFlush(dis);
+        return;
+    }
     XUngrabPointer(dis, CurrentTime);
     if(mode == 4) {
         for(c=head;c;c=c->next)
@@ -1142,14 +1151,17 @@ void quit() {
     for(i=0;i<DESKTOPS;++i) {
         select_desktop(i);
         for(c=head;c;c=c->next)
+            XUnmapWindow(dis, c->win);
             kill_client();
     }
+    XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
+    XClearWindow(dis, root);
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<7;i++)
         XFreeGC(dis, theme[i].gc);
     XFreeGC(dis, bggc);
     XFreePixmap(dis, area_sb);
-    XDestroySubwindows(dis, root);
+    //XDestroySubwindows(dis, root);
     XSync(dis, False);
     bool_quit = 1;
 }
