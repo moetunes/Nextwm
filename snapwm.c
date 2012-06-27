@@ -1147,22 +1147,22 @@ void kill_client() {
 void quit() {
     int i;
     client *c;
-    logger("\033[0;34mYou Quit : Thanks for using!");
+
     for(i=0;i<DESKTOPS;++i) {
         select_desktop(i);
         for(c=head;c;c=c->next)
             XUnmapWindow(dis, c->win);
             kill_client();
     }
-    XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
     XClearWindow(dis, root);
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<7;i++)
         XFreeGC(dis, theme[i].gc);
     XFreeGC(dis, bggc);
     XFreePixmap(dis, area_sb);
-    //XDestroySubwindows(dis, root);
     XSync(dis, False);
+    XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
+    logger("\033[0;34mYou Quit : Bye!");
     bool_quit = 1;
 }
 
@@ -1205,7 +1205,7 @@ void setup() {
     char *loc;
     loc = setlocale(LC_ALL, "");
     if (!loc || !strcmp(loc, "C") || !strcmp(loc, "POSIX") || !XSupportsLocale())
-        fprintf(stderr, "SSB :: LOCALE FAILED\n");
+        logger("LOCALE FAILED");
     // Read in RC_FILE
     sprintf(RC_FILE, "%s/.config/snapwm/rc.conf", getenv("HOME"));
     set_defaults();
@@ -1241,7 +1241,6 @@ void setup() {
 
     // Select first dekstop by default
     const Arg arg = {.i = 0};
-    current_desktop = arg.i;
     change_desktop(arg);
     alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);

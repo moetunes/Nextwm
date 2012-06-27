@@ -1,3 +1,6 @@
+25/6/12
+  Send mouse clicks through to window when focusing
+
 23/6/12
   Use XFetchName for root window name in bar
 
