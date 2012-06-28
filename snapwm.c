@@ -281,7 +281,7 @@ void add_window(Window w, int tw) {
         } 
         if(j < 1) {
             XGetWindowAttributes(dis, w, &attr);
-            XMoveWindow(dis, w,sw/2-(attr.width/2),sb_height+4+(sh/2)-(attr.height/2));
+            XMoveWindow(dis, w,sw/2-(attr.width/2),(sh+sb_height+4)/2-(attr.height/2));
         }
         XGetWindowAttributes(dis, w, &attr);
         c->x = attr.x;
