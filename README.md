@@ -122,5 +122,4 @@ Need Xlib, then:
 ###Todo
 ----
 
-  * Improve font handling
   * Add commands and keyboard shortcuts to rc file.

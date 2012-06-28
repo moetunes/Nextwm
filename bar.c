@@ -1,4 +1,4 @@
-// bar.c [ 0.5.5 ]
+// bar.c [ 0.5.6 ]
 
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
@@ -34,30 +34,32 @@ void setup_status_bar() {
         values.font = font.font->fid;
         bggc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
-    sb_width = 0;
+    sb_desks = 0;
     for(i=0;i<DESKTOPS;i++) {
         if(font.fontset)
-            sb_bar[i].width = wc_size(sb_bar[i].label);
+            sb_bar[i].labelwidth = wc_size(sb_bar[i].label);
         else
-            sb_bar[i].width = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label));
-        if(sb_bar[i].width > sb_width)
-            sb_width = sb_bar[i].width;
+            sb_bar[i].labelwidth = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label));
+        sb_bar[i].width = sb_bar[i].labelwidth + 4;
+        if(sb_bar[i].width < sb_height*3/2) sb_bar[i].width = sb_height*3/2;
+        sb_desks += sb_bar[i].width;
     }
-    sb_width += 4;
-    if(sb_width < sb_height*3/2) sb_width = sb_height*3/2;
-    sb_desks = (DESKTOPS*sb_width)+2;
+    //sb_width += 4;
+    sb_desks += 2;
 }
 
 void status_bar() {
     int i, y;
 
     y = (topbar == 0) ? 0 : sh+bdw;
+    sb_width = 0;
     for(i=0;i<DESKTOPS;i++) {
-        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, i*sb_width, y,
-                                            sb_width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
+        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, sb_width, y,
+                                            sb_bar[i].width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask);
         XMapRaised(dis, sb_bar[i].sb_win);
+        sb_width += sb_bar[i].width;
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
@@ -110,20 +112,20 @@ void update_bar() {
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
                 if(showopen < 1 && desktops[i].numwins > 1) {
-                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                     draw_numopen(i, 2);
                 } else {
-                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 }
             } else {
-                draw_desk(sb_bar[i].sb_win, 1, 1, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                draw_desk(sb_bar[i].sb_win, 1, 1, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         } else {
             if(showopen < 1 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numwins > 1) {
-                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 draw_numopen(i, 0);
             } else {
-                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_width-sb_bar[i].width)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         }
     }
@@ -144,7 +146,7 @@ void draw_numopen(int cd, int gc) {
     for(i=0;i<desktops[cd].numwins; i++) {
         XFillRectangle(dis, sb_bar[cd].sb_win, theme[gc].gc, x, y, 2, 2);
         x += 3;
-        if((x+3) >= sb_width) return;
+        if((x+3) >= sb_bar[cd].width) return;
     }
 }
 
@@ -186,7 +188,7 @@ void update_output(int messg) {
     char *win_name;
 
     if(!(XFetchName(dis, root, &win_name))) {
-        strcpy(output, "&3snapwm 0.5.5 ");
+        strcpy(output, "&3snapwm 0.5.6 ");
         text_length = 15;
     } else {
         while(win_name[text_length] != '\0' && text_length < 256) {

@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.5.5 ]
+ /* snapwm.c [ 0.5.6 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -101,6 +101,7 @@ typedef struct {
     Window sb_win;
     char *label;
     int width;
+    int labelwidth;
 } Barwin;
 
 typedef struct {

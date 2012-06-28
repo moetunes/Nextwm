@@ -1,4 +1,4 @@
-// readrc.c [ 0.5.5 ]
+// readrc.c [ 0.5.6 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -242,9 +242,11 @@ void update_config() {
     y = (topbar == 0) ? 0 : sh+bdw;
     if(STATUS_BAR == 0) {
         setup_status_bar();
+        sb_width = 0;
         for(i=0;i<DESKTOPS;i++) {
             XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].barcolor);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, i*sb_width, y,sb_width-2,sb_height);
+            XMoveResizeWindow(dis, sb_bar[i].sb_win, sb_width, y,sb_bar[i].width-2,sb_height);
+            sb_width += sb_bar[i].width;
         }
         XSetWindowBorder(dis,sb_area,theme[3].barcolor);
         XSetWindowBackground(dis, sb_area, theme[1].barcolor);
