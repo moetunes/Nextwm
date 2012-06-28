@@ -40,11 +40,10 @@ void setup_status_bar() {
             sb_bar[i].labelwidth = wc_size(sb_bar[i].label);
         else
             sb_bar[i].labelwidth = XTextWidth(font.font, sb_bar[i].label, strlen(sb_bar[i].label));
-        sb_bar[i].width = sb_bar[i].labelwidth + 4;
+        sb_bar[i].width = sb_bar[i].labelwidth + 6;
         if(sb_bar[i].width < sb_height*3/2) sb_bar[i].width = sb_height*3/2;
         sb_desks += sb_bar[i].width;
     }
-    //sb_width += 4;
     sb_desks += 2;
 }
 
