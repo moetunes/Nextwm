@@ -992,22 +992,25 @@ void leavenotify(XEvent *e) {
 void buttonpress(XEvent *e) {
     XButtonEvent *ev = &e->xbutton;
     client *c;
+    int i;
 
     if(STATUS_BAR == 0) {
-        int i;
+        if(sb_area == ev->subwindow) return;
         for(i=0;i<DESKTOPS;i++)
-            if(i != current_desktop && sb_bar[i].sb_win == ev->window) {
+            if(sb_bar[i].sb_win == ev->subwindow) return;
+            if(sb_bar[i].sb_win == ev->window && i != current_desktop) {
                 Arg a = {.i = i};
                 change_desktop(a);
                 return;
             } else {
-                if(i == current_desktop && sb_bar[i].sb_win == ev->window) {
+                if(sb_bar[i].sb_win == ev->window && i == current_desktop) {
                     next_win();
                     return;
                 }
             }
     }
 
+    printf("WOOT!!\n");
     // change focus with LMB
     if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
         for(c=head;c;c=c->next) {
