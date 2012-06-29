@@ -1024,7 +1024,11 @@ void buttonpress(XEvent *e) {
 
     if(ev->subwindow == None) return;
 
+    i = 0;
     if(mode == 4) {
+        for(c=head;c;c=c->next)
+            if(ev->subwindow == c->win) i = 1;
+        if(i == 0) return;
         XGrabPointer(dis, ev->subwindow, True,
             PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
             GrabModeAsync, None, None, CurrentTime);
