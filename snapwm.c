@@ -997,13 +997,13 @@ void buttonpress(XEvent *e) {
     if(STATUS_BAR == 0) {
         if(sb_area == ev->subwindow) return;
         for(i=0;i<DESKTOPS;i++)
-            if(sb_bar[i].sb_win == ev->subwindow) return;
-            if(sb_bar[i].sb_win == ev->window && i != current_desktop) {
+            //if(sb_bar[i].sb_win == ev->subwindow) printf("WOOT!\n");
+            if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i != current_desktop) {
                 Arg a = {.i = i};
                 change_desktop(a);
                 return;
             } else {
-                if(sb_bar[i].sb_win == ev->window && i == current_desktop) {
+                if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i == current_desktop) {
                     next_win();
                     return;
                 }
@@ -1152,7 +1152,7 @@ void kill_client() {
 }
 
 void quit() {
-    int i;
+    unsigned int i;
     client *c;
 
     for(i=0;i<DESKTOPS;++i) {
