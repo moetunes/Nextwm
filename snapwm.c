@@ -1010,7 +1010,6 @@ void buttonpress(XEvent *e) {
             }
     }
 
-    printf("WOOT!!\n");
     // change focus with LMB
     if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
         for(c=head;c;c=c->next) {
