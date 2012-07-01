@@ -63,7 +63,7 @@ void status_bar() {
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
-    XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
+    XSelectInput(dis, sb_area, ButtonPressMask|ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapWindow(dis, sb_area);
     XGetWindowAttributes(dis, sb_area, &attr);
     total_w = attr.width;

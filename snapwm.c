@@ -995,7 +995,11 @@ void buttonpress(XEvent *e) {
     int i;
 
     if(STATUS_BAR == 0) {
-        if(sb_area == ev->subwindow) return;
+        if(sb_area == ev->subwindow || sb_area == ev->window) {
+            Arg a = {.i = previous_desktop};
+            change_desktop(a);
+            return;
+        }
         for(i=0;i<DESKTOPS;i++)
             if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i != current_desktop) {
                 Arg a = {.i = i};
