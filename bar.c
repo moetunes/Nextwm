@@ -1,4 +1,4 @@
-// bar.c [ 0.5.6 ]
+// bar.c [ 0.5.7 ]
 
 static void draw_numopen(int cd, int gc);
 static Drawable area_sb;
@@ -57,14 +57,14 @@ void status_bar() {
                                             sb_bar[i].width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask);
-        XMapRaised(dis, sb_bar[i].sb_win);
+        XMapWindow(dis, sb_bar[i].sb_win);
         sb_width += sb_bar[i].width;
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
              sw-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ExposureMask|EnterWindowMask|LeaveWindowMask);
-    XMapRaised(dis, sb_area);
+    XMapWindow(dis, sb_area);
     XGetWindowAttributes(dis, sb_area, &attr);
     total_w = attr.width;
     area_sb = XCreatePixmap(dis, root, total_w, sb_height, DefaultDepth(dis, screen));
@@ -187,7 +187,7 @@ void update_output(int messg) {
     char *win_name;
 
     if(!(XFetchName(dis, root, &win_name))) {
-        strcpy(output, "&3snapwm 0.5.6 ");
+        strcpy(output, "&3snapwm 0.5.7 ");
         text_length = 15;
     } else {
         while(win_name[text_length] != '\0' && text_length < 256) {
