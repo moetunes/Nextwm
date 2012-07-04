@@ -200,7 +200,7 @@ void update_output(int messg) {
 
     for(n=0;n<text_length;n++) {
         while(output[n] == '&') {
-            if(output[n+1]-'0' < 7 && output[n+1]-'0' > 0) {
+            if(output[n+1]-'0' < 7 && output[n+1]-'0' >= 0) {
                 n += 2;
             } else break;
         }
