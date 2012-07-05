@@ -1107,6 +1107,14 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
     client *c;
 
     if(ev->send_event == 1) {
+        if(transient != NULL) {
+            for(c=transient;c;c=c->next)
+                if(ev->window == c->win) {
+                    remove_window(ev->window, 1);
+                    select_desktop(tmp);
+                    return;
+                }
+        }
         save_desktop(tmp);
         for(i=0;i<TABLENGTH(desktops);++i) {
             select_desktop(i);
