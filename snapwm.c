@@ -355,6 +355,7 @@ void remove_window(Window w, int dr) {
                 }
                 free(c);
                 save_desktop(current_desktop);
+                update_current();
                 return;
             }
         }
