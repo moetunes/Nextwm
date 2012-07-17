@@ -710,15 +710,18 @@ void update_current() {
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
     for(c=head;c;c=c->next) {
-        ((head->next == NULL) || (mode == 1)) ? XSetWindowBorderWidth(dis,c->win,0) : XSetWindowBorderWidth(dis,c->win,bdw);
+        ((mode == 1) || ((head->next == NULL) && (mode != 4))) ? XSetWindowBorderWidth(dis,c->win,0) : XSetWindowBorderWidth(dis,c->win,bdw);
 
         if(current == c) {
             // "Enable" current window
             if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
-            XSetWindowBorder(dis,c->win,theme[0].wincolor);
-            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
-            if(transient == NULL) XRaiseWindow(dis,c->win);
-            if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
+            if(transient == NULL) {
+                XSetWindowBorder(dis,c->win,theme[0].wincolor);
+                XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
+                XRaiseWindow(dis,c->win);
+                if(clicktofocus == 0) XUngrabButton(dis, AnyButton, AnyModifier, c->win);
+            } else XSetWindowBorder(dis,c->win,theme[1].wincolor);
+            
         } else {
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].wincolor);
@@ -890,8 +893,9 @@ void maprequest(XEvent *e) {
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].wincolor);
-        XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
+        update_current();
         XMapRaised(dis,ev->window);
+        XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         return;
     }
 
