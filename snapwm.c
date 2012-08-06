@@ -604,8 +604,8 @@ void select_desktop(int i) {
 
 void tile() {
     client *c, *d;
-    unsigned int n = 0, x = 0, y = 0;
-    unsigned int xpos = 0, ypos=0, wdt = 0, ht = 0, msw, ssw, ncols = 2, nrows = 1;
+    unsigned int x = 0, xpos = 0, ypos=0, wdt = 0, msw, ssw, ncols = 2, nrows = 1;
+    int ht = 0, y = 0, n = 0;
 
     // For a top bar
     y = (STATUS_BAR == 0 && topbar == 0 && show_bar == 0) ? sb_height+4 : 0;
