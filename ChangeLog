@@ -1,3 +1,8 @@
+8/8/12
+  Fixed Kill client and quit
+  the order windows are focused in is remembered -
+      makes a difference in stacking mode !
+
 5/8/12
   Change the grid mode for up to 5 rows and columns with the option to resize the
   first column and the second window.

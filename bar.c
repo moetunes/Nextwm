@@ -128,6 +128,7 @@ void update_bar() {
             }
         }
     }
+    if(head == NULL) status_text("");
 }
 
 void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len) {
