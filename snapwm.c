@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.5.7 ]
+ /* snapwm.c [ 0.5.8 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -226,11 +226,10 @@ static Iammanyfonts font;
 void add_window(Window w, int tw) {
     client *c,*t, *dummy;
 
-    if(tw < 2) // For shifting windows between desktops
-        if(!(c = (client *)calloc(1,sizeof(client)))) {
-            logger("\033[0;31mError calloc!");
-            exit(1);
-        }
+    if(!(c = (client *)calloc(1,sizeof(client)))) {
+        logger("\033[0;31mError calloc!");
+        exit(1);
+    }
 
     if(tw == 0) {
         XClassHint chh = {0};
@@ -256,7 +255,7 @@ void add_window(Window w, int tw) {
         c->height = attr.height;
     }
 
-    c->order = 0; c->win = w;
+    c->win = w; c->order = 0;
     dummy = (tw == 1) ? transient : head;
     for(t=dummy;t;t=t->next)
         t->order++;
@@ -521,16 +520,16 @@ void client_to_desktop(const Arg arg) {
 
     if(arg.i == current_desktop || current == NULL) return;
 
-    // Remove client from current desktop
-    XUnmapWindow(dis,current->win);
-    remove_window(current->win, 1, 0);
-
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win, 2);
+    add_window(tmp->win, 0);
     save_desktop(arg.i);
 
     select_desktop(tmp2);
+    // Remove client from current desktop
+    XUnmapWindow(dis,current->win);
+    remove_window(current->win, 0, 0);
+
     if(STATUS_BAR == 0) update_bar();
 }
 
