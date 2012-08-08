@@ -634,13 +634,8 @@ void tile() {
                 }
                 break;
             case 4: // Stacking
-                for(x=desktops[current_desktop].numwins;x>0;x--) {
-                    for(c=head;c;c=c->next)
-                        if(c->order == (x-1)) {
-                            XMoveResizeWindow(dis,c->win,c->x,c->y,c->width,c->height);
-                            break;
-                        }
-                }
+                for(c=head;c;c=c->next)
+                    XMoveResizeWindow(dis,c->win,c->x,c->y,c->width,c->height);
                 break;
             }
             default:
@@ -972,7 +967,6 @@ void buttonpress(XEvent *e) {
             if(ev->window == c->win) {
                 current = c;
                 update_current();
-                if(mode == 4) tile();
                 XSendEvent(dis, PointerWindow, False, 0xfff, e);
                 XFlush(dis);
                 return;
@@ -1004,7 +998,6 @@ void motionnotify(XEvent *e) {
            if(ev->window == c->win) {
                 current = c;
                 update_current();
-                if(mode == 4) tile();
                 dowarp = 0;
                 return;
            }
