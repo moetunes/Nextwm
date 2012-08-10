@@ -108,6 +108,8 @@ static key keys[] = {
     {  MOD1|ShiftMask,   XK_f,          switch_mode,       {.i = 1}}, // fullscreen
     {  MOD1|ShiftMask,   XK_v,          switch_mode,       {.i = 0}}, // vertical
     {  MOD1|ShiftMask,   XK_c,          switch_mode,       {.i = 4}}, // stacking
+    {  MOD1|ShiftMask,   XK_m,          more_master,       {.i = 1}}, // add window to master area
+    {  MOD1|ShiftMask,   XK_l,          more_master,       {.i = -1}}, // remove window from master area
 // Control + alt + shortcut
     {  MOD1|ControlMask, XK_q,          quit,              {NULL}},
 // Window key + shortcut

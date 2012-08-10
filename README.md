@@ -63,6 +63,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
  
  * The window *W* at the top of the stack can be resized on a per desktop basis.
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
+ * Windows can be added/removed to/from the master area with keyboard shortcuts
  * There is a bar with a desktop switcher, space to show the focused window's name and space to show external text.
  * The rc file is reloadable 'on the run'.
 
@@ -72,7 +73,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Moved the RC FILE to $HOME/.config/snapwm/rc.conf
+  * Windows can be added/removed to/from the master area with keyboard shortcuts
 
 
 
@@ -96,6 +97,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Seperated the window and bar colours in the config.h and rc files
   * Added support for multibyte fonts
   * Added 'double buffer' for text in the bar
+  * Changed grid mode: First column and second window can be resized
+  * Moved the RC FILE to $HOME/.config/snapwm/rc.conf
 
 
 ###Installation
