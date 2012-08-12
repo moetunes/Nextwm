@@ -587,10 +587,10 @@ void tile() {
             case 0: /* Vertical */
             	// Master window
             	if(nmaster < 1)
-                    XMoveResizeWindow(dis,head->win,0,y,master_size - BORDER_WIDTH,sh - BORDER_WIDTH);
+                    XMoveResizeWindow(dis,head->win,0,y,master_size - bdw,sh - bdw);
                 else {
                     for(d=head;d;d=d->next) {
-                        XMoveResizeWindow(dis,d->win,0,ypos,master_size - BORDER_WIDTH,sh/(nmaster+1) - BORDER_WIDTH);
+                        XMoveResizeWindow(dis,d->win,0,ypos,master_size - bdw,sh/(nmaster+1) - bdw);
                         if(x == nmaster) break;
                         ypos += sh/(nmaster+1); x++;
                     }
@@ -599,10 +599,10 @@ void tile() {
                 // Stack
                 if(d == NULL) d = head;
                 n = desktops[current_desktop].numwins - (nmaster+1);
-                XMoveResizeWindow(dis,d->next->win,master_size + BORDER_WIDTH,y,sw-master_size-(2*BORDER_WIDTH),(sh/n)+growth - BORDER_WIDTH);
+                XMoveResizeWindow(dis,d->next->win,master_size + bdw,y,sw-master_size-(2*bdw),(sh/n)+growth - bdw);
                 y += (sh/n)+growth;
                 for(c=d->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,master_size + BORDER_WIDTH,y,sw-master_size-(2*BORDER_WIDTH),(sh/n)-(growth/(n-1)) - BORDER_WIDTH);
+                    XMoveResizeWindow(dis,c->win,master_size + bdw,y,sw-master_size-(2*bdw),(sh/n)-(growth/(n-1)) - bdw);
                     y += (sh/n)-(growth/(n-1));
                 }
                 break;
@@ -613,10 +613,10 @@ void tile() {
             case 2: /* Horizontal */
             	// Master window
             	if(nmaster < 1)
-                    XMoveResizeWindow(dis,head->win,xpos,ypos,sw-BORDER_WIDTH,master_size-BORDER_WIDTH);
+                    XMoveResizeWindow(dis,head->win,xpos,ypos,sw-bdw,master_size-bdw);
                 else {
                     for(d=head;d;d=d->next) {
-                        XMoveResizeWindow(dis,d->win,xpos,ypos,sw/(nmaster+1)-BORDER_WIDTH,master_size-BORDER_WIDTH);
+                        XMoveResizeWindow(dis,d->win,xpos,ypos,sw/(nmaster+1)-bdw,master_size-bdw);
                         if(x == nmaster) break;
                         xpos += sw/(nmaster+1); x++;
                     }
@@ -625,10 +625,10 @@ void tile() {
                 // Stack
                 if(d == NULL) d = head;
                 n = desktops[current_desktop].numwins - (nmaster+1);
-                XMoveResizeWindow(dis,d->next->win,0,y+master_size + BORDER_WIDTH,(sw/n)+growth-BORDER_WIDTH,sh-master_size-(2*BORDER_WIDTH));
+                XMoveResizeWindow(dis,d->next->win,0,y+master_size + bdw,(sw/n)+growth-bdw,sh-master_size-(2*bdw));
                 msw = (sw/n)+growth;
                 for(c=d->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,msw,y+master_size + BORDER_WIDTH,(sw/n)-(growth/(n-1)) - BORDER_WIDTH,sh-master_size-(2*BORDER_WIDTH));
+                    XMoveResizeWindow(dis,c->win,msw,y+master_size + bdw,(sw/n)-(growth/(n-1)) - bdw,sh-master_size-(2*bdw));
                     msw += (sw/n)-(growth/(n-1));
                 }
                 break;
@@ -662,7 +662,7 @@ void tile() {
                         ypos -= growth;
                     }
                     wdt = (xpos > 0) ? ssw : msw;
-                    XMoveResizeWindow(dis,d->win,xpos,ypos,wdt-BORDER_WIDTH,ht-BORDER_WIDTH);
+                    XMoveResizeWindow(dis,d->win,xpos,ypos,wdt-bdw,ht-bdw);
                     ht = sh/nrows;
                     ypos -= ht; n++;
                 }
@@ -704,9 +704,12 @@ void update_current() {
         }
     }
     current->order = 0;
-    if(STATUS_BAR == 0 && show_bar == 0) {
-        (head != NULL) ? getwindowname() : status_text("");
+    if(transient != NULL) {
+        XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
+        XRaiseWindow(dis,transient->win);
     }
+    if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
+
     XSync(dis, False);
 }
 
