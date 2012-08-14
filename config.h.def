@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.5.8 ]
+ /* config.h for snapwm.c [ 0.6.0 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,9 +28,6 @@
 #define STATUS_BAR  0  /* 1=Don't 0=Make the bar */
 #define FONTS_ERROR 1  /* 1=Don't 0=Print errors about missing fonts */
 
-/* Mod (Mod1 == alt) (Mod4 == Super/windows) */
-#define MOD1            Mod1Mask
-#define MOD4            Mod4Mask
 #define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
 #define LA_WINDOWNAME   1  /* 1=Dont't 0=Left align current window name in bar */
 
@@ -57,73 +54,6 @@ static const char *defaulttextcolor[] = { "#000000", "#ffffff", "#ffffff", "#fff
 static const char *defaultwincolor[] = { "#ff0000", "#00ff00", };
 static const char *defaultmodename[] = { "[0]", "[1]", "[2]", "[3]", "[4]", };
 static const char defaultfontlist[] = "-*-terminus-medium-r-*-*-12-*-*-*-*-*-*-*";
-
-// Open applications on a specific desktop. Examples given are commented out
-static const Convenience convenience[] = { \
-    /*  class     desktop follow 1=Don't 0=Change the desktop*/
-    { "None",   0,   0 },
-    //{ "Firefox",      3,    0 },
-    //{ "MPlayer",      4,    0 },
-};
-
-// In stacking mode set position and size for application
-static const Positional positional[] = { \
-    /* class  x  y  width  height */
-    { "None",    0,  0,  0,  0 },
-    //{ "URxvt", 100,320,820,400 },
-};
-
-// Using a script makes changing commands easy
-const char* dmenucmd[]      = {"dmenu_run","-i","-nb","#666622","-nf","white",NULL};
-const char* terminalcmd[]   = {"xterm",NULL};
-
-// Avoid multiple paste
-#define DESKTOPCHANGE(K,N) \
-    {  MOD1,             K,        change_desktop, {.i = N}}, \
-    {  MOD1|ShiftMask,   K,        follow_client_to_desktop, {.i = N}}, \
-    {  MOD4|ShiftMask,   K,        client_to_desktop, {.i = N}},
-
-// Shortcuts
-static key keys[] = {
-    // MOD               KEY             FUNCTION            ARGS
-    {  MOD1,             XK_h,          resize_master,     {.i = 10}},
-    {  MOD1,             XK_l,          resize_master,     {.i = -10}},
-    {  MOD1,             XK_c,          kill_client,       {NULL}},
-    {  MOD1,             XK_j,          next_win,          {NULL}},
-    {  MOD1,             XK_k,          prev_win,          {NULL}},
-    {  MOD1,             XK_v,          spawn,             {.com = dmenucmd}},
-    {  MOD1,             XK_p,          resize_stack,      {.i = 10}},
-    {  MOD1,             XK_o,          resize_stack,      {.i = -10}},
-    {  MOD1,             XK_u,          update_config,     {NULL}},
-    {  MOD1,             XK_Tab,        last_desktop,      {NULL}},
-    {  MOD1,             XK_a,          rotate_mode,       {.i = 1}},
-// alt + shift + shortcut
-    {  MOD1|ShiftMask,   XK_j,          move_up,           {.i = -10}},
-    {  MOD1|ShiftMask,   XK_k,          move_down,         {.i = 10}},
-    {  MOD1|ShiftMask,   XK_o,          move_left,         {.i = -10}},
-    {  MOD1|ShiftMask,   XK_p,          move_right,        {.i = 10}},
-    {  MOD1|ShiftMask,   XK_Return,     swap_master,       {NULL}},
-    {  MOD1|ShiftMask,   XK_g,          switch_mode,       {.i = 3}}, // grid
-    {  MOD1|ShiftMask,   XK_h,          switch_mode,       {.i = 2}}, // horizontal
-    {  MOD1|ShiftMask,   XK_f,          switch_mode,       {.i = 1}}, // fullscreen
-    {  MOD1|ShiftMask,   XK_v,          switch_mode,       {.i = 0}}, // vertical
-    {  MOD1|ShiftMask,   XK_c,          switch_mode,       {.i = 4}}, // stacking
-    {  MOD1|ShiftMask,   XK_m,          more_master,       {.i = 1}}, // add window to master area
-    {  MOD1|ShiftMask,   XK_l,          more_master,       {.i = -1}}, // remove window from master area
-// Control + alt + shortcut
-    {  MOD1|ControlMask, XK_q,          quit,              {NULL}},
-// Window key + shortcut
-    {  MOD4,             XK_Right,      rotate_desktop,    {.i = 1}},
-    {  MOD4,             XK_Left,       rotate_desktop,    {.i = -1}},
-    {  MOD4,             XK_b,          toggle_bar,        {NULL}},
-    {  MOD4,             XK_t,          spawn,             {.com = terminalcmd}},
-       DESKTOPCHANGE(   XK_1,                              0)
-       DESKTOPCHANGE(   XK_2,                              1)
-       DESKTOPCHANGE(   XK_3,                              2)
-       DESKTOPCHANGE(   XK_4,                              3)
-       DESKTOPCHANGE(   XK_5,                              4)
-       DESKTOPCHANGE(   XK_6,                              5)
-};
 
 #endif
 

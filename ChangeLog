@@ -1,3 +1,7 @@
+14/8/12
+    Moved keyboard shortcuts and apps settings to files in
+      ~/.config/snapwm/key.conf and apps.conf.
+
 10/8/12
   Can now add/remove windows to/from the master area
     with keyboard shortcuts

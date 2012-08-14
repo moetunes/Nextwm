@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.5.8 ]
+ /* snapwm.c [ 0.6.0 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -44,16 +44,16 @@
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
 
 typedef union {
-    const char** com;
-    const int i;
+    char *com[10];
+    int i;
 } Arg;
 
 // Structs
 typedef struct {
     unsigned int mod;
-    KeySym keysym;
-    void (*function)(const Arg arg);
-    const Arg arg;
+    char * keysym;
+    void (*myfunction)(const Arg arg);
+    Arg arg;
 } key;
 
 typedef struct client client;
@@ -110,6 +110,11 @@ typedef struct {
     GC gc;
 } Theme;
 
+typedef struct {
+    char *name;
+    char *list[10];
+} Commands;
+
 // Functions
 static void add_window(Window w, int tw);
 static void buttonpress(XEvent *e);
@@ -146,6 +151,8 @@ static void prev_win();
 static void propertynotify(XEvent *e);
 static void quit();
 static void remove_window(Window w, unsigned int dr, unsigned int tw);
+static void read_apps_file();
+static void read_keys_file();
 static void read_rcfile();
 static void resize_master(const Arg arg);
 static void resize_stack(const Arg arg);
@@ -184,7 +191,7 @@ static int growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
-static unsigned int topbar, top_stack, windownamelength;
+static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount;
 static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
@@ -193,7 +200,7 @@ static Window root;
 static Window sb_area;
 static client *head, *current, *transient;
 static char font_list[256];
-static char RC_FILE[100];
+static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
 static Atom alphaatom, wm_delete_window, protos, *protocols;
 static XWindowAttributes attr;
 static XButtonEvent starter;
@@ -220,8 +227,13 @@ static desktop desktops[DESKTOPS];
 static Barwin sb_bar[DESKTOPS];
 static Theme theme[8];
 static Iammanyfonts font;
+static key keys[80];
+static Commands cmds[50];
+static Convenience convenience[20];
+static Positional positional[20];
 #include "bar.c"
 #include "readrc.c"
+#include "readkeysapps.c"
 
 /* ***************************** Window Management ******************************* */
 void add_window(Window w, int tw) {
@@ -236,7 +248,7 @@ void add_window(Window w, int tw) {
         XClassHint chh = {0};
         unsigned int i, j=0;
         if(XGetClassHint(dis, w, &chh)) {
-            for(i=0;i<TABLENGTH(positional);i++)
+            for(i=0;i<pcount;i++)
                 if(strcmp(chh.res_class, positional[i].class) == 0) {
                     XMoveResizeWindow(dis,w,positional[i].x,positional[i].y,positional[i].width,positional[i].height);
                     j++;
@@ -776,6 +788,7 @@ void grabkeys() {
     KeyCode code;
 
     XUngrabKey(dis, AnyKey, AnyModifier, root);
+    read_keys_file();
     // numlock workaround
     numlockmask = 0;
     modmap = XGetModifierMapping(dis);
@@ -788,18 +801,18 @@ void grabkeys() {
     XFreeModifiermap(modmap);
 
     // For each shortcuts
-    for(i=0;i<TABLENGTH(keys);++i) {
-        code = XKeysymToKeycode(dis,keys[i].keysym);
+    for(i=0;i<keycount;++i) {
+        code = XKeysymToKeycode(dis,XStringToKeysym(keys[i].keysym));
         XGrabKey(dis, code, keys[i].mod, root, True, GrabModeAsync, GrabModeAsync);
         XGrabKey(dis, code, keys[i].mod | LockMask, root, True, GrabModeAsync, GrabModeAsync);
         XGrabKey(dis, code, keys[i].mod | numlockmask, root, True, GrabModeAsync, GrabModeAsync);
         XGrabKey(dis, code, keys[i].mod | numlockmask | LockMask, root, True, GrabModeAsync, GrabModeAsync);
     }
     for(i=1;i<4;i+=2) {
-        XGrabButton(dis, i, RESIZEMOVEKEY, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-        XGrabButton(dis, i, RESIZEMOVEKEY | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-        XGrabButton(dis, i, RESIZEMOVEKEY | numlockmask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-        XGrabButton(dis, i, RESIZEMOVEKEY | numlockmask | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, Mod1Mask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, Mod1Mask | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, Mod1Mask | numlockmask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, Mod1Mask | numlockmask | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
     }
 }
 
@@ -809,10 +822,10 @@ void keypress(XEvent *e) {
     XKeyEvent *ev = &e->xkey;
 
     keysym = XkbKeycodeToKeysym(dis, (KeyCode)ev->keycode, 0, 0);
-    for(i = 0; i < TABLENGTH(keys); i++) {
-        if(keysym == keys[i].keysym && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)) {
-            if(keys[i].function)
-                keys[i].function(keys[i].arg);
+    for(i = 0; i < keycount; i++) {
+        if(keysym == XStringToKeysym(keys[i].keysym) && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)) {
+            if(keys[i].myfunction)
+                keys[i].myfunction(keys[i].arg);
         }
     }
 }
@@ -883,7 +896,7 @@ void maprequest(XEvent *e) {
     XClassHint ch = {0};
     unsigned int i=0, j=0, tmp = current_desktop;
     if(XGetClassHint(dis, ev->window, &ch))
-        for(i=0;i<TABLENGTH(convenience);i++)
+        for(i=0;i<dtcount;i++)
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
                 save_desktop(tmp);
                 select_desktop(convenience[i].preferredd-1);
@@ -1215,6 +1228,8 @@ void setup() {
         logger("LOCALE FAILED");
     // Read in RC_FILE
     sprintf(RC_FILE, "%s/.config/snapwm/rc.conf", getenv("HOME"));
+    sprintf(KEY_FILE, "%s/.config/snapwm/key.conf", getenv("HOME"));
+    sprintf(APPS_FILE, "%s/.config/snapwm/apps.conf", getenv("HOME"));
     set_defaults();
     read_rcfile();
     if(STATUS_BAR == 0) {
@@ -1224,6 +1239,7 @@ void setup() {
         update_output(1);
         if(SHOW_BAR > 0) toggle_bar();
     }
+    read_apps_file();
 
     // Shortcuts
     grabkeys();

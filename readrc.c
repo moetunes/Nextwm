@@ -1,4 +1,4 @@
-// readrc.c [ 0.5.8 ]
+// readrc.c [ 0.6.0 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -267,5 +267,9 @@ void update_config() {
     tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
+
+    read_apps_file();
+    memset(keys, 0, keycount * sizeof(key));
+    memset(cmds, 0, cmdcount * sizeof(Commands));
     grabkeys();
 }

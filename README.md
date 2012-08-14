@@ -73,7 +73,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Windows can be added/removed to/from the master area with keyboard shortcuts
+  * Keyboard shortcuts and apps settings moved to files in ~/.config/snapwm/
 
 
 
@@ -99,6 +99,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Added 'double buffer' for text in the bar
   * Changed grid mode: First column and second window can be resized
   * Moved the RC FILE to $HOME/.config/snapwm/rc.conf
+  * Windows can be added/removed to/from the master area with keyboard shortcuts
 
 
 ###Installation
@@ -106,7 +107,12 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 Need Xlib, then:
 
-    Copy the rc file to $HOME and edit it to suit.
+    Copy the sample.rc.conf file to $HOME/.config/snapwm and edit it to suit.
+
+    Copy the sample.apps.conf file to $HOME/.config/snapwm and edit it to suit.
+
+    Copy the sample.key.conf file to $HOME/.config/snapwm and edit it to suit.
+
     Edit the config.h.def file to suit your needs and
         save it as config.h making sure to add
         the correct path for the rc file.
