@@ -531,10 +531,8 @@ void follow_client_to_desktop(const Arg arg) {
 }
 
 void client_to_desktop(const Arg arg) {
-    if(arg.i == current_desktop || current == NULL ||arg.i >= DESKTOPS) {
-        printf("CLIENT_TO_DEKTOP FAIL !!!\n");
-        return;
-    }
+    if(arg.i == current_desktop || current == NULL ||arg.i >= DESKTOPS) return;
+
     client *tmp = current;
     unsigned int tmp2 = current_desktop;
 
@@ -548,7 +546,6 @@ void client_to_desktop(const Arg arg) {
     remove_window(current->win, 0, 0);
 
     if(STATUS_BAR == 0) update_bar();
-    printf("C_TO_D - REMOVED CLIENT\n");
 }
 
 void save_desktop(int i) {

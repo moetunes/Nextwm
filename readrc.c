@@ -202,7 +202,6 @@ void set_defaults() {
 
 void update_config() {
     unsigned int i, y, old_desktops = DESKTOPS, tmp = current_desktop;
-    client *c;
     
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<256;i++)
@@ -212,22 +211,16 @@ void update_config() {
     y = (topbar == 0) ? 0 : sh+bdw;
     if(DESKTOPS < old_desktops) {
         save_desktop(current_desktop);
-        printf("CURRENT = %d, DESKTOPS = %d, OLD = %d.\n", current_desktop, DESKTOPS, old_desktops);
         Arg a = {.i = DESKTOPS-1};
         for(i=DESKTOPS;i<old_desktops;i++) {
             select_desktop(i);
-            printf("**DESKTOP [ %d ], numwins = %d\n", current_desktop, desktops[current_desktop].numwins);
             if(head != NULL) {
-                printf("**MOVing CLIENT !!!!!\n");
                 while(desktops[current_desktop].numwins > 0) {
-                    printf("WHAT!!\n");
                     client_to_desktop(a);
-                    printf("**CLIENT MOVED !!\n");
                 }
             }
         }
         select_desktop(tmp);
-        printf("****DESKTOPs DONE\n");
         if(current_desktop > (DESKTOPS-1)) change_desktop(a);
     }
     if(STATUS_BAR == 0) {
