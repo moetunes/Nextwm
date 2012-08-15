@@ -96,6 +96,7 @@ void read_rcfile() {
                             theme[i].modename = strdup(dummy3);
                     }
                 } else if(strstr(buffer,"FONTNAME" ) != NULL) {
+                    memset(font_list, '\0', 256);
                     strncpy(font_list, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
                     get_font();
                     sb_height = font.height+2;
@@ -158,7 +159,7 @@ void get_font() {
 		}
 		font.width = XmbTextEscapement(font.fontset, " ", 1);
 	} else {
-		fprintf(stderr, ":: snapwm :: Font '%s' Not Found\nSSB :: Trying Font 'Fixed'\n", font_list);
+		fprintf(stderr, ":: snapwm :: Font '%s' Not Found\n:: snapwm :: Trying Font 'Fixed'\n", font_list);
 		if(!(font.font = XLoadQueryFont(dis, font_list))
 		&& !(font.font = XLoadQueryFont(dis, "fixed")))
 			fprintf(stderr, ":: snapwm :: Error, cannot load font: '%s'\n", font_list);

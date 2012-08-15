@@ -252,6 +252,11 @@ unsigned int wc_size(char *string) {
     XRectangle rect;
 
     num = strlen(string);
-    XmbTextExtents(font.fontset, string, num, NULL, &rect);
-    return rect.width;
+
+    if(font.fontset) {
+        XmbTextExtents(font.fontset, string, num, NULL, &rect);
+        return rect.width;
+    } else {
+        return XTextWidth(font.font, string, num);
+    }
 }
