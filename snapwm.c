@@ -895,23 +895,24 @@ void maprequest(XEvent *e) {
     }
 
     XClassHint ch = {0};
-    unsigned int i=0, j=0, tmp = current_desktop;
+    unsigned int i=0, j=0, tmp = current_desktop, tmp2;
     if(XGetClassHint(dis, ev->window, &ch))
         for(i=0;i<dtcount;i++)
             if(strcmp(ch.res_class, convenience[i].class) == 0) {
+                tmp2 = (convenience[i].preferredd > DESKTOPS) ? DESKTOPS-1 : convenience[i].preferredd-1;
                 save_desktop(tmp);
-                select_desktop(convenience[i].preferredd-1);
+                select_desktop(tmp2);
                 for(c=head;c;c=c->next)
                     if(ev->window == c->win)
                         ++j;
                 if(j < 1) add_window(ev->window, 0);
-                if(tmp == convenience[i].preferredd-1) {
+                if(tmp == tmp2) {
                     tile();
                     XMapWindow(dis, ev->window);
                     update_current();
                 } else select_desktop(tmp);
                 if(convenience[i].followwin == 0) {
-                    Arg a = {.i = convenience[i].preferredd-1};
+                    Arg a = {.i = tmp2};
                     change_desktop(a);
                 }
                 if(STATUS_BAR == 0) update_bar();
