@@ -1,9 +1,9 @@
-/* readkeysapps.c [ 0.6.0 ] */
+/* readkeysapps.c [ 0.6.1 ] */
 
 void read_keys_file() {
     FILE *keyfile ;
-    char buffer[100];
-    char dummy[100];
+    char buffer[256];
+    char dummy[256];
     char *dummy2, *dummy3, *dummy4;
     keycount = cmdcount = 0;
     int i, j;
@@ -35,33 +35,27 @@ void read_keys_file() {
                 dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
                 dummy3 = strsep(&dummy2, ";");
-                if(strncmp(dummy3, "DESKTOPCHANGE", 12) == 0) {
-                    keys[keycount].keysym = strsep(&dummy2, ";");
-                    dummy4 = strsep(&dummy2, ";");
-                    keys[keycount].mod = Mod1Mask;
-                    keys[keycount].myfunction = change_desktop;
-                    keys[keycount].arg.i = atoi(dummy4);
-                    keycount++;
-                    keys[keycount].mod = Mod4Mask|ShiftMask;
-                    keys[keycount].keysym = keys[keycount-1].keysym;
-                    keys[keycount].myfunction = client_to_desktop;
-                    keys[keycount].arg.i = atoi(dummy4);
-                    keycount++;
-                    keys[keycount].mod = Mod1Mask|ShiftMask;
-                    keys[keycount].keysym = keys[keycount-1].keysym;
-                    keys[keycount].myfunction = follow_client_to_desktop;
-                    keys[keycount].arg.i = atoi(dummy4);
-                    keycount++;
-                    continue;
-                } else if(strncmp(dummy3, "Alt", 3) == 0) keys[keycount].mod = Mod1Mask;
+                if(strncmp(dummy3, "Alt", 3) == 0) keys[keycount].mod = Mod1Mask;
                 else if(strncmp(dummy3, "CtrlAlt", 7) == 0) keys[keycount].mod = Mod1Mask|ControlMask;
                 else if(strncmp(dummy3, "ShftAlt", 7) == 0) keys[keycount].mod = Mod1Mask|ShiftMask;
                 else if(strncmp(dummy3, "Super", 5) == 0) keys[keycount].mod = Mod4Mask;
+                else if(strncmp(dummy3, "CtrlSuper", 7) == 0) keys[keycount].mod = Mod4Mask|ControlMask;
+                else if(strncmp(dummy3, "ShftSuper", 7) == 0) keys[keycount].mod = Mod4Mask|ShiftMask;
+                else continue;
                 keys[keycount].keysym = strsep(&dummy2, ";");
                 dummy3 = strsep(&dummy2, ";");
                 if(strcmp(dummy3, "kill_client") == 0) keys[keycount].myfunction = kill_client;
                 else if(strcmp(dummy3, "last_desktop") == 0) keys[keycount].myfunction = last_desktop;
-                else if(strcmp(dummy3, "more_master") == 0) {
+                else if(strcmp(dummy3, "change_desktop") == 0) {
+                    keys[keycount].myfunction = change_desktop;
+                    keys[keycount].arg.i = atoi(strsep(&dummy2, ";"));
+                } else if(strcmp(dummy3, "follow_client_to_desktop") == 0) {
+                    keys[keycount].myfunction = follow_client_to_desktop;
+                    keys[keycount].arg.i = atoi(strsep(&dummy2, ";"));
+                } else if(strcmp(dummy3, "client_to_desktop") == 0) {
+                    keys[keycount].myfunction = client_to_desktop;
+                    keys[keycount].arg.i = atoi(strsep(&dummy2, ";"));
+                } else if(strcmp(dummy3, "more_master") == 0) {
                     keys[keycount].myfunction = more_master;
                     keys[keycount].arg.i = atoi(strsep(&dummy2, ";"));
                 } else if(strcmp(dummy3, "move_down") == 0) {
@@ -104,8 +98,7 @@ void read_keys_file() {
                         if(strcmp(dummy4, cmds[i].name) == 0) {
                             keys[keycount].arg.com[0] = cmds[i].list[0];
                             j=1;
-                            while(cmds[i].list[j]) {
-                                if(strcmp(cmds[i].list[j], "NULL") == 0) break;
+                            while(strcmp(cmds[i].list[j], "NULL") != 0) {
                                 keys[keycount].arg.com[j] = cmds[i].list[j];
                                 j++;
                             }

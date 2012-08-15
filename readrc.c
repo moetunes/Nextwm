@@ -1,4 +1,4 @@
-// readrc.c [ 0.6.0 ]
+// readrc.c [ 0.6.1 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -24,130 +24,99 @@ void read_rcfile() {
                 dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
                 for(i=0;i<2;i++) {
-                    dummy3 = strsep(&dummy2, ",");
+                    dummy3 = strsep(&dummy2, ";");
                     if(getcolor(dummy3) == 1) {
                         theme[i].wincolor = getcolor(defaultwincolor[i]);
                         logger("Default colour");
                     } else
                         theme[i].wincolor = getcolor(dummy3);
                 }
-                for(i=0;i<256;i++) dummy[i] = '\0';
-                continue;
-            }
-            if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
+            } else if(strstr(buffer, "DESKTOPS" ) != NULL) {
+                DESKTOPS = atoi(strstr(buffer, " ")+1);
+                if(DESKTOPS > 10) DESKTOPS = 10;
+            } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
+            } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
                 bdw = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "MASTERSIZE" ) != NULL) {
+            } else if(strstr(buffer, "MASTERSIZE" ) != NULL) {
                 msize = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
+            } else if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
                 attachaside = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "TOPSTACK" ) != NULL) {
+            } else if(strstr(buffer, "TOPSTACK" ) != NULL) {
                 top_stack = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
+            } else if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
                 followmouse = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
+            } else if(strstr(buffer, "LEFT_WINDOWNAME" ) != NULL) {
+                LA_WINDOWNAME = atoi(strstr(buffer, " ")+1);
+            } else if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
                 clicktofocus = atoi(strstr(buffer, " ")+1);
-                continue;
-            }
-            if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
+            } else if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
                 mode = atoi(strstr(buffer, " ")+1);
                 for(i=0;i<DESKTOPS;i++)
                     if(desktops[i].head == NULL)
                         desktops[i].mode = mode;
-
-                continue;
-            }
-            if(STATUS_BAR == 0) {
+            } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "BARTHEME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
                     for(i=0;i<4;i++) {
-                        dummy3 = strsep(&dummy2, ",");
+                        dummy3 = strsep(&dummy2, ";");
                         if(getcolor(dummy3) == 1) {
                             theme[i].barcolor = getcolor(defaultbarcolor[i]);
                             logger("Default bar colour");
                         } else
                             theme[i].barcolor = getcolor(dummy3);
                     }
-                    for(i=0;i<256;i++) dummy[i] = '\0';
-                    continue;
-                }
-                if(strstr(buffer, "TEXTTHEME" ) != NULL) {
+                } else if(strstr(buffer, "TEXTTHEME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
                     for(i=0;i<7;i++) {
-                        dummy3 = strsep(&dummy2, ",");
+                        dummy3 = strsep(&dummy2, ";");
                         if(getcolor(dummy3) == 1) {
                             theme[i].textcolor = getcolor(defaulttextcolor[i]);
                             logger("Default text colour");
                         } else
                             theme[i].textcolor = getcolor(dummy3);
                     }
-                    for(i=0;i<256;i++) dummy[i] = '\0';
-                    continue;
-                }
-                if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
+                } else if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
-                    continue;
-                }
-                if(strstr(buffer, "TOPBAR" ) != NULL) {
+                } else if(strstr(buffer, "TOPBAR" ) != NULL) {
                     topbar = atoi(strstr(buffer, " ")+1);
-                    continue;
-                }
-                if(strstr(buffer, "MODENAME" ) != NULL) {
+                } else if(strstr(buffer, "MODENAME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
                     for(i=0;i<5;i++) {
-                        dummy3 = strsep(&dummy2, ",");
+                        dummy3 = strsep(&dummy2, ";");
                         if(strlen(dummy3) < 1)
                             theme[i].modename = strdup(defaultmodename[i]);
                         else
                             theme[i].modename = strdup(dummy3);
                     }
-                    continue;
-                }
-                if(strstr(buffer,"FONTNAME" ) != NULL) {
+                } else if(strstr(buffer,"FONTNAME" ) != NULL) {
                     strncpy(font_list, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
                     get_font();
                     sb_height = font.height+2;
                     font.fh = ((sb_height - font.height)/2) + font.ascent;
-                    continue;
-                }
-                if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
+                } else if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
                     windownamelength = atoi(strstr(buffer, " ")+1);
-                    continue;
-                }
-                if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
+                } else if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
                     for(i=0;i<DESKTOPS;i++) {
-                        dummy3 = strsep(&dummy2, ",");
+                        dummy3 = strsep(&dummy2, ";");
                         if(!(dummy3)) {
                             if(!(defaultdesktopnames[i]))
                                 sb_bar[i].label = strdup("?");
                             else sb_bar[i].label = strdup(defaultdesktopnames[i]);
                         } else sb_bar[i].label = strdup(dummy3);
-                        if(strlen(sb_bar[i].label) < 1) sb_bar[i].label = strdup("?");
                     }
-                    continue;
                 }
+                memset(buffer, '\0', 256);
+                memset(dummy, '\0', 256);
             }
         }
         fclose(rcfile);
@@ -213,7 +182,7 @@ void set_defaults() {
             theme[i].textcolor = getcolor(defaulttextcolor[i]);
         for(i=0;i<5;i++)
             theme[i].modename = strdup(defaultmodename[i]);
-        for(i=0;i<DESKTOPS;i++) {
+        for(i=0;i<10;i++) {
             if(!(defaultdesktopnames[i]))
                 sb_bar[i].label = strdup("?");
             else sb_bar[i].label = strdup(defaultdesktopnames[i]);
@@ -232,7 +201,8 @@ void set_defaults() {
 }
 
 void update_config() {
-    int i, y;
+    unsigned int i, y, old_desktops = DESKTOPS, tmp = current_desktop;
+    client *c;
     
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<256;i++)
@@ -240,24 +210,51 @@ void update_config() {
     if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
     y = (topbar == 0) ? 0 : sh+bdw;
+    if(DESKTOPS < old_desktops) {
+        save_desktop(current_desktop);
+        printf("CURRENT = %d, DESKTOPS = %d, OLD = %d.\n", current_desktop, DESKTOPS, old_desktops);
+        Arg a = {.i = DESKTOPS-1};
+        for(i=DESKTOPS;i<old_desktops;i++) {
+            select_desktop(i);
+            printf("**DESKTOP [ %d ], numwins = %d\n", current_desktop, desktops[current_desktop].numwins);
+            if(head != NULL) {
+                printf("**MOVing CLIENT !!!!!\n");
+                while(desktops[current_desktop].numwins > 0) {
+                    printf("WHAT!!\n");
+                    client_to_desktop(a);
+                    printf("**CLIENT MOVED !!\n");
+                }
+            }
+        }
+        select_desktop(tmp);
+        printf("****DESKTOPs DONE\n");
+        if(current_desktop > (DESKTOPS-1)) change_desktop(a);
+    }
     if(STATUS_BAR == 0) {
         setup_status_bar();
-        sb_width = 0;
-        for(i=0;i<DESKTOPS;i++) {
-            XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].barcolor);
-            XMoveResizeWindow(dis, sb_bar[i].sb_win, sb_width, y,sb_bar[i].width-2,sb_height);
-            sb_width += sb_bar[i].width;
+        if(DESKTOPS != old_desktops) {
+            for(i=0;i<old_desktops;i++)
+                XDestroyWindow(dis, sb_bar[i].sb_win);
+            XDestroyWindow(dis, sb_area);
+            status_bar();
+        } else {
+            sb_width = 0;
+            for(i=0;i<DESKTOPS;i++) {
+                XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].barcolor);
+                XMoveResizeWindow(dis, sb_bar[i].sb_win, sb_width, y,sb_bar[i].width-2,sb_height);
+                sb_width += sb_bar[i].width;
+            }
+            XSetWindowBorder(dis,sb_area,theme[3].barcolor);
+            XSetWindowBackground(dis, sb_area, theme[1].barcolor);
+            XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+4)+bdw,sb_height);
+            XGetWindowAttributes(dis, sb_area, &attr);
+            total_w = attr.width;
+            if(area_sb != 0) {
+                XFreePixmap(dis, area_sb);
+            }
+            area_sb = XCreatePixmap(dis, root, total_w, sb_height+4, DefaultDepth(dis, screen));
+            XFillRectangle(dis, area_sb, bggc, 0, 0, total_w, sb_height+4);
         }
-        XSetWindowBorder(dis,sb_area,theme[3].barcolor);
-        XSetWindowBackground(dis, sb_area, theme[1].barcolor);
-        XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+4)+bdw,sb_height);
-        XGetWindowAttributes(dis, sb_area, &attr);
-        total_w = attr.width;
-        if(area_sb != 0) {
-            XFreePixmap(dis, area_sb);
-        }
-        area_sb = XCreatePixmap(dis, root, total_w, sb_height+4, DefaultDepth(dis, screen));
-        XFillRectangle(dis, area_sb, bggc, 0, 0, total_w, sb_height+4);
     }
     for(i=0;i<DESKTOPS;i++) {
         desktops[i].master_size = (desktops[i].mode == 2) ? (sh*msize)/100 : (sw*msize)/100;

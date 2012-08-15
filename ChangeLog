@@ -1,3 +1,8 @@
+15/8/12
+  Changed rc.conf to be colon seperated
+  can set the number of desktops in the rc.conf file, defaults to four
+  can set whether current window name in bar is left aligned
+
 14/8/12
     Moved keyboard shortcuts and apps settings to files in
       ~/.config/snapwm/key.conf and apps.conf.

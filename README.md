@@ -2,7 +2,7 @@
 ### it's minimal and dynamic
 
 I started this from catwm 31/12/10 ( https://bbs.archlinux.org/viewtopic.php?id=100215&p=1 )
-    See snapwm.c or config.h for thanks and licensing.
+    See snapwm.c for thanks and licensing.
 Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=126463
 
 
@@ -12,6 +12,13 @@ Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=
 
 **snapwm** is a very minimal and lightweight dynamic tiling window manager.
 
+All configuration is read from three files in ~/.config/snapwm/ .
+
+*rc.conf* has colours and window manager configurations.
+
+*key.conf* is mandatory for shortcuts and commands to run.
+
+*apps.conf* is optional and where apps settings are read from.
 
 ###Modes
 -----
@@ -59,7 +66,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
  *Fullscreen mode*(which you'll know when you see it)
 
- All accessible with keyboard shortcuts defined in the config.h file.
+ All accessible with keyboard shortcuts defined in key.conf file.
  
  * The window *W* at the top of the stack can be resized on a per desktop basis.
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
@@ -73,7 +80,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * Keyboard shortcuts and apps settings moved to files in ~/.config/snapwm/
+  * rc.conf changed to semi-colon seperated
+  * Number of desktops now read from rc.conf
+  * Whether to left align the current windows' name in the bar moved to rc.conf
+  * No need to rebuild the wm to change a setting
 
 
 
@@ -100,6 +110,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Changed grid mode: First column and second window can be resized
   * Moved the RC FILE to $HOME/.config/snapwm/rc.conf
   * Windows can be added/removed to/from the master area with keyboard shortcuts
+  * Keyboard shortcuts and apps settings moved to files in ~/.config/snapwm/
 
 
 ###Installation

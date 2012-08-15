@@ -1,4 +1,4 @@
- /* config.h for snapwm.c [ 0.6.0 ]
+ /* config.h for snapwm.c [ 0.6.1 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,11 +28,8 @@
 #define STATUS_BAR  0  /* 1=Don't 0=Make the bar */
 #define FONTS_ERROR 1  /* 1=Don't 0=Print errors about missing fonts */
 
-#define DESKTOPS        6  /* Must edit DESKTOPCHANGE keys to suit */
-#define LA_WINDOWNAME   1  /* 1=Dont't 0=Left align current window name in bar */
-
-// The settings from here to defaultfont[] are in the rc file, which has precedence,
-// so if the rc file all has these 15 options they don't have to be changed.
+// The settings from here are in the rc file, which has precedence,
+// so if the rc file all has these options they don't have to be changed.
 
 #define UF_ALPHA        75 /* Percentage transparency for unfocused windows - 100 to turn off */
 #define MASTER_SIZE     55

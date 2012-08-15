@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.6.0 ]
+ /* snapwm.c [ 0.6.1 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -44,7 +44,7 @@
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
 
 typedef union {
-    char *com[10];
+    char *com[256];
     int i;
 } Arg;
 
@@ -112,7 +112,7 @@ typedef struct {
 
 typedef struct {
     char *name;
-    char *list[10];
+    char *list[100];
 } Commands;
 
 // Functions
@@ -186,12 +186,12 @@ static unsigned int wc_size(char *string);
 // Variable
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp;
-static unsigned int followmouse, mode, msize, previous_desktop;
+static unsigned int followmouse, mode, msize, previous_desktop, DESKTOPS;
 static int growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
-static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount;
+static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, LA_WINDOWNAME;
 static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
@@ -223,8 +223,8 @@ static void (*events[LASTEvent])(XEvent *e) = {
 };
 
 // Desktop array
-static desktop desktops[DESKTOPS];
-static Barwin sb_bar[DESKTOPS];
+static desktop desktops[10];
+static Barwin sb_bar[10];
 static Theme theme[8];
 static Iammanyfonts font;
 static key keys[80];
@@ -469,6 +469,7 @@ void swap_master() {
 /* **************************** Desktop Management ************************************* */
 
 void change_desktop(const Arg arg) {
+    if(arg.i >= DESKTOPS) return;
     client *c;
 
     if(arg.i == current_desktop)
@@ -524,15 +525,18 @@ void rotate_mode(const Arg arg) {
 }
 
 void follow_client_to_desktop(const Arg arg) {
+    if(arg.i >= DESKTOPS) return;
     client_to_desktop(arg);
     change_desktop(arg);
 }
 
 void client_to_desktop(const Arg arg) {
+    if(arg.i == current_desktop || current == NULL ||arg.i >= DESKTOPS) {
+        printf("CLIENT_TO_DEKTOP FAIL !!!\n");
+        return;
+    }
     client *tmp = current;
     unsigned int tmp2 = current_desktop;
-
-    if(arg.i == current_desktop || current == NULL) return;
 
     // Add client to desktop
     select_desktop(arg.i);
@@ -541,10 +545,10 @@ void client_to_desktop(const Arg arg) {
 
     select_desktop(tmp2);
     // Remove client from current desktop
-    XUnmapWindow(dis,current->win);
     remove_window(current->win, 0, 0);
 
     if(STATUS_BAR == 0) update_bar();
+    printf("C_TO_D - REMOVED CLIENT\n");
 }
 
 void save_desktop(int i) {
@@ -1209,6 +1213,8 @@ void setup() {
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
 
+    // Initialize variables
+    DESKTOPS = 4;
     mode = DEFAULT_MODE;
     msize = MASTER_SIZE;
     ufalpha = UF_ALPHA;
@@ -1220,6 +1226,7 @@ void setup() {
     windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
+    LA_WINDOWNAME = 0;
     dowarp = doresize = 0;
 
     char *loc;
