@@ -1,4 +1,4 @@
-/* readkeysapps.c [ 0.6.1 ] */
+/* readkeysapps.c [ 0.6.2 ] */
 
 void read_keys_file() {
     FILE *keyfile ;

@@ -1,5 +1,4 @@
 snapwm
-config.h
 *.o
 *.swp
 *~

@@ -1,23 +1,4 @@
- /* config.h for snapwm.c [ 0.6.1 ]
- *
- *  Started from catwm 31/12/10
- *  Permission is hereby granted, free of charge, to any person obtaining a
- *  copy of this software and associated documentation files (the "Software"),
- *  to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense,
- *  and/or sell copies of the Software, and to permit persons to whom the
- *  Software is furnished to do so, subject to the following conditions:
- *
- *  The above copyright notice and this permission notice shall be included in
- *  all copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- *  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- *  DEALINGS IN THE SOFTWARE.
+ /* config.h for snapwm.c [ 0.6.2 ]
  *
  *  RC FILE set to $HOME/.config/snapwm/rc.conf
  */
@@ -28,8 +9,8 @@
 #define STATUS_BAR  0  /* 1=Don't 0=Make the bar */
 #define FONTS_ERROR 1  /* 1=Don't 0=Print errors about missing fonts */
 
-// The settings from here are in the rc file, which has precedence,
-// so if the rc file all has these options they don't have to be changed.
+// The settings from here to defaultfont[] are in the rc file, which has precedence,
+// so if the rc file all has these 15 options they don't have to be changed.
 
 #define UF_ALPHA        75 /* Percentage transparency for unfocused windows - 100 to turn off */
 #define MASTER_SIZE     55
