@@ -45,7 +45,7 @@
 #define SHOW_NUM_OPEN   1  /* 1=Dont' 0=Show the number of open windows in the switcher */
 #define WINDOW_NAME_LENGTH 35 /* Character length for the current window's name in the bar */
 
-static const char *defaultdesktopnames[] = { "1", "2", "3", "4", "5", "6", };
+static const char *defaultdesktopnames[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", };
 static const char *defaultbarcolor[] = { "#ff0000", "#00ff00", "#0000ff", "#000000", };
 static const char *defaulttextcolor[] = { "#000000", "#ffffff", "#ffffff", "#ffff00", "#ff00ff", "#f0f0f0", "#0f0f0f", };
 static const char *defaultwincolor[] = { "#ff0000", "#00ff00", };
