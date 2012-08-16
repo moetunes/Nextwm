@@ -118,15 +118,11 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 Need Xlib, then:
 
-    Copy the sample.rc.conf file to $HOME/.config/snapwm and edit it to suit.
+    Copy the sample.rc.conf file to $HOME/.config/snapwm/rc.conf and edit it to suit.
 
-    Copy the sample.apps.conf file to $HOME/.config/snapwm and edit it to suit.
+    Copy the sample.apps.conf file to $HOME/.config/snapwm/apps.conf and edit it to suit.
 
-    Copy the sample.key.conf file to $HOME/.config/snapwm and edit it to suit.
-
-    Edit the config.h.def file to suit your needs and
-        save it as config.h making sure to add
-        the correct path for the rc file.
+    Copy the sample.key.conf file to $HOME/.config/snapwm/key.conf and edit it to suit.
 
     $ make
     # make install
@@ -142,4 +138,4 @@ Need Xlib, then:
 ###Todo
 ----
 
-  * Add commands and keyboard shortcuts to rc file.
+  * Maybe xft fonts
