@@ -1,3 +1,7 @@
+21/8/12
+  pre increment/decrement not post
+  Added -ffast-math -fno-unit-at-a-time to Makefile
+
 15/8/12
   Changed rc.conf to be colon seperated
   can set the number of desktops in the rc.conf file, defaults to four

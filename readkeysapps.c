@@ -6,9 +6,9 @@ void read_keys_file() {
     char dummy[256];
     char *dummy2, *dummy3, *dummy4;
     keycount = cmdcount = 0;
-    int i, j;
+    unsigned int i, j;
 
-    keyfile = fopen( KEY_FILE, "r" ) ;
+    keyfile = fopen( KEY_FILE, "rb" ) ;
     if ( keyfile == NULL ) {
         fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,KEY_FILE);
         return;
@@ -21,14 +21,13 @@ void read_keys_file() {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 dummy2 = strdup(dummy);
                 cmds[cmdcount].name = strsep(&dummy2, ";");
-                cmds[cmdcount].list[0] = strsep(&dummy2, ";");
-                i=1;
+                i=0;
                 while(dummy2) {
                     cmds[cmdcount].list[i] = strsep(&dummy2, ";");
                     if(strcmp(cmds[cmdcount].list[i], "NULL") == 0) break;
-                    i++;
+                    ++i;
                 }
-                cmdcount++;
+                ++cmdcount;
                 continue;
             } else if(strstr(buffer, "KEY" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1));
@@ -94,19 +93,19 @@ void read_keys_file() {
                 else if(strcmp(dummy3, "spawn") == 0) {
                     keys[keycount].myfunction = spawn;
                     dummy4 = strsep(&dummy2, ";");
-                    for(i=0;i<cmdcount;i++) {
+                    for(i=0;i<cmdcount;++i) {
                         if(strcmp(dummy4, cmds[i].name) == 0) {
                             keys[keycount].arg.com[0] = cmds[i].list[0];
                             j=1;
                             while(strcmp(cmds[i].list[j], "NULL") != 0) {
                                 keys[keycount].arg.com[j] = cmds[i].list[j];
-                                j++;
+                                ++j;
                             }
                             break;
                         }
                     }
                 }
-                keycount++;
+                ++keycount;
                 continue;
             }
         }
@@ -136,7 +135,7 @@ void read_apps_file() {
                 convenience[dtcount].class = strsep(&dummy2, ";");
                 convenience[dtcount].preferredd = atoi(strsep(&dummy2, ";"));
                 convenience[dtcount].followwin = atoi(strsep(&dummy2, ";"));
-                dtcount++;
+                ++dtcount;
                 continue;
             } else if(strstr(buffer, "POSITION" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -146,7 +145,7 @@ void read_apps_file() {
                 positional[pcount].y = atoi(strsep(&dummy2, ";"));
                 positional[pcount].width = atoi(strsep(&dummy2, ";"));
                 positional[pcount].height = atoi(strsep(&dummy2, ";"));
-                pcount++;
+                ++pcount;
                 continue;
             } else continue;
         }

@@ -1,18 +1,17 @@
 // bar.c [ 0.6.2 ]
 
-static void draw_numopen(int cd, int gc);
+static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
 static GC bggc;
-static unsigned int total_w;
-static unsigned int pos;
+static unsigned int total_w, pos;
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
-    int i;
+    unsigned int i;
     XGCValues values;
 
-    logger(" \033[0;33mStatus Bar called ...");
+    // logger(" \033[0;33mStatus Bar called ...");
 
-    for(i=0;i<7;i++) {
+    for(i=0;i<7;++i) {
         values.background = theme[1].barcolor;
         values.foreground = theme[i].textcolor;
         values.line_width = 2;
@@ -35,7 +34,7 @@ void setup_status_bar() {
         bggc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
     sb_desks = 0;
-    for(i=0;i<DESKTOPS;i++) {
+    for(i=0;i<DESKTOPS;++i) {
         sb_bar[i].labelwidth = wc_size(sb_bar[i].label);
         sb_bar[i].width = sb_bar[i].labelwidth + 6;
         if(sb_bar[i].width < sb_height*3/2) sb_bar[i].width = sb_height*3/2;
@@ -45,11 +44,11 @@ void setup_status_bar() {
 }
 
 void status_bar() {
-    int i, y;
+    unsigned int i, y;
 
     y = (topbar == 0) ? 0 : sh+bdw;
     sb_width = 0;
-    for(i=0;i<DESKTOPS;i++) {
+    for(i=0;i<DESKTOPS;++i) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, sb_width, y,
                                             sb_bar[i].width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
 
@@ -71,22 +70,22 @@ void status_bar() {
 }
 
 void toggle_bar() {
-    int i;
+    unsigned int i;
 
     if(STATUS_BAR == 0) {
         if(show_bar == 0) {
             show_bar = 1;
             sh += sb_height+4;
-            for(i=0;i<DESKTOPS;i++) XUnmapWindow(dis,sb_bar[i].sb_win);
+            for(i=0;i<DESKTOPS;++i) XUnmapWindow(dis,sb_bar[i].sb_win);
             XUnmapWindow(dis, sb_area);
         } else {
             show_bar = 0;
             sh -= sb_height+4;
-            for(i=0;i<DESKTOPS;i++) XMapRaised(dis, sb_bar[i].sb_win);
-            XMapRaised(dis, sb_area);
+            for(i=0;i<DESKTOPS;++i) XMapWindow(dis, sb_bar[i].sb_win);
+            XMapWindow(dis, sb_area);
         }
 
-        if(mode != 4) tile();
+        tile();
         update_current();
         update_bar();
     }
@@ -102,33 +101,29 @@ void getwindowname() {
 }
 
 void update_bar() {
-    int i;
+    unsigned int i;
 
-    for(i=0;i<DESKTOPS;i++) {
+    for(i=0;i<DESKTOPS;++i) {
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
+                draw_desk(sb_bar[i].sb_win, 2, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 if(showopen < 1 && desktops[i].numwins > 1) {
-                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                     draw_numopen(i, 2);
-                } else {
-                    draw_desk(sb_bar[i].sb_win, 2, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 }
             } else {
                 draw_desk(sb_bar[i].sb_win, 1, 1, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         } else {
+            draw_desk(sb_bar[i].sb_win, 0, 0, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             if(showopen < 1 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numwins > 1) {
-                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 draw_numopen(i, 0);
-            } else {
-                draw_desk(sb_bar[i].sb_win, 0, 0, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         }
     }
     if(head == NULL) status_text("");
 }
 
-void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len) {
+void draw_desk(Window win, unsigned int barcolor, unsigned int gc, unsigned int x, char *string, unsigned int len) {
     XSetWindowBackground(dis, win, theme[barcolor].barcolor);
     XClearWindow(dis, win);
     if(font.fontset)
@@ -137,17 +132,17 @@ void draw_desk(Window win, int barcolor, int gc, int x, char *string, int len) {
         XDrawString(dis, win, theme[gc].gc, x, font.fh, string, len);
 }
 
-void draw_numopen(int cd, int gc) {
-    int i, x=0, y=sb_height-2;
+void draw_numopen(unsigned int cd, unsigned int gc) {
+    unsigned int i, x=0, y=sb_height-2;
 
-    for(i=0;i<desktops[cd].numwins; i++) {
+    for(i=0;i<desktops[cd].numwins; ++i) {
         XFillRectangle(dis, sb_bar[cd].sb_win, theme[gc].gc, x, y, 2, 2);
         x += 3;
         if((x+3) >= sb_bar[cd].width) return;
     }
 }
 
-void draw_text(Window win, int gc, int x, char *string, int len) {
+void draw_text(Window win, unsigned int gc, unsigned int x, char *string, unsigned int len) {
     if(font.fontset)
         XmbDrawString(dis, win, font.fontset, theme[gc].gc, x, font.fh, string, len);
     else
@@ -162,7 +157,7 @@ void status_text(char *sb_text) {
     if(strlen(sb_text) < 1) sb_text = ":";
     while(sb_text[count] != '\0' && count < windownamelength) {
         win_name[count] = sb_text[count];
-        count++;
+        ++count;
     }
     win_name[count] = '\0';
     wnl = windownamelength*font.width;
@@ -177,7 +172,7 @@ void status_text(char *sb_text) {
     XCopyArea(dis, area_sb, sb_area, theme[1].gc, 0, 0, pos, sb_height+4, 0, 0);
 }
 
-void update_output(int messg) {
+void update_output(unsigned int messg) {
     unsigned int text_length=0, p_length, text_start, i, j=2, k=0;
     unsigned int wsize, n;
     char output[256];
@@ -190,26 +185,26 @@ void update_output(int messg) {
     } else {
         while(win_name[text_length] != '\0' && text_length < 256) {
             output[text_length] = win_name[text_length];
-            text_length++;
+            ++text_length;
         }
         output[text_length] = '\0';
     }
     XFree(win_name);
 
-    for(n=0;n<text_length;n++) {
+    for(n=0;n<text_length;++n) {
         while(output[n] == '&') {
             if(output[n+1]-'0' < 7 && output[n+1]-'0' >= 0) {
                 n += 2;
             } else break;
         }
-        astring[k] = output[n]; k++;
+        astring[k] = output[n]; ++k;
     }
     astring[k] = '\0';
     p_length = wc_size(astring);
     text_start = total_w - p_length;
     XFillRectangle(dis, area_sb, bggc, pos, 0, total_w-pos, sb_height+4);
     k = 0; // i=pos on screen k=pos in text
-    for(i=text_start;i<total_w;i++) {
+    for(i=text_start;i<total_w;++i) {
         if(k <= text_length) { 
             while(output[k] == '&') {
                 if(output[k+1]-'0' < 7 && output[k+1]-'0' >= 0) {
@@ -220,11 +215,11 @@ void update_output(int messg) {
             n = 0;
             if(output[k] == '&') {
                 astring[0] = '&';
-                n++;k++;
+                ++n;++k;
             }
             while(output[k] != '&' && output[k] != '\0' && output[k] != '\n' && output[k] != '\r') {
                 astring[n] = output[k];
-                n++;k++;
+                ++n;++k;
             }
             if(n < 1)
                 continue;
@@ -232,20 +227,20 @@ void update_output(int messg) {
             wsize = wc_size(astring);
             draw_text(area_sb, j, i, astring, n);
             i += wsize-1;
-            for(n=0;n<256;n++)
+            for(n=0;n<256;++n)
                 astring[n] = '\0';
         }
     }
 
     XCopyArea(dis, area_sb, sb_area, theme[1].gc, pos, 0, (total_w - pos), sb_height+4, pos, 0);
-    for(n=0;n<256;n++)
+    for(n=0;n<256;++n)
         output[n] ='\0';
     XSync(dis, False);
     return;
 }
 
 unsigned int wc_size(char *string) {
-    int num;
+    unsigned int num;
     XRectangle rect;
 
     num = strlen(string);
