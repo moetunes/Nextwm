@@ -8,7 +8,7 @@ void read_rcfile() {
     char *dummy2, *dummy3;
     unsigned int i;
 
-    rcfile = fopen( RC_FILE, "r" ) ;
+    rcfile = fopen( RC_FILE, "rb" ) ;
     if ( rcfile == NULL ) {
         fprintf(stderr, "\033[0;34m:: snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RC_FILE);
         set_defaults();

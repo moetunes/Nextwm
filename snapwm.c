@@ -34,9 +34,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <signal.h>
+// #include <signal.h>
 #include <sys/wait.h>
-#include <locale.h>
 #include <string.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -44,7 +43,7 @@
 #define TABLENGTH(X)    (sizeof(X)/sizeof(*X))
 
 typedef union {
-    char *com[256];
+    char *com[15];
     int i;
 } Arg;
 
@@ -100,8 +99,8 @@ typedef struct {
 typedef struct {
     Window sb_win;
     char *label;
-    int width;
-    int labelwidth;
+    unsigned int width;
+    unsigned int labelwidth;
 } Barwin;
 
 typedef struct {
@@ -112,7 +111,7 @@ typedef struct {
 
 typedef struct {
     char *name;
-    char *list[100];
+    char *list[15];
 } Commands;
 
 // Functions
@@ -269,7 +268,7 @@ void add_window(Window w, int tw) {
         c->height = attr.height;
     }
 
-    c->win = w; c->order = 0;
+    c->win = w;
     dummy = (tw == 1) ? transient : head;
     for(t=dummy;t;t=t->next)
         ++t->order;
@@ -300,6 +299,7 @@ void add_window(Window w, int tw) {
         return;
     } else head = dummy;
     current = c;
+    c->order = 0;
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
@@ -682,8 +682,12 @@ void tile() {
                 }
                 break;
             case 4: // Stacking
-                for(c=head;c;c=c->next)
-                    XMoveResizeWindow(dis,c->win,c->x,c->y,c->width,c->height);
+                for(n=desktops[current_desktop].numwins-1;n>=0;--n) {
+                    for(c=head;c;c=c->next) {
+                        if(c->order == n)
+                            XMoveResizeWindow(dis,c->win,c->x,c->y,c->width,c->height);
+                    }
+                }
                 break;
             }
             default:

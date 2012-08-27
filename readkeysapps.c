@@ -104,9 +104,8 @@ void read_keys_file() {
                             break;
                         }
                     }
-                }
+                } else continue;
                 ++keycount;
-                continue;
             }
         }
     }
@@ -120,7 +119,7 @@ void read_apps_file() {
     char *dummy2;
     dtcount = pcount = 0;
 
-    appsfile = fopen( APPS_FILE, "r" ) ;
+    appsfile = fopen( APPS_FILE, "rb" ) ;
     if ( appsfile == NULL ) {
         fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,APPS_FILE);
         return;
