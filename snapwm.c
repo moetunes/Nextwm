@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.6.2 ]
+ /* snapwm.c [ 0.6.3 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -956,7 +956,8 @@ void destroynotify(XEvent *e) {
             if(ev->window == c->win) {
                 remove_window(ev->window, 0, 0);
                 select_desktop(tmp);
-                return;
+                if(STATUS_BAR == 0) update_bar();
+                break;
             }
     }
     select_desktop(tmp);
