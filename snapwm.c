@@ -357,8 +357,6 @@ void remove_window(Window w, unsigned int dr, unsigned int tw) {
         if(mode != 4) tile();
         warp_pointer();
         update_current();
-        if(STATUS_BAR == 0)
-            update_bar();
         return;
     }
 }
@@ -1150,6 +1148,7 @@ void kill_client() {
     if(head == NULL) return;
     kill_client_now(current->win);
     remove_window(current->win, 0, 0);
+    if(STATUS_BAR == 0) update_bar();
 }
 
 void kill_client_now(Window w) {
