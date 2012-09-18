@@ -1,37 +1,23 @@
-// bar.c [ 0.6.3 ]
+// bar.c [ 0.6.4 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
-static GC bggc;
 static unsigned int total_w, pos;
 /* ************************** Status Bar *************************** */
 void setup_status_bar() {
     unsigned int i;
     XGCValues values;
 
-    // logger(" \033[0;33mStatus Bar called ...");
-
-    for(i=0;i<7;++i) {
-        values.background = theme[1].barcolor;
+    for(i=0;i<10;++i) {
         values.foreground = theme[i].textcolor;
         values.line_width = 2;
         values.line_style = LineSolid;
         if(font.fontset)
-            theme[i].gc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle,&values);
+            theme[i].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle,&values);
         else {
             values.font = font.font->fid;
-            theme[i].gc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
+            theme[i].gc = XCreateGC(dis, root, GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
         }
-    }
-    values.background = theme[1].barcolor;
-    values.foreground = theme[1].barcolor;
-    values.line_width = 2;
-    values.line_style = LineSolid;
-    if(font.fontset)
-        bggc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle,&values);
-    else {
-        values.font = font.font->fid;
-        bggc = XCreateGC(dis, root, GCBackground|GCForeground|GCLineWidth|GCLineStyle|GCFont,&values);
     }
     sb_desks = 0;
     for(i=0;i<DESKTOPS;++i) {
@@ -64,7 +50,7 @@ void status_bar() {
     XGetWindowAttributes(dis, sb_area, &attr);
     total_w = attr.width;
     area_sb = XCreatePixmap(dis, root, total_w, sb_height, DefaultDepth(dis, screen));
-    XFillRectangle(dis, area_sb, bggc, 0, 0, total_w, sb_height+4);
+    XFillRectangle(dis, area_sb, theme[0].gc, 0, 0, total_w, sb_height+4);
     status_text("");
     update_bar();
 }
@@ -106,17 +92,17 @@ void update_bar() {
     for(i=0;i<DESKTOPS;++i) {
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
-                draw_desk(sb_bar[i].sb_win, 2, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                draw_desk(sb_bar[i].sb_win, 2, 3, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
                 if(showopen < 1 && desktops[i].numwins > 1) {
-                    draw_numopen(i, 2);
+                    draw_numopen(i, 3);
                 }
             } else {
-                draw_desk(sb_bar[i].sb_win, 1, 1, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                draw_desk(sb_bar[i].sb_win, 1, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
         } else {
-            draw_desk(sb_bar[i].sb_win, 0, 0, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+            draw_desk(sb_bar[i].sb_win, 0, 1, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             if(showopen < 1 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numwins > 1) {
-                draw_numopen(i, 0);
+                draw_numopen(i, 1);
             }
         }
     }
@@ -153,7 +139,7 @@ void status_text(char *sb_text) {
     unsigned int text_length, text_start, blank_start, wsize, count = 0, wnl;
     char win_name[256];
 
-    XFillRectangle(dis, area_sb, bggc, 0, 0, pos, sb_height+4);
+    XFillRectangle(dis, area_sb, theme[0].gc, 0, 0, pos, sb_height+4);
     if(strlen(sb_text) < 1) sb_text = ":";
     while(sb_text[count] != '\0' && count < windownamelength) {
         win_name[count] = sb_text[count];
@@ -168,13 +154,14 @@ void status_text(char *sb_text) {
     text_start = (LA_WINDOWNAME < 1) ? blank_start : pos - text_length;
 
     draw_text(area_sb, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
+    XFillRectangle(dis, area_sb, theme[wnamebg].gc, text_start, 0, text_length, sb_height+4);
     draw_text(area_sb, 3, text_start, win_name, count);
     XCopyArea(dis, area_sb, sb_area, theme[1].gc, 0, 0, pos, sb_height+4, 0, 0);
 }
 
 void update_output(unsigned int messg) {
     unsigned int text_length=0, p_length, text_start, i, j=2, k=0;
-    unsigned int wsize, n;
+    unsigned int wsize, n, bg=0;
     char output[256];
     char astring[256];
     char *win_name;
@@ -193,8 +180,11 @@ void update_output(unsigned int messg) {
 
     for(n=0;n<text_length;++n) {
         while(output[n] == '&') {
-            if(output[n+1]-'0' < 7 && output[n+1]-'0' >= 0) {
+            if(output[n+1]-'0' < 10 && output[n+1]-'0' >= 0) {
                 n += 2;
+            } else if(output[n+1] == 'B' && output[n+2]-'0' < 10 && output[n+2]-'0' >= 0) {
+                bg = output[n+2]-'0';
+                n += 3;
             } else break;
         }
         astring[k] = output[n]; ++k;
@@ -202,14 +192,17 @@ void update_output(unsigned int messg) {
     astring[k] = '\0';
     p_length = wc_size(astring);
     text_start = total_w - p_length;
-    XFillRectangle(dis, area_sb, bggc, pos, 0, total_w-pos, sb_height+4);
+    XFillRectangle(dis, area_sb, theme[0].gc, pos, 0, total_w-pos, sb_height+4);
     k = 0; // i=pos on screen k=pos in text
     for(i=text_start;i<total_w;++i) {
         if(k <= text_length) { 
             while(output[k] == '&') {
-                if(output[k+1]-'0' < 7 && output[k+1]-'0' >= 0) {
+                if(output[k+1]-'0' < 10 && output[k+1]-'0' >= 0) {
                     j = output[k+1]-'0';
                     k += 2;
+                } else if(output[k+1] == 'B' && output[k+2]-'0' < 10 && output[k+2]-'0' >= 0) {
+                    bg = output[k+2]-'0';
+                    k += 3;
                 } else break;
             }
             n = 0;
@@ -225,6 +218,7 @@ void update_output(unsigned int messg) {
                 continue;
             astring[n] = '\0';
             wsize = wc_size(astring);
+            XFillRectangle(dis, area_sb, theme[bg].gc, i, 0, wsize, sb_height+4);
             draw_text(area_sb, j, i, astring, n);
             i += wsize-1;
             for(n=0;n<256;++n)

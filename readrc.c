@@ -1,4 +1,4 @@
-// readrc.c [ 0.6.3 ]
+// readrc.c [ 0.6.4 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -52,7 +52,7 @@ void read_rcfile() {
             } else if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
                 mode = atoi(strstr(buffer, " ")+1);
             } else if(STATUS_BAR == 0) {
-                if(strstr(buffer, "BARTHEME" ) != NULL) {
+                if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
@@ -64,11 +64,11 @@ void read_rcfile() {
                         } else
                             theme[i].barcolor = getcolor(dummy3);
                     }
-                } else if(strstr(buffer, "TEXTTHEME" ) != NULL) {
+                } else if(strstr(buffer, "STATUSTHEME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
-                    for(i=0;i<7;++i) {
+                    for(i=0;i<10;++i) {
                         dummy3 = strsep(&dummy2, ";");
                         if(getcolor(dummy3) == 1) {
                             theme[i].textcolor = getcolor(defaulttextcolor[i]);
@@ -78,6 +78,8 @@ void read_rcfile() {
                     }
                 } else if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
+                } else if(strstr(buffer, "WNAMEBG" ) != NULL) {
+                    wnamebg = atoi(strstr(buffer, " ")+1);
                 } else if(strstr(buffer, "TOPBAR" ) != NULL) {
                     topbar = atoi(strstr(buffer, " ")+1);
                 } else if(strstr(buffer, "MODENAME" ) != NULL) {
@@ -175,7 +177,7 @@ void set_defaults() {
     if(STATUS_BAR == 0) {
         for(i=0;i<4;++i)
             theme[i].barcolor = getcolor(defaultbarcolor[i]);
-        for(i=0;i<7;++i)
+        for(i=0;i<10;++i)
             theme[i].textcolor = getcolor(defaulttextcolor[i]);
         for(i=0;i<5;++i)
             theme[i].modename = strdup(defaultmodename[i]);
@@ -244,7 +246,7 @@ void update_config() {
                 XFreePixmap(dis, area_sb);
             }
             area_sb = XCreatePixmap(dis, root, total_w, sb_height+4, DefaultDepth(dis, screen));
-            XFillRectangle(dis, area_sb, bggc, 0, 0, total_w, sb_height+4);
+            XFillRectangle(dis, area_sb, theme[0].gc, 0, 0, total_w, sb_height+4);
         }
     }
     for(i=0;i<DESKTOPS;++i) {

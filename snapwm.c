@@ -1,4 +1,4 @@
- /* snapwm.c [ 0.6.3 ]
+ /* snapwm.c [ 0.6.4 ]
  *
  *  Started from catwm 31/12/10
  *  Permission is hereby granted, free of charge, to any person obtaining a
@@ -189,7 +189,7 @@ static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, 
 static unsigned int followmouse, mode, msize, previous_desktop, DESKTOPS;
 static int growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
-static unsigned int sb_height, sb_width, screen, show_bar;
+static unsigned int sb_height, sb_width, screen, show_bar, wnamebg;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
 static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, LA_WINDOWNAME;
 static int ufalpha;
@@ -225,7 +225,7 @@ static void (*events[LASTEvent])(XEvent *e) = {
 // Desktop array
 static desktop desktops[10];
 static Barwin sb_bar[10];
-static Theme theme[8];
+static Theme theme[10];
 static Iammanyfonts font;
 static key keys[80];
 static Commands cmds[50];
@@ -1183,9 +1183,8 @@ void quit() {
     }
     XClearWindow(dis, root);
     XUngrabKey(dis, AnyKey, AnyModifier, root);
-    for(i=0;i<7;++i)
+    for(i=0;i<10;++i)
         XFreeGC(dis, theme[i].gc);
-    XFreeGC(dis, bggc);
     XFreePixmap(dis, area_sb);
     XSync(dis, False);
     XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
@@ -1240,7 +1239,7 @@ void setup() {
     windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
-    LA_WINDOWNAME = 0;
+    LA_WINDOWNAME = wnamebg = 0;
     dowarp = doresize = 0;
 
     char *loc;
