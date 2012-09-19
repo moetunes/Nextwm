@@ -695,14 +695,15 @@ void tile() {
 }
 
 void update_current() {
+    if(head == NULL) return;
+
     client *c; unsigned int border;
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
-    if(head == NULL) return;
     border = ((head->next == NULL) || (mode == 1)) ? 0 : bdw;
     for(c=head;c;c=c->next) {
         XSetWindowBorderWidth(dis,c->win,border);
-        if(c != current || transient != NULL) {
+        if(c != current) {
             if(c->order < current->order) ++c->order;
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].wincolor);
@@ -721,8 +722,8 @@ void update_current() {
     }
     current->order = 0;
     if(transient != NULL) {
-        XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
-        XRaiseWindow(dis,transient->win);
+        for(c=transient;c;c=c->next)
+            XRaiseWindow(dis,c->win);
     }
     if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
 
@@ -891,7 +892,7 @@ void maprequest(XEvent *e) {
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].wincolor);
-        update_current();
+        //update_current();
         XMapRaised(dis,ev->window);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         return;
@@ -1017,6 +1018,11 @@ void buttonpress(XEvent *e) {
             }
     }
 
+    for(c=transient;c;c=c->next)
+        if(ev->window == c->win) {
+            XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
+            return;
+        }
     // change focus with LMB
     if(clicktofocus == 0 && ev->window != current->win && ev->button == Button1)
         for(c=head;c;c=c->next) {

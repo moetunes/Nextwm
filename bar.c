@@ -106,7 +106,7 @@ void update_bar() {
             }
         }
     }
-    if(head == NULL) status_text("");
+    getwindowname();
 }
 
 void draw_desk(Window win, unsigned int barcolor, unsigned int gc, unsigned int x, char *string, unsigned int len) {
