@@ -996,7 +996,7 @@ void leavenotify(XEvent *e) {
 void buttonpress(XEvent *e) {
     XButtonEvent *ev = &e->xbutton;
     client *c;
-    int i;
+    int i=0;
 
     if(STATUS_BAR == 0) {
         if(sb_area == ev->subwindow || sb_area == ev->window) {
@@ -1031,11 +1031,10 @@ void buttonpress(XEvent *e) {
 
     if(ev->subwindow == None) return;
 
-    i = 0;
-    if(mode == 4) {
+    for(c=transient;c;c=c->next)
+        if(ev->subwindow == c->win) i = 1;
+    if(mode == 4 || i > 0) {
         for(c=head;c;c=c->next)
-            if(ev->subwindow == c->win) i = 1;
-        for(c=transient;c;c=c->next)
             if(ev->subwindow == c->win) i = 1;
         if(i == 0) return;
         XGrabPointer(dis, ev->subwindow, True,
