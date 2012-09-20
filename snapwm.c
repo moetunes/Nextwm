@@ -700,7 +700,7 @@ void update_current() {
     client *c; unsigned int border;
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
-    border = ((head->next == NULL) || (mode == 1)) ? 0 : bdw;
+    border = ((head->next == NULL && mode != 4) || (mode == 1)) ? 0 : bdw;
     for(c=head;c;c=c->next) {
         XSetWindowBorderWidth(dis,c->win,border);
         if(c != current) {
