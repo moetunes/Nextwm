@@ -30,6 +30,13 @@ void read_rcfile() {
                     } else
                         theme[i].wincolor = getcolor(dummy3);
                 }
+            } else if(strstr(buffer, "RESIZEMOVEKEY" ) != NULL) {
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                dummy[strlen(dummy)-1] = '\0';
+                if(strncmp(dummy, "Super", 5) == 0)
+                    resizemovekey = Mod4Mask;
+                else
+                    resizemovekey = Mod1Mask;
             } else if(strstr(buffer, "DESKTOPS" ) != NULL) {
                 DESKTOPS = atoi(strstr(buffer, " ")+1);
                 if(DESKTOPS > 10) DESKTOPS = 10;

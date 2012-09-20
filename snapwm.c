@@ -195,7 +195,7 @@ static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtc
 static int ufalpha;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
-unsigned int numlockmask;        /* dynamic key lock mask */
+unsigned int numlockmask, resizemovekey;        /* dynamic key lock mask */
 static Window root;
 static Window sb_area;
 static client *head, *current, *transient;
@@ -793,6 +793,7 @@ void grabkeys() {
     KeyCode code;
 
     XUngrabKey(dis, AnyKey, AnyModifier, root);
+    XUngrabButton(dis, AnyKey, AnyModifier, root);
     read_keys_file();
     // numlock workaround
     numlockmask = 0;
@@ -814,10 +815,10 @@ void grabkeys() {
         XGrabKey(dis, code, keys[i].mod | numlockmask | LockMask, root, True, GrabModeAsync, GrabModeAsync);
     }
     for(i=1;i<4;i+=2) {
-        XGrabButton(dis, i, Mod1Mask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-        XGrabButton(dis, i, Mod1Mask | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-        XGrabButton(dis, i, Mod1Mask | numlockmask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-        XGrabButton(dis, i, Mod1Mask | numlockmask | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, resizemovekey, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, resizemovekey | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, resizemovekey | numlockmask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+        XGrabButton(dis, i, resizemovekey | numlockmask | LockMask, root, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
     }
 }
 
@@ -892,7 +893,6 @@ void maprequest(XEvent *e) {
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
         XSetWindowBorderWidth(dis,ev->window,bdw);
         XSetWindowBorder(dis,ev->window,theme[0].wincolor);
-        //update_current();
         XMapRaised(dis,ev->window);
         XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
         return;
@@ -1243,6 +1243,7 @@ void setup() {
     top_stack = TOP_STACK;
     followmouse = FOLLOW_MOUSE;
     clicktofocus = CLICK_TO_FOCUS;
+    resizemovekey = Mod1Mask;
     windownamelength = WINDOW_NAME_LENGTH;
     topbar = TOP_BAR;
     showopen = SHOW_NUM_OPEN;
