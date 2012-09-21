@@ -793,7 +793,7 @@ void grabkeys() {
     KeyCode code;
 
     XUngrabKey(dis, AnyKey, AnyModifier, root);
-    XUngrabButton(dis, AnyKey, AnyModifier, root);
+    XUngrabButton(dis, AnyButton, AnyModifier, root);
     read_keys_file();
     // numlock workaround
     numlockmask = 0;
