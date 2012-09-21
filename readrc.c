@@ -210,6 +210,7 @@ void update_config() {
     unsigned int i, y, old_desktops = DESKTOPS, tmp = current_desktop;
     
     XUngrabKey(dis, AnyKey, AnyModifier, root);
+    XUngrabButton(dis, AnyKey, AnyModifier, root);
     if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
     y = (topbar == 0) ? 0 : sh+bdw;
