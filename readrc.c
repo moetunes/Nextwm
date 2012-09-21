@@ -32,8 +32,9 @@ void read_rcfile() {
                 }
             } else if(strstr(buffer, "RESIZEMOVEKEY" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                dummy[strlen(dummy)-1] = '\0';
-                if(strncmp(dummy, "Super", 5) == 0)
+                //dummy[strlen(dummy)-1] = '\0';
+                dummy2 = strdup(dummy);
+                if(strncmp(dummy2, "Super", 5) == 0)
                     resizemovekey = Mod4Mask;
                 else
                     resizemovekey = Mod1Mask;
