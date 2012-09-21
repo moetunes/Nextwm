@@ -619,7 +619,7 @@ void tile() {
                 }
                 break;
             case 1: /* Fullscreen */
-                XMoveResizeWindow(dis,current->win,0,y,sw+2*bdw,sh+2*bdw);
+                XMoveResizeWindow(dis,current->win,0,y,sw+bdw,sh+bdw);
                 XMapWindow(dis, current->win);
                 break;
             case 2: /* Horizontal */
