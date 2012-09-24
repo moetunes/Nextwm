@@ -69,7 +69,7 @@ struct client{
 typedef struct desktop desktop;
 struct desktop{
     unsigned int master_size;
-    unsigned int mode, growth, numwins, nmaster;
+    unsigned int mode, growth, numwins, nmaster, showbar;
     client *head;
     client *current;
     client *transient;
@@ -189,7 +189,7 @@ static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, 
 static unsigned int followmouse, mode, msize, previous_desktop, DESKTOPS;
 static int growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
-static unsigned int sb_height, sb_width, screen, show_bar, wnamebg;
+static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
 static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, LA_WINDOWNAME;
 static int ufalpha;
@@ -490,6 +490,8 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
+    if(has_bar == 0 && show_bar == 1) toggle_bar();
+    if(has_bar == 1 && show_bar == 0) toggle_bar();
     // Map all windows
     if(head != NULL) {
         if(mode != 1) {
@@ -552,6 +554,7 @@ void save_desktop(int i) {
     desktops[i].nmaster = nmaster;
     desktops[i].mode = mode;
     desktops[i].growth = growth;
+    desktops[i].showbar = show_bar;
     desktops[i].head = head;
     desktops[i].current = current;
     desktops[i].transient = transient;
@@ -562,6 +565,7 @@ void select_desktop(int i) {
     nmaster = desktops[i].nmaster;
     mode = desktops[i].mode;
     growth = desktops[i].growth;
+    show_bar = desktops[i].showbar;
     head = desktops[i].head;
     current = desktops[i].current;
     transient = desktops[i].transient;
@@ -1227,6 +1231,7 @@ void init_desks(unsigned int ws) {
     desktops[ws].nmaster = 0;
     desktops[ws].mode = mode;
     desktops[ws].growth = 0;
+    desktops[ws].showbar = show_bar;
     desktops[ws].numwins = 0;
     desktops[ws].head = NULL;
     desktops[ws].current = NULL;

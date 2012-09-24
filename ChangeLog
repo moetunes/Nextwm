@@ -1,6 +1,7 @@
 24/9/12
   Fix for existing window/s not being unmapped in
     fullscreen mode when new window added
+    Bar is toggled on a per desktop basis
 
 22/9/12
   Added AltSuper for Mod key combo
