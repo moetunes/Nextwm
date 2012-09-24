@@ -490,8 +490,7 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
-    if(has_bar == 0 && show_bar == 1) toggle_bar();
-    if(has_bar == 1 && show_bar == 0) toggle_bar();
+    if(has_bar != show_bar) toggle_bar();
     // Map all windows
     if(head != NULL) {
         if(mode != 1) {
