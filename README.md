@@ -80,11 +80,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 13/4/12
 
-  * rc.conf changed to semi-colon seperated
-  * Number of desktops now read from rc.conf
-  * Whether to left align the current windows' name in the bar moved to rc.conf
-  * No need to rebuild the wm to change a setting
-
+  * Colours changed in rc.conf
+  * Background colour can be changed
 
 
 ###Status
@@ -111,6 +108,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Moved the RC FILE to $HOME/.config/snapwm/rc.conf
   * Windows can be added/removed to/from the master area with keyboard shortcuts
   * Keyboard shortcuts and apps settings moved to files in ~/.config/snapwm/
+  * rc.conf changed to semi-colon seperated
+  * Number of desktops now read from rc.conf
+  * Whether to left align the current windows' name in the bar moved to rc.conf
+  * No need to rebuild the wm to change a setting
 
 
 ###Installation
