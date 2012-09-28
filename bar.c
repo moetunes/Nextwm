@@ -155,9 +155,9 @@ void status_text(char *sb_text) {
     pos = blank_start+wnl;
     text_start = (LA_WINDOWNAME < 1) ? blank_start : pos - text_length;
 
-    draw_text(area_sb, 3, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
+    draw_text(area_sb, 4, font.width*2, theme[mode].modename, strlen(theme[mode].modename));
     XFillRectangle(dis, area_sb, theme[wnamebg].gc, text_start, 0, text_length, sb_height+4);
-    draw_text(area_sb, 3, text_start, win_name, count);
+    draw_text(area_sb, 4, text_start, win_name, count);
     XCopyArea(dis, area_sb, sb_area, theme[1].gc, 0, 0, pos, sb_height+4, 0, 0);
 }
 
