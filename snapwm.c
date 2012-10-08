@@ -115,7 +115,7 @@ typedef struct {
 } Commands;
 
 // Functions
-static void add_window(Window w, int tw);
+static void add_window(Window w, int tw, client *cl);
 static void buttonpress(XEvent *e);
 static void buttonrelease(XEvent *e);
 static void change_desktop(const Arg arg);
@@ -236,10 +236,11 @@ static Positional positional[20];
 #include "readkeysapps.c"
 
 /* ***************************** Window Management ******************************* */
-void add_window(Window w, int tw) {
+void add_window(Window w, int tw, client *cl) {
     client *c,*t, *dummy;
 
-    if(!(c = (client *)calloc(1,sizeof(client)))) {
+    if(cl != NULL) c = cl;
+    else if(!(c = (client *)calloc(1,sizeof(client)))) {
         logger("\033[0;31mError calloc!");
         exit(1);
     }
@@ -536,14 +537,16 @@ void client_to_desktop(const Arg arg) {
     client *tmp = current;
     unsigned int tmp2 = current_desktop;
 
+    // Remove client from current desktop
+    //XUnmapWindow(dis,current->win);
+    remove_window(current->win, 1, 0);
+
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win, 0);
+    add_window(tmp->win, 0, tmp);
     save_desktop(arg.i);
 
     select_desktop(tmp2);
-    // Remove client from current desktop
-    remove_window(current->win, 0, 0);
 
     if(STATUS_BAR == 0) update_bar();
 }
@@ -891,7 +894,7 @@ void maprequest(XEvent *e) {
 
     Window trans = None;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-        add_window(ev->window, 1); 
+        add_window(ev->window, 1, NULL); 
         if((attr.y + attr.height) > sh)
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
         XSetWindowBorderWidth(dis,ev->window,bdw);
@@ -920,7 +923,7 @@ void maprequest(XEvent *e) {
                 for(c=head;c;c=c->next)
                     if(ev->window == c->win)
                         ++j;
-                if(j < 1) add_window(ev->window, 0);
+                if(j < 1) add_window(ev->window, 0, NULL);
                 if(tmp == tmp2) {
                     tile();
                     XMapWindow(dis, ev->window);
@@ -938,7 +941,7 @@ void maprequest(XEvent *e) {
     if(ch.res_class) XFree(ch.res_class);
     if(ch.res_name) XFree(ch.res_name);
 
-    add_window(ev->window, 0);
+    add_window(ev->window, 0, NULL);
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     warp_pointer();
