@@ -1289,6 +1289,7 @@ void init_desks() {
 
     for (i = 0; i < num_screens; i++) {
         for(j=i;j<DESKTOPS;j+=num_screens) {
+            if(desktops[j].w > 0) continue;
             //printf("**screen is %d - desktop is %d **\n", i, j);
             desktops[j].x = info[i].x_org + last_width;
             desktops[j].y = info[i].y_org;
