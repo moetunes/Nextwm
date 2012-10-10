@@ -10,7 +10,7 @@ Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=
 -------
 
 
-**snapwm** is a very minimal and lightweight dynamic tiling window manager.
+**snapwm** is a xinerama aware, very minimal and lightweight dynamic tiling window manager.
 
 All configuration is read from three files in ~/.config/snapwm/ .
 
@@ -78,10 +78,9 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-13/4/12
+10/10/12
 
-  * Colours changed in rc.conf
-  * Background colour can be changed
+  * Added multi monitor support
 
 
 ###Status
@@ -112,6 +111,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Number of desktops now read from rc.conf
   * Whether to left align the current windows' name in the bar moved to rc.conf
   * No need to rebuild the wm to change a setting
+  * Colours changed in rc.conf
+  * Background colour can be changed
 
 
 ###Installation

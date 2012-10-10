@@ -1,4 +1,4 @@
-// bar.c [ 0.6.4 ]
+// bar.c [ 0.7.0 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
@@ -32,7 +32,7 @@ void setup_status_bar() {
 void status_bar() {
     unsigned int i, y;
 
-    y = (topbar == 0) ? 0 : sh+bdw;
+    y = (topbar == 0) ? 0 : desktops[0].h+bdw;
     sb_width = 0;
     for(i=0;i<DESKTOPS;++i) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, sb_width, y,
@@ -43,7 +43,7 @@ void status_bar() {
         sb_width += sb_bar[i].width;
     }
     sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             sw-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
+             desktops[0].w-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ButtonPressMask|ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapWindow(dis, sb_area);
@@ -58,16 +58,17 @@ void status_bar() {
 void toggle_bar() {
     unsigned int i;
 
+    if(desktops[current_desktop].screen != 0) return;
     if(STATUS_BAR == 0) {
         if(has_bar == 0) {
             show_bar = 1;
-            sh += sb_height+4;
+            desktops[0].h += sb_height+4;
             for(i=0;i<DESKTOPS;++i) XUnmapWindow(dis,sb_bar[i].sb_win);
             XUnmapWindow(dis, sb_area);
             has_bar = 1;
         } else {
             show_bar = 0;
-            sh -= sb_height+4;
+            desktops[0].h -= sb_height+4;
             for(i=0;i<DESKTOPS;++i) XMapWindow(dis, sb_bar[i].sb_win);
             XMapWindow(dis, sb_area);
             has_bar = 0;
@@ -169,7 +170,7 @@ void update_output(unsigned int messg) {
     char *win_name;
 
     if(!(XFetchName(dis, root, &win_name))) {
-        strcpy(output, "&3snapwm 0.5.7 ");
+        strcpy(output, "&3 snapwm inc. ");
         text_length = 15;
     } else {
         while(win_name[text_length] != '\0' && text_length < 256) {

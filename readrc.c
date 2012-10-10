@@ -1,4 +1,4 @@
-// readrc.c [ 0.6.4 ]
+// readrc.c [ 0.7.0 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -128,14 +128,6 @@ void read_rcfile() {
         }
         fclose(rcfile);
     }
-    if(STATUS_BAR == 0 && show_bar == 0) {
-        // Screen height
-        sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
-        sw = XDisplayWidth(dis,screen)- bdw;
-    } else {
-        sh = (XDisplayHeight(dis,screen) - bdw);
-        sw = XDisplayWidth(dis,screen)- bdw;
-    }
     return;
 }
 
@@ -198,11 +190,6 @@ void set_defaults() {
         get_font();
         sb_height = font.height+2;
         font.fh = ((sb_height - font.height)/2) + font.ascent;
-        sh = (XDisplayHeight(dis,screen) - (sb_height+4+bdw));
-        sw = XDisplayWidth(dis,screen)- bdw;
-    } else {
-        sh = (XDisplayHeight(dis,screen) - bdw);
-        sw = XDisplayWidth(dis,screen)- bdw;
     }
     return;
 }
@@ -214,7 +201,7 @@ void update_config() {
     XUngrabButton(dis, AnyButton, AnyModifier, root);
     if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
-    y = (topbar == 0) ? 0 : sh+bdw;
+    y = (topbar == 0) ? 0 : desktops[0].h+bdw;
     if(DESKTOPS < old_desktops) {
         save_desktop(current_desktop);
         Arg a = {.i = DESKTOPS-1};
@@ -230,8 +217,7 @@ void update_config() {
         if(current_desktop > (DESKTOPS-1)) change_desktop(a);
     }
     if(old_desktops < DESKTOPS)
-        for(i=old_desktops;i<DESKTOPS;++i)
-            init_desks(i);
+        init_desks();
     if(STATUS_BAR == 0) {
         setup_status_bar();
         if(DESKTOPS != old_desktops) {
@@ -248,7 +234,7 @@ void update_config() {
             }
             XSetWindowBorder(dis,sb_area,theme[3].barcolor);
             XSetWindowBackground(dis, sb_area, theme[1].barcolor);
-            XMoveResizeWindow(dis, sb_area, sb_desks, y, sw-(sb_desks+4)+bdw,sb_height);
+            XMoveResizeWindow(dis, sb_area, sb_desks, y, desktops[0].w-(sb_desks+4)+bdw,sb_height);
             XGetWindowAttributes(dis, sb_area, &attr);
             total_w = attr.width;
             if(area_sb != 0) {
@@ -259,7 +245,7 @@ void update_config() {
         }
     }
     for(i=0;i<DESKTOPS;++i) {
-        desktops[i].master_size = (desktops[i].mode == 2) ? (sh*msize)/100 : (sw*msize)/100;
+        desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;
         if(desktops[i].head == NULL)
             desktops[i].mode = mode;
     }

@@ -1,6 +1,6 @@
- /* config.h for snapwm.c [ 0.6.4 ]
+ /* config.h for snapwm
  *
- *  RC FILE set to $HOME/.config/snapwm/rc.conf
+ *  CONFIG FILES set to $HOME/.config/snapwm/
  */
 
 #ifndef CONFIG_H
