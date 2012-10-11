@@ -6,7 +6,7 @@ void read_rcfile() {
     char buffer[256];
     char dummy[256];
     char *dummy2, *dummy3;
-    unsigned int i;
+    unsigned int i; int j=-1;
 
     rcfile = fopen( RC_FILE, "rb" ) ;
     if ( rcfile == NULL ) {
@@ -58,7 +58,15 @@ void read_rcfile() {
             } else if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
                 clicktofocus = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
-                mode = atoi(strstr(buffer, " ")+1);
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                dummy[strlen(dummy)-1] = '\0';
+                dummy2 = strdup(dummy);
+                for(i=0;i<DESKTOPS; ++i) {
+                    j = atoi(strsep(&dummy2, ";"));
+                    if(j > -1 && j < 5)
+                        desktops[i].mode = j;
+                    if(dummy2 == NULL) break;
+                }
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -177,14 +185,14 @@ void set_defaults() {
     if(STATUS_BAR == 0) {
         for(i=0;i<4;++i)
             theme[i].barcolor = getcolor(defaultbarcolor[i]);
-        for(i=0;i<10;++i)
-            theme[i].textcolor = getcolor(defaulttextcolor[i]);
         for(i=0;i<5;++i)
             theme[i].modename = strdup(defaultmodename[i]);
         for(i=0;i<10;++i) {
             if(!(defaultdesktopnames[i]))
                 sb_bar[i].label = strdup("?");
             else sb_bar[i].label = strdup(defaultdesktopnames[i]);
+            theme[i].textcolor = getcolor(defaulttextcolor[i]);
+            desktops[i].mode = mode;
         }
         strncpy(font_list, defaultfontlist, strlen(defaultfontlist));
         get_font();
@@ -244,11 +252,8 @@ void update_config() {
             XFillRectangle(dis, area_sb, theme[0].gc, 0, 0, total_w, sb_height+4);
         }
     }
-    for(i=0;i<DESKTOPS;++i) {
+    for(i=0;i<DESKTOPS;++i)
         desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;
-        if(desktops[i].head == NULL)
-            desktops[i].mode = mode;
-    }
     select_desktop(current_desktop);
     Arg a = {.i = mode}; switch_mode(a);
     tile();

@@ -1,3 +1,7 @@
+11/10/12
+  Changed the DEFAULT_MODE line in rc.conf
+    to set the default mode for each desktop
+
 10/10/12
   Added multi monitor support
 

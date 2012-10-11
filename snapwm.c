@@ -192,7 +192,7 @@ static unsigned int wc_size(char *string);
 // Variable
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp;
-static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS;
+static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg;
@@ -285,8 +285,8 @@ void add_window(Window w, int tw, client *cl) {
         c->next = NULL; c->prev = NULL;
         dummy = c;
     } else {
-        if(ATTACH_ASIDE == 0) {
-            if(TOP_STACK == 0) {
+        if(attachaside == 0) {
+            if(top_stack == 0) {
                 c->next = dummy->next; c->prev = dummy;
                 dummy->next = c;
             } else {
@@ -1293,7 +1293,7 @@ void init_desks() {
             //printf("**screen is %d - desktop is %d **\n", i, j);
             desktops[j].x = info[i].x_org + last_width;
             desktops[j].y = info[i].y_org;
-            desktops[j].w = info[i].width - BORDER_WIDTH;
+            desktops[j].w = info[i].width - bdw;
             if(i == 0 && STATUS_BAR == 0 && show_bar == 0) {
                 desktops[j].h = info[i].height - (sb_height+4+bdw);
                 desktops[j].showbar = show_bar;
@@ -1304,7 +1304,7 @@ void init_desks() {
             //printf(" x=%d - y=%d - w=%d - h=%d \n", desktops[j].x, desktops[j].y, desktops[j].w, desktops[j].h);
             desktops[j].master_size = (mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
             desktops[j].nmaster = 0;
-            desktops[j].mode = mode;
+            //desktops[j].mode = mode;
             desktops[j].growth = 0;
             desktops[j].numwins = 0;
             desktops[j].head = NULL;
@@ -1328,21 +1328,15 @@ void setup() {
 
     // Initialize variables
     DESKTOPS = 4;
-    mode = DEFAULT_MODE;
-    msize = MASTER_SIZE;
-    ufalpha = UF_ALPHA;
-    bdw = BORDER_WIDTH;
-    attachaside = ATTACH_ASIDE;
-    top_stack = TOP_STACK;
-    followmouse = FOLLOW_MOUSE;
-    clicktofocus = CLICK_TO_FOCUS;
+    topbar = followmouse = top_stack = mode = 0;
+    LA_WINDOWNAME = wnamebg = dowarp = doresize = 0;
+    msize = 55;
+    ufalpha = 75;
+    bdw = 2;
+    showopen = clicktofocus = attachaside = 1;
     resizemovekey = Mod1Mask;
-    windownamelength = WINDOW_NAME_LENGTH;
-    topbar = TOP_BAR;
-    showopen = SHOW_NUM_OPEN;
-    LA_WINDOWNAME = wnamebg = 0;
-    dowarp = doresize = 0;
-    show_bar = STATUS_BAR;
+    windownamelength = 35;
+    show_bar = STATUS_BAR = 0;
 
     char *loc;
     loc = setlocale(LC_ALL, "");
@@ -1362,7 +1356,7 @@ void setup() {
         setup_status_bar();
         status_bar();
         update_output(1);
-        if(SHOW_BAR > 0) toggle_bar();
+        if(show_bar > 0) toggle_bar();
     }
     read_apps_file();
 
