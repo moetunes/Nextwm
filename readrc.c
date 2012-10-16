@@ -1,4 +1,4 @@
-// readrc.c [ 0.7.0 ]
+// readrc.c [ 0.7.1 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -41,6 +41,12 @@ void read_rcfile() {
             } else if(strstr(buffer, "DESKTOPS" ) != NULL) {
                 DESKTOPS = atoi(strstr(buffer, " ")+1);
                 if(DESKTOPS > 10) DESKTOPS = 10;
+            } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
+                i = atoi(strstr(buffer, " ")+1);
+                if(i < num_screens && i >= 0) {
+                    barmon = i;
+                    init_desks();
+                }
             } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
@@ -209,7 +215,7 @@ void update_config() {
     XUngrabButton(dis, AnyButton, AnyModifier, root);
     if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
-    y = (topbar == 0) ? 0 : desktops[0].h+bdw;
+    y = (topbar == 0) ? 0 : desktops[barmon].h+bdw;
     if(DESKTOPS < old_desktops) {
         save_desktop(current_desktop);
         Arg a = {.i = DESKTOPS-1};
@@ -237,12 +243,12 @@ void update_config() {
             sb_width = 0;
             for(i=0;i<DESKTOPS;++i) {
                 XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].barcolor);
-                XMoveResizeWindow(dis, sb_bar[i].sb_win, sb_width, y,sb_bar[i].width-2,sb_height);
+                XMoveResizeWindow(dis, sb_bar[i].sb_win, desktops[barmon].x+sb_width, y,sb_bar[i].width-2,sb_height);
                 sb_width += sb_bar[i].width;
             }
             XSetWindowBorder(dis,sb_area,theme[3].barcolor);
             XSetWindowBackground(dis, sb_area, theme[1].barcolor);
-            XMoveResizeWindow(dis, sb_area, sb_desks, y, desktops[0].w-(sb_desks+4)+bdw,sb_height);
+            XMoveResizeWindow(dis, sb_area, desktops[barmon].x+sb_desks, y, desktops[barmon].w-(sb_desks+4)+bdw,sb_height);
             XGetWindowAttributes(dis, sb_area, &attr);
             total_w = attr.width;
             if(area_sb != 0) {

@@ -1,4 +1,4 @@
-// bar.c [ 0.7.0 ]
+// bar.c [ 0.7.1 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
@@ -32,18 +32,18 @@ void setup_status_bar() {
 void status_bar() {
     unsigned int i, y;
 
-    y = (topbar == 0) ? 0 : desktops[0].h+bdw;
+    y = (topbar == 0) ? 0 : desktops[barmon].h+bdw;
     sb_width = 0;
     for(i=0;i<DESKTOPS;++i) {
-        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, sb_width, y,
+        sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, desktops[barmon].x+sb_width, y,
                                             sb_bar[i].width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask);
         XMapWindow(dis, sb_bar[i].sb_win);
         sb_width += sb_bar[i].width;
     }
-    sb_area = XCreateSimpleWindow(dis, root, sb_desks, y,
-             desktops[0].w-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
+    sb_area = XCreateSimpleWindow(dis, root, desktops[barmon].x+sb_desks, y,
+             desktops[barmon].w-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ButtonPressMask|ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapWindow(dis, sb_area);
@@ -62,13 +62,13 @@ void toggle_bar() {
     if(STATUS_BAR == 0) {
         if(has_bar == 0) {
             show_bar = 1;
-            desktops[0].h += sb_height+4;
+            desktops[barmon].h += sb_height+4;
             for(i=0;i<DESKTOPS;++i) XUnmapWindow(dis,sb_bar[i].sb_win);
             XUnmapWindow(dis, sb_area);
             has_bar = 1;
         } else {
             show_bar = 0;
-            desktops[0].h -= sb_height+4;
+            desktops[barmon].h -= sb_height+4;
             for(i=0;i<DESKTOPS;++i) XMapWindow(dis, sb_bar[i].sb_win);
             XMapWindow(dis, sb_area);
             has_bar = 0;

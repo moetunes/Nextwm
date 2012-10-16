@@ -1,5 +1,8 @@
+16/10/12
+  Added option in rc.conf to select monitor bar is on
+
 11/10/12
-  Changed the DEFAULT_MODE line in rc.conf
+  Changed the DEFAULTMODE line in rc.conf
     to set the default mode for each desktop
 
 10/10/12
