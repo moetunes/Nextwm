@@ -58,25 +58,25 @@ void status_bar() {
 void toggle_bar() {
     unsigned int i;
 
-    if(desktops[current_desktop].screen != 0) return;
+    if(desktops[current_desktop].screen != barmon) return;
     if(STATUS_BAR == 0) {
         if(has_bar == 0) {
             show_bar = 1;
-            desktops[barmon].h += sb_height+4;
+            desktops[current_desktop].h += sb_height+4;
             for(i=0;i<DESKTOPS;++i) XUnmapWindow(dis,sb_bar[i].sb_win);
             XUnmapWindow(dis, sb_area);
             has_bar = 1;
         } else {
             show_bar = 0;
-            desktops[barmon].h -= sb_height+4;
+            desktops[current_desktop].h -= sb_height+4;
             for(i=0;i<DESKTOPS;++i) XMapWindow(dis, sb_bar[i].sb_win);
             XMapWindow(dis, sb_area);
             has_bar = 0;
+            update_bar();
         }
 
         tile();
         update_current();
-        update_bar();
     }
 }
 

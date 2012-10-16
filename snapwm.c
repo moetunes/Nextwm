@@ -156,7 +156,7 @@ static void next_win();
 static void prev_win();
 static void propertynotify(XEvent *e);
 static void quit();
-static void remove_window(Window w, unsigned int dr, unsigned int tw);
+static void remove_client(client *cl, unsigned int dr, unsigned int tw);
 static void read_apps_file();
 static void read_keys_file();
 static void read_rcfile();
@@ -252,7 +252,7 @@ void add_window(Window w, int tw, client *cl) {
         exit(1);
     }
 
-    if(tw == 0) {
+    if(tw == 0 && cl == NULL) {
         XClassHint chh = {0};
         unsigned int i, j=0;
         if(XGetClassHint(dis, w, &chh)) {
@@ -276,7 +276,7 @@ void add_window(Window w, int tw, client *cl) {
         c->height = attr.height;
     }
 
-    c->win = w;
+    c->win = w; c->order = 0;
     dummy = (tw == 1) ? transient : head;
     for(t=dummy;t;t=t->next)
         ++t->order;
@@ -307,7 +307,6 @@ void add_window(Window w, int tw, client *cl) {
         return;
     } else head = dummy;
     current = c;
-    c->order = 0;
     desktops[current_desktop].numwins += 1;
     if(growth > 0) growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
     else growth = 0;
@@ -321,43 +320,39 @@ void add_window(Window w, int tw, client *cl) {
         XSelectInput(dis, c->win, PropertyChangeMask);
 }
 
-void remove_window(Window w, unsigned int dr, unsigned int tw) {
-    client *c, *t, *dummy;
+void remove_client(client *cl, unsigned int dr, unsigned int tw) {
+    client *t, *dummy;
 
     dummy = (tw == 1) ? transient : head;
-    for(c=dummy;c;c=c->next) {
-        if(c->win == w) {
-            if(c->prev == NULL && c->next == NULL) {
-                dummy = NULL;
-            } else if(c->prev == NULL) {
-                dummy = c->next;
-                c->next->prev = NULL;
-            } else if(c->next == NULL) {
-                c->prev->next = NULL;
-            } else {
-                c->prev->next = c->next;
-                c->next->prev = c->prev;
-            } break;
-        }
+    if(cl->prev == NULL && cl->next == NULL) {
+        dummy = NULL;
+    } else if(cl->prev == NULL) {
+        dummy = cl->next;
+        cl->next->prev = NULL;
+    } else if(cl->next == NULL) {
+        cl->prev->next = NULL;
+    } else {
+        cl->prev->next = cl->next;
+        cl->next->prev = cl->prev;
     }
     if(tw == 1) {
         transient = dummy;
-        free(c);
+        free(cl);
         save_desktop(current_desktop);
         update_current();
         return;
     } else {
         head = dummy;
-        XUngrabButton(dis, AnyButton, AnyModifier, c->win);
-        XUnmapWindow(dis, c->win);
+        XUngrabButton(dis, AnyButton, AnyModifier, cl->win);
+        XUnmapWindow(dis, cl->win);
         desktops[current_desktop].numwins -= 1;
         if(head != NULL) {
             for(t=head;t;t=t->next) {
-                if(t->order > c->order) --t->order;
+                if(t->order > cl->order) --t->order;
                 if(t->order == 0) current = t;
             }
         } else current = NULL;
-        if(dr == 0) free(c);
+        if(dr == 0) free(cl);
         if(desktops[current_desktop].numwins < 3) growth = 0;
         else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
         if(nmaster > 0 && nmaster == (desktops[current_desktop].numwins-1)) nmaster -= 1;
@@ -548,20 +543,20 @@ void rotate_mode(const Arg arg) {
 }
 
 void follow_client_to_desktop(const Arg arg) {
-    if(arg.i >= DESKTOPS) return;
+    if(arg.i >= DESKTOPS || arg.i == current_desktop) return;
     client_to_desktop(arg);
     change_desktop(arg);
 }
 
 void client_to_desktop(const Arg arg) {
-    if(arg.i == current_desktop || current == NULL ||arg.i >= DESKTOPS) return;
+    if(arg.i == current_desktop || current == NULL || arg.i >= DESKTOPS) return;
 
     client *tmp = current;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
 
+
     // Remove client from current desktop
-    //XUnmapWindow(dis,current->win);
-    remove_window(current->win, 1, 0);
+    remove_client(current, 1, 0);
 
     // Add client to desktop
     select_desktop(arg.i);
@@ -1005,7 +1000,7 @@ void destroynotify(XEvent *e) {
     if(transient != NULL) {
         for(c=transient;c;c=c->next)
             if(ev->window == c->win) {
-                remove_window(ev->window, 0, 1);
+                remove_client(c, 0, 1);
                 update_current();
                 return;
             }
@@ -1015,7 +1010,7 @@ void destroynotify(XEvent *e) {
         select_desktop(i);
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
-                remove_window(ev->window, 0, 0);
+                remove_client(c, 0, 0);
                 select_desktop(tmp);
                 if(STATUS_BAR == 0) update_bar();
                 break;
@@ -1186,7 +1181,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
         if(transient != NULL) {
             for(c=transient;c;c=c->next)
                 if(ev->window == c->win) {
-                    remove_window(ev->window, 1, 1);
+                    remove_client(c, 1, 1);
                     select_desktop(tmp);
                     return;
                 }
@@ -1196,7 +1191,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
             select_desktop(i);
             for(c=head;c;c=c->next)
                 if(ev->window == c->win) {
-                    remove_window(ev->window, 1, 0);
+                    remove_client(c, 1, 0);
                     select_desktop(tmp);
                     if(STATUS_BAR == 0) update_bar();
                     return;
@@ -1219,7 +1214,7 @@ void expose(XEvent *e) {
 void kill_client() {
     if(head == NULL) return;
     kill_client_now(current->win);
-    remove_window(current->win, 0, 0);
+    remove_client(current, 0, 0);
     if(STATUS_BAR == 0) update_bar();
 }
 

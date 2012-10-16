@@ -41,12 +41,6 @@ void read_rcfile() {
             } else if(strstr(buffer, "DESKTOPS" ) != NULL) {
                 DESKTOPS = atoi(strstr(buffer, " ")+1);
                 if(DESKTOPS > 10) DESKTOPS = 10;
-            } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
-                i = atoi(strstr(buffer, " ")+1);
-                if(i < num_screens && i >= 0) {
-                    barmon = i;
-                    init_desks();
-                }
             } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
@@ -97,6 +91,12 @@ void read_rcfile() {
                             logger("Default text colour");
                         } else
                             theme[i].textcolor = getcolor(dummy3);
+                    }
+                } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
+                    i = atoi(strstr(buffer, " ")+1);
+                    if(i < num_screens && i >= 0) {
+                        barmon = i;
+                        init_desks();
                     }
                 } else if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
@@ -261,7 +261,6 @@ void update_config() {
     for(i=0;i<DESKTOPS;++i)
         desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;
     select_desktop(current_desktop);
-    Arg a = {.i = mode}; switch_mode(a);
     tile();
     update_current();
     if(STATUS_BAR == 0) update_bar();
