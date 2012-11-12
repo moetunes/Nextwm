@@ -354,7 +354,7 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         } else current = NULL;
         if(dr == 0) free(cl);
         if(desktops[current_desktop].numwins < 3) growth = 0;
-        else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
+        //else growth = growth*(desktops[current_desktop].numwins-1)/desktops[current_desktop].numwins;
         if(nmaster > 0 && nmaster == (desktops[current_desktop].numwins-1)) nmaster -= 1;
         save_desktop(current_desktop);
         if(mode != 4) tile();
@@ -553,7 +553,6 @@ void client_to_desktop(const Arg arg) {
 
     client *tmp = current;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
-
 
     // Remove client from current desktop
     remove_client(current, 1, 0);
@@ -1286,7 +1285,7 @@ void init_desks() {
         for(j=i;j<DESKTOPS;j+=num_screens) {
             if(i == barmon && STATUS_BAR == 0 && show_bar == 0) {
                 desktops[j].h = info[i].height - (sb_height+4+bdw);
-                desktops[j].showbar = show_bar;
+                desktops[j].showbar = 0;
             } else {
                 desktops[j].h = info[i].height - bdw;
                 desktops[j].showbar = 1;

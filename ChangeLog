@@ -1,3 +1,7 @@
+17/10/12
+  Fix for toggle_bar() with BAR_MONITOR
+  changed remove_window() to remove client
+
 16/10/12
   Added option in rc.conf to select monitor bar is on
 
