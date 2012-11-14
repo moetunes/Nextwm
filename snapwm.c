@@ -145,6 +145,7 @@ static void kill_client_now(Window w);
 static void last_desktop();
 static void leavenotify(XEvent *e);
 static void logger(const char* e);
+static void mapbar();
 static void maprequest(XEvent *e);
 static void motionnotify(XEvent *e);
 static void more_master(const Arg arg);
@@ -178,6 +179,7 @@ static void swap_master();
 static void switch_mode(const Arg arg);
 static void tile();
 static void toggle_bar();
+static void unmapbar();
 static void unmapnotify(XEvent *e);    // Thunderbird's write window just unmaps...
 static void update_bar();
 static void update_config();
@@ -509,7 +511,9 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
-    if(has_bar != show_bar) toggle_bar();
+    if(has_bar == 1 && show_bar == 0) mapbar();
+    if(has_bar == 0 && show_bar == 1) unmapbar();
+
     // Map all windows
     if(head != NULL) {
         if(mode != 1)
