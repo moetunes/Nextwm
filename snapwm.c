@@ -511,8 +511,8 @@ void change_desktop(const Arg arg) {
     // Take "properties" from the new desktop
     select_desktop(arg.i);
 
-    if(has_bar == 1 && show_bar == 0) mapbar();
-    if(has_bar == 0 && show_bar == 1) unmapbar();
+    if(next_view == barmon && has_bar == 1 && show_bar == 0) mapbar();
+    if(next_view == barmon && has_bar == 0 && show_bar == 1) unmapbar();
 
     // Map all windows
     if(head != NULL) {
