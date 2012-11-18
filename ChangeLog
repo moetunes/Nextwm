@@ -1,3 +1,9 @@
+18/11/12
+  Fix for bar not showing on 2nd monitor at startup
+
+14/11/12
+  Fix for bar toggling messing with window heights
+
 17/10/12
   Fix for toggle_bar() with BAR_MONITOR
   changed remove_window() to remove client

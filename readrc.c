@@ -1,4 +1,4 @@
-// readrc.c [ 0.7.1 ]
+// readrc.c [ 0.7.2 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -93,11 +93,7 @@ void read_rcfile() {
                             theme[i].textcolor = getcolor(dummy3);
                     }
                 } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
-                    i = atoi(strstr(buffer, " ")+1);
-                    if(i < num_screens && i >= 0) {
-                        barmon = i;
-                        init_desks();
-                    }
+                    barmonchange = atoi(strstr(buffer, " ")+1);
                 } else if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
                 } else if(strstr(buffer, "WNAMEBG" ) != NULL) {
@@ -230,7 +226,7 @@ void update_config() {
         select_desktop(tmp);
         if(current_desktop > (DESKTOPS-1)) change_desktop(a);
     }
-    if(old_desktops < DESKTOPS)
+    if(old_desktops < DESKTOPS || barmon != barmonchange)
         init_desks();
     if(STATUS_BAR == 0) {
         setup_status_bar();
