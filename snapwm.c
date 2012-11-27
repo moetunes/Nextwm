@@ -620,7 +620,7 @@ void tile() {
     if(head == NULL) return;
     client *c, *d=NULL;
     unsigned int x = 0, xpos = 0, ypos=0, wdt = 0, msw, ssw, ncols = 2, nrows = 1;
-    int ht = 0, y = 0, n = 0;
+    int ht = 0, y, n = 0;
     int scrx = desktops[current_desktop].x;
     int scry = desktops[current_desktop].y;
 
@@ -683,37 +683,63 @@ void tile() {
                 break;
             case 3: { // Grid
                 x = desktops[current_desktop].numwins;
-                for(xpos=0;xpos<=x;++xpos) {
-                    if(xpos == 3 || xpos == 7 || xpos == 10 || xpos == 17) ++nrows;
-                    if(xpos == 5 || xpos == 13 || xpos == 21) ++ncols;
-                }
-                msw = (ncols > 2) ? ((master_size*2)/ncols) : master_size;
-                ssw = (sw - msw)/(ncols-1); ht = sh/nrows;
-                xpos = msw+(ssw*(ncols-2)); ypos = y+((nrows-1)*ht);
-                for(c=head;c->next;c=c->next);
-                for(d=c;d;d=d->prev) {
-                    --x;
-                    if(n == nrows) {
-                        xpos -= (xpos == msw) ? msw : ssw;
-                        ypos = y+((nrows-1)*ht);
-                        n = 0;
+                if(x < 5) {
+                    for(c=head;c;c=c->next) {
+                        ++n;
+                        if(x > 2) {
+                            if((n == 1) || (n == 2))
+                                ht = (sh/2) + growth - bdw;
+                            if(n > 2)
+                                ht = (sh/2) - growth - bdw;
+                        } else ht = sh - bdw;
+                        if((n == 1) || (n == 3)) {
+                            xpos = 0;
+                            wdt = master_size - bdw;
+                        }
+                        if((n == 2) || (n == 4)) {
+                            xpos = master_size;
+                            wdt = (sw - master_size) - bdw;
+                        }
+                        if(n == 3)
+                            ypos += (sh/2) + growth;
+                        if((n == x) && (n == 3))
+                            wdt = sw - bdw;
+                        //printf("X = %d, N = %d, WDT == %d\n", x, n, wdt);
+                        XMoveResizeWindow(dis,c->win,scrx+xpos,scry+ypos,wdt,ht);
                     }
-                    if(x == 0) {
-                        ht = (ypos-y+ht);
-                        ypos = y;
+                } else {
+                    for(xpos=0;xpos<=x;++xpos) {
+                        if(xpos == 3 || xpos == 7 || xpos == 10 || xpos == 17) ++nrows;
+                        if(xpos == 5 || xpos == 13 || xpos == 21) ++ncols;
                     }
-                    if(x == 2 && xpos == msw && ypos != y) {
-                        ht -= growth;
-                        ypos += growth;
+                    msw = (ncols > 2) ? ((master_size*2)/ncols) : master_size;
+                    ssw = (sw - msw)/(ncols-1); ht = sh/nrows;
+                    xpos = msw+(ssw*(ncols-2)); ypos = y+((nrows-1)*ht);
+                    for(c=head;c->next;c=c->next);
+                    for(d=c;d;d=d->prev) {
+                        --x;
+                        if(n == nrows) {
+                            xpos -= (xpos == msw) ? msw : ssw;
+                            ypos = y+((nrows-1)*ht);
+                            n = 0;
+                        }
+                        if(x == 0) {
+                            ht = (ypos-y+ht);
+                            ypos = y;
+                        }
+                        if(x == 2 && xpos == msw && ypos != y) {
+                            ht -= growth;
+                            ypos += growth;
+                        }
+                        if(x == 1) {
+                            ht += growth;
+                            ypos -= growth;
+                        }
+                        wdt = (xpos > 0) ? ssw : msw;
+                        XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,wdt-bdw,ht-bdw);
+                        ht = sh/nrows;
+                        ypos -= ht; ++n;
                     }
-                    if(x == 1) {
-                        ht += growth;
-                        ypos -= growth;
-                    }
-                    wdt = (xpos > 0) ? ssw : msw;
-                    XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,wdt-bdw,ht-bdw);
-                    ht = sh/nrows;
-                    ypos -= ht; ++n;
                 }
                 break;
             case 4: // Stacking

@@ -1,3 +1,7 @@
+27/11/18
+  Added back behaviour in grid mode with three or
+   four windows open i.e they all move with Alt+h/l/p/o
+
 18/11/12
   Fix for bar not showing on 2nd monitor at startup
 
