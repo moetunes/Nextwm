@@ -1,3 +1,6 @@
+30/11/12
+  Fix for swapping master with no open windows crash
+
 27/11/18
   Added back behaviour in grid mode with three or
    four windows open i.e they all move with Alt+h/l/p/o
