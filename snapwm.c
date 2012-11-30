@@ -683,11 +683,10 @@ void tile() {
                 }
                 break;
             case 3: { // Grid
-                x = numwins;
-                if(x < 5) {
+                if(numwins < 5) {
                     for(c=head;c;c=c->next) {
                         ++n;
-                        if(x > 2) {
+                        if(numwins > 2) {
                             if((n == 1) || (n == 2))
                                 ht = (sh/2) + growth - bdw;
                             if(n > 2)
@@ -703,12 +702,12 @@ void tile() {
                         }
                         if(n == 3)
                             ypos += (sh/2) + growth;
-                        if((n == x) && (n == 3))
+                        if((n == numwins) && (n == 3))
                             wdt = sw - bdw;
-                        //printf("X = %d, N = %d, WDT == %d\n", x, n, wdt);
                         XMoveResizeWindow(dis,c->win,scrx+xpos,scry+ypos,wdt,ht);
                     }
                 } else {
+                    x = numwins;
                     for(xpos=0;xpos<=x;++xpos) {
                         if(xpos == 3 || xpos == 7 || xpos == 10 || xpos == 17) ++nrows;
                         if(xpos == 5 || xpos == 13 || xpos == 21) ++ncols;

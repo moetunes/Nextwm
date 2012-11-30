@@ -35,6 +35,7 @@ void read_keys_file() {
                 dummy2 = strdup(dummy);
                 dummy3 = strsep(&dummy2, ";");
                 if(strncmp(dummy3, "Alt", 3) == 0) keys[keycount].mod = Mod1Mask;
+                else if(strncmp(dummy3, "Control", 7) == 0) keys[keycount].mod = ControlMask;
                 else if(strncmp(dummy3, "CtrlAlt", 7) == 0) keys[keycount].mod = Mod1Mask|ControlMask;
                 else if(strncmp(dummy3, "ShftAlt", 7) == 0) keys[keycount].mod = Mod1Mask|ShiftMask;
                 else if(strncmp(dummy3, "Super", 5) == 0) keys[keycount].mod = Mod4Mask;
