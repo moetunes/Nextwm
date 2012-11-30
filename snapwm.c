@@ -988,7 +988,7 @@ void maprequest(XEvent *e) {
                 if(j < 1) add_window(ev->window, 0, NULL);
                 for(j=0;j<num_screens;++j) {
                     if(view[j].cd == convenience[i].preferredd-1) {
-                        if(mode == 1) XUnmapWindow(dis, current->win);
+                        if(mode == 1 && head != NULL) XUnmapWindow(dis, current->win);
                         tile();
                         XMapWindow(dis, ev->window);
                         update_current();
@@ -1007,7 +1007,7 @@ void maprequest(XEvent *e) {
     if(ch.res_class) XFree(ch.res_class);
     if(ch.res_name) XFree(ch.res_name);
 
-    if(mode == 1) XUnmapWindow(dis, current->win);
+    if(mode == 1 && head != NULL) XUnmapWindow(dis, current->win);
     add_window(ev->window, 0, NULL);
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
