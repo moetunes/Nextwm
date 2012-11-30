@@ -69,6 +69,7 @@ void toggle_bar() {
             update_bar();
         }
 
+        sh = desktops[current_desktop].h;
         tile();
     }
 }
