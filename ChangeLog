@@ -2,6 +2,8 @@
   Fix for window size with toggle_bar()
   Fix for fullscreen window unmapping when window
    opens on a different desktop
+  Fix for window mapping when using update_config
+   and mode changes from fullscreen
 
 30/11/12
   Added Control to keyboard shortcuts mods

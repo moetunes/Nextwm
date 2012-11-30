@@ -807,9 +807,9 @@ void update_current() {
 }
 
 void switch_mode(const Arg arg) {
-    client *c;
-
     if(mode == arg.i) return;
+
+    client *c;
     growth = 0;
     if(mode == 1 && head != NULL) {
         XUnmapWindow(dis, current->win);

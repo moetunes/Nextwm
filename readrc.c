@@ -254,11 +254,16 @@ void update_config() {
             XFillRectangle(dis, area_sb, theme[0].gc, 0, 0, total_w, sb_height+4);
         }
     }
+    if(mode == 1 && head != NULL) {
+        client *c;
+        XUnmapWindow(dis, current->win);
+        for(c=head;c;c=c->next) XMapWindow(dis, c->win);
+    }
     for(i=0;i<DESKTOPS;++i)
         desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;
+    Arg a = {.i = desktops[current_desktop].mode};
+    switch_mode(a);
     select_desktop(current_desktop);
-    tile();
-    update_current();
     if(STATUS_BAR == 0) update_bar();
 
     read_apps_file();
