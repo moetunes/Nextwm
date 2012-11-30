@@ -974,14 +974,6 @@ void maprequest(XEvent *e) {
         return;
     }
 
-    if(mode ==1)
-        for(c=head;c;c=c->next)
-            XUnmapWindow(dis, c->win);
-
-    if(mode ==1)
-        for(c=head;c;c=c->next)
-            XUnmapWindow(dis, c->win);
-
     XClassHint ch = {0};
     unsigned int i=0, j=0, tmp = current_desktop, tmp2;
     if(XGetClassHint(dis, ev->window, &ch))
@@ -996,11 +988,13 @@ void maprequest(XEvent *e) {
                 if(j < 1) add_window(ev->window, 0, NULL);
                 for(j=0;j<num_screens;++j) {
                     if(view[j].cd == convenience[i].preferredd-1) {
+                        if(mode == 1) XUnmapWindow(dis, current->win);
                         tile();
                         XMapWindow(dis, ev->window);
                         update_current();
-                    } else select_desktop(tmp);
+                    }
                 }
+                select_desktop(tmp);
                 if(convenience[i].followwin == 0) {
                     Arg a = {.i = tmp2};
                     change_desktop(a);
@@ -1013,6 +1007,7 @@ void maprequest(XEvent *e) {
     if(ch.res_class) XFree(ch.res_class);
     if(ch.res_name) XFree(ch.res_name);
 
+    if(mode == 1) XUnmapWindow(dis, current->win);
     add_window(ev->window, 0, NULL);
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
