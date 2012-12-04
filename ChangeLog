@@ -1,3 +1,6 @@
+5/12/12
+  Fix for window mapping with multiple monitors
+
 4/12/12
   Added option in rc.conf to center windows or not
    in stacking mode # for gimp windows etc

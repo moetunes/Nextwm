@@ -276,8 +276,7 @@ void add_window(Window w, int tw, client *cl) {
         else c->y = attr.y;
         c->width = attr.width;
         c->height = attr.height;
-        XMoveWindow(dis, w,desktops[current_desktop].x+c->x,
-          desktops[current_desktop].y+c->y);
+        XMoveWindow(dis, w,c->x,c->y);
     }
 
     c->win = w; c->order = 0;
@@ -559,11 +558,15 @@ void client_to_desktop(const Arg arg) {
     client *tmp = current;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
 
+    tmp->x -= desktops[current_desktop].x;
+    tmp->y -= desktops[current_desktop].y;
     // Remove client from current desktop
     remove_client(current, 1, 0);
 
     // Add client to desktop
     select_desktop(arg.i);
+    tmp->x += desktops[current_desktop].x;
+    tmp->y += desktops[current_desktop].y;
     add_window(tmp->win, 0, tmp);
     save_desktop(arg.i);
 
@@ -944,7 +947,7 @@ void configurerequest(XEvent *e) {
         wc.width = (ev->width < sw+bdw) ? ev->width : sw+bdw;
         wc.height = (ev->height < sh+bdw) ? ev->height : sh+bdw;
     }
-    wc.border_width = bdw;
+    wc.border_width = 0;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
     XConfigureWindow(dis, ev->window, ev->value_mask, &wc);
