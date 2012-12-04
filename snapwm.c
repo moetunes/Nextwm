@@ -193,7 +193,7 @@ static unsigned int wc_size(char *string);
 
 // Variable
 static Display *dis;
-static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp;
+static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
 static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
@@ -266,16 +266,18 @@ void add_window(Window w, int tw, client *cl) {
             if(chh.res_class) XFree(chh.res_class);
             if(chh.res_name) XFree(chh.res_name);
         } 
-        if(j < 1) {
+        if(j == 0 && cstack == 0) {
             XGetWindowAttributes(dis, w, &attr);
             XMoveWindow(dis, w,desktops[current_desktop].x+desktops[current_desktop].w/2-(attr.width/2),desktops[current_desktop].y+(desktops[current_desktop].h+sb_height+4)/2-(attr.height/2));
         }
         XGetWindowAttributes(dis, w, &attr);
         c->x = attr.x;
-        if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0 && attr.y < sb_height+4) c->y = sb_height+4;
+        if(topbar == 0 && attr.y < sb_height+4+bdw) c->y = sb_height+4+bdw;
         else c->y = attr.y;
         c->width = attr.width;
         c->height = attr.height;
+        XMoveWindow(dis, w,desktops[current_desktop].x+c->x,
+          desktops[current_desktop].y+c->y);
     }
 
     c->win = w; c->order = 0;
@@ -932,15 +934,21 @@ void configurerequest(XEvent *e) {
     XWindowChanges wc;
     int y = 0;
 
-    wc.x = ev->x;
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
+    wc.x = ev->x;
     wc.y = ev->y + y;
-    wc.width = (ev->width < sw-bdw) ? ev->width : sw+bdw;
-    wc.height = (ev->height < sh-bdw) ? ev->height : sh+bdw;
+    if(mode == 4) {
+        wc.width = (ev->width < sw-bdw) ? ev->width : sw-bdw;
+        wc.height = (ev->height < sh-bdw) ? ev->height : sh-bdw;
+    } else {
+        wc.width = (ev->width < sw+bdw) ? ev->width : sw+bdw;
+        wc.height = (ev->height < sh+bdw) ? ev->height : sh+bdw;
+    }
     wc.border_width = 0;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
     XConfigureWindow(dis, ev->window, ev->value_mask, &wc);
+    
     if(STATUS_BAR == 0) update_bar();
     XSync(dis, False);
 }
@@ -1030,7 +1038,7 @@ void destroynotify(XEvent *e) {
             }
     }
     save_desktop(tmp);
-    for(i=0;i<TABLENGTH(desktops);++i) {
+    for(i=0;i<DESKTOPS;++i) {
         select_desktop(i);
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
@@ -1351,7 +1359,7 @@ void setup() {
 
     // Initialize variables
     DESKTOPS = 4;
-    topbar = followmouse = top_stack = mode = 0;
+    topbar = followmouse = top_stack = mode = cstack = 0;
     LA_WINDOWNAME = wnamebg = dowarp = doresize = 0;
     msize = 55;
     ufalpha = 75;

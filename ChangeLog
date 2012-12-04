@@ -1,3 +1,7 @@
+4/12/12
+  Added option in rc.conf to center windows or not
+   in stacking mode # for gimp windows etc
+
 1/12/12
   Fix for window size with toggle_bar()
   Fix for fullscreen window unmapping when window

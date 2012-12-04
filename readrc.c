@@ -43,6 +43,8 @@ void read_rcfile() {
                 if(DESKTOPS > 10) DESKTOPS = 10;
             } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
+            } else if(strstr(buffer, "CENTER_STACK" ) != NULL) {
+                cstack = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
                 bdw = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "MASTERSIZE" ) != NULL) {
