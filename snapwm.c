@@ -938,13 +938,13 @@ void configurerequest(XEvent *e) {
     wc.x = ev->x;
     wc.y = ev->y + y;
     if(mode == 4) {
-        wc.width = (ev->width < sw-bdw) ? ev->width : sw-bdw;
-        wc.height = (ev->height < sh-bdw) ? ev->height : sh-bdw;
+        wc.width = (ev->width < sw-2*bdw) ? ev->width : sw-2*bdw;
+        wc.height = (ev->height < sh-2*bdw) ? ev->height : sh-2*bdw;
     } else {
         wc.width = (ev->width < sw+bdw) ? ev->width : sw+bdw;
         wc.height = (ev->height < sh+bdw) ? ev->height : sh+bdw;
     }
-    wc.border_width = 0;
+    wc.border_width = bdw;
     wc.sibling = ev->above;
     wc.stack_mode = ev->detail;
     XConfigureWindow(dis, ev->window, ev->value_mask, &wc);

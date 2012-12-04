@@ -266,6 +266,7 @@ void update_config() {
     Arg a = {.i = desktops[current_desktop].mode};
     switch_mode(a);
     select_desktop(current_desktop);
+    update_current();
     if(STATUS_BAR == 0) update_bar();
 
     read_apps_file();
