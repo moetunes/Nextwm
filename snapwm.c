@@ -574,10 +574,10 @@ void client_to_desktop(const Arg arg) {
         if(view[j%num_screens].cd == arg.i) {
             tile();
             XMapWindow(dis, current->win);
-            update_current();
         }
     }
     select_desktop(tmp2);
+    update_current();
 
     if(STATUS_BAR == 0) update_bar();
 }
