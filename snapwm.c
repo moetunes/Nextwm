@@ -1112,12 +1112,15 @@ void buttonpress(XEvent *e) {
             return;
         }
     // change focus with LMB
-    unsigned int cds = desktops[cd].screen;
+    unsigned int cds = desktops[cd].screen, tmp = current_desktop;
     if(clicktofocus == 0 && ev->button == Button1)
         for(i=cds;i<cds+num_screens;++i) {
             select_desktop(view[i%num_screens].cd);
             for(c=head;c;c=c->next) {
                 if(ev->window == c->win) {
+                    Arg a = {.i = current_desktop};
+                    select_desktop(tmp);
+                    change_desktop(a);
                     current = c;
                     update_current();
                     XSendEvent(dis, PointerWindow, False, 0xfff, e);
