@@ -1,3 +1,7 @@
+6/12/12
+  Don't warp the pointer when clicking an unfocused
+   window on an unfocused monitor
+
 5/12/12
   Fix for window mapping with multiple monitors
 
