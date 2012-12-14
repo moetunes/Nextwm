@@ -962,7 +962,7 @@ void maprequest(XEvent *e) {
     XGetWindowAttributes(dis, ev->window, &attr);
     if(attr.override_redirect == True) return;
 
-    int y=0;
+    unsigned int y=0;
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     // For fullscreen mplayer (and maybe some other program)
     client *c;
@@ -1047,6 +1047,7 @@ void destroynotify(XEvent *e) {
             if(ev->window == c->win) {
                 remove_client(c, 0, 0);
                 select_desktop(tmp);
+                update_current();
                 if(STATUS_BAR == 0) update_bar();
                 break;
             }
