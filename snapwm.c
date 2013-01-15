@@ -1091,6 +1091,7 @@ void buttonpress(XEvent *e) {
     if(STATUS_BAR == 0) {
         if(sb_area == ev->subwindow || sb_area == ev->window) {
             Arg a = {.i = previous_desktop};
+            dowarp = 1;
             change_desktop(a);
             return;
         }
