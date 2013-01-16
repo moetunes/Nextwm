@@ -1,5 +1,7 @@
 16/1/13
   Fix for multi monitor pointer warping when clicking on the bar
+  Fix for bar not updating in multi monitor mode when switching
+   mode on monitor without bar
 
 14/12/12
   update_current() after destroynotify()
