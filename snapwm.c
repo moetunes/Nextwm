@@ -1342,9 +1342,9 @@ void init_desks() {
             desktops[j].y = info[i].y_org;
             desktops[j].w = info[i].width - bdw;
             //printf(" x=%d - y=%d - w=%d - h=%d \n", desktops[j].x, desktops[j].y, desktops[j].w, desktops[j].h);
-            desktops[j].master_size = (mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
+            if(!(desktops[j].mode)) desktops[j].mode = mode;
+            desktops[j].master_size = (desktops[j].mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
             desktops[j].nmaster = 0;
-            //desktops[j].mode = mode;
             desktops[j].growth = 0;
             desktops[j].numwins = 0;
             desktops[j].head = NULL;

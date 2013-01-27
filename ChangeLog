@@ -1,3 +1,7 @@
+27/1/13
+  Fix for booting into horizontal mode failing to map windows
+   correctly
+
 16/1/13
   Fix for multi monitor pointer warping when clicking on the bar
   Fix for bar not updating in multi monitor mode when switching
