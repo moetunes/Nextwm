@@ -490,7 +490,7 @@ void change_desktop(const Arg arg) {
         if(dy > (desktops[arg.i].y+desktops[arg.i].h-10))
             dy = (desktops[arg.i].y+desktops[arg.i].h)-10;
         XWarpPointer(dis, None, root, 0, 0, 0, 0, dx, dy);
-    } else if(dowarp != 0) dowarp = 0;
+    }
 
     // Save current "properties"
     save_desktop(current_desktop);
