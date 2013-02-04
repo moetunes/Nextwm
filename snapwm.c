@@ -654,10 +654,10 @@ void tile() {
                 // Stack
                 if(d == NULL) d = head;
                 n = numwins - (nmaster+1);
-                XMoveResizeWindow(dis,d->next->win,scrx+master_size + bdw,scry+y,sw-master_size-(2*bdw),(sh/n)+growth - bdw);
+                XMoveResizeWindow(dis,d->next->win,scrx+master_size,scry+y,sw-master_size-bdw,(sh/n)+growth - bdw);
                 y += (sh/n)+growth;
                 for(c=d->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,scrx+master_size + bdw,scry+y,sw-master_size-(2*bdw),(sh/n)-(growth/(n-1)) - bdw);
+                    XMoveResizeWindow(dis,c->win,scrx+master_size,scry+y,sw-master_size-bdw,(sh/n)-(growth/(n-1)) - bdw);
                     y += (sh/n)-(growth/(n-1));
                 }
                 break;
@@ -680,10 +680,10 @@ void tile() {
                 // Stack
                 if(d == NULL) d = head;
                 n = numwins - (nmaster+1);
-                XMoveResizeWindow(dis,d->next->win,scrx,scry+y+master_size + bdw,(sw/n)+growth-bdw,sh-master_size-(2*bdw));
+                XMoveResizeWindow(dis,d->next->win,scrx,scry+y+master_size,(sw/n)+growth-bdw,sh-master_size-bdw);
                 msw = (sw/n)+growth;
                 for(c=d->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,scrx+msw,scry+y+master_size + bdw,(sw/n)-(growth/(n-1)) - bdw,sh-master_size-(2*bdw));
+                    XMoveResizeWindow(dis,c->win,scrx+msw,scry+y+master_size,(sw/n)-(growth/(n-1)) - bdw,sh-master_size-bdw);
                     msw += (sw/n)-(growth/(n-1));
                 }
                 break;
