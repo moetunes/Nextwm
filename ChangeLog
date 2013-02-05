@@ -1,5 +1,7 @@
 5/2/13
   Overlap master/stack borders in vertical & horizontal tiling modes
+  With multiple monitors when click to focus window on unfocused
+   screen warp cursor
 
 27/1/13
   Fix for booting into horizontal mode failing to map windows

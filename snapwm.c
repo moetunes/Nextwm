@@ -1122,7 +1122,7 @@ void buttonpress(XEvent *e) {
             for(c=head;c;c=c->next) {
                 if(ev->window == c->win) {
                     Arg a = {.i = current_desktop};
-                    select_desktop(cd); dowarp = 1;
+                    select_desktop(cd);
                     change_desktop(a);
                     current = c;
                     update_current();
