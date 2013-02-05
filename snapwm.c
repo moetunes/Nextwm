@@ -1122,8 +1122,8 @@ void buttonpress(XEvent *e) {
             for(c=head;c;c=c->next) {
                 if(ev->window == c->win) {
                     Arg a = {.i = current_desktop};
-                    select_desktop(cd);
-                    change_desktop(a);
+                    select_desktop(cd); dowarp = 1;
+                    change_desktop(a); dowarp = 0;
                     current = c;
                     update_current();
                     XSendEvent(dis, PointerWindow, False, 0xfff, e);
