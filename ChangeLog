@@ -1,3 +1,6 @@
+9/2/12
+  Remove input focus from current window when changing monitors
+
 5/2/13
   Overlap master/stack borders in vertical & horizontal tiling modes
   With multiple monitors when click to focus window on unfocused
