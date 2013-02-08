@@ -1,5 +1,7 @@
 9/2/12
   Remove input focus from current window when changing monitors
+  Add option to automatically switch from stacking mode when
+   opening a window with more than a set number of windows open
 
 5/2/13
   Overlap master/stack borders in vertical & horizontal tiling modes

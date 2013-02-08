@@ -195,6 +195,7 @@ static unsigned int wc_size(char *string);
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
 static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins;
+static unsigned int auto_mode, auto_num;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange;
@@ -1021,6 +1022,8 @@ void maprequest(XEvent *e) {
 
     if(mode == 1 && head != NULL) XUnmapWindow(dis, current->win);
     add_window(ev->window, 0, NULL);
+    if(mode == 4 && auto_num > 0 && numwins >= auto_num)
+            mode = auto_mode;
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     warp_pointer();
@@ -1371,6 +1374,7 @@ void setup() {
     DESKTOPS = 4;
     topbar = followmouse = top_stack = mode = cstack = 0;
     LA_WINDOWNAME = wnamebg = dowarp = doresize = 0;
+    auto_mode = auto_num = 0;
     msize = 55;
     ufalpha = 75;
     bdw = 2;

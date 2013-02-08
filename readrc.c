@@ -59,6 +59,10 @@ void read_rcfile() {
                 LA_WINDOWNAME = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
                 clicktofocus = atoi(strstr(buffer, " ")+1);
+            } else if(strstr(buffer, "AUTO_NUM_OPEN" ) != NULL) {
+                auto_num = atoi(strstr(buffer, " ")+1);
+            } else if(strstr(buffer, "AUTO_MODE" ) != NULL) {
+                auto_mode = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                 dummy[strlen(dummy)-1] = '\0';
