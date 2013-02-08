@@ -772,7 +772,7 @@ void update_current() {
         if(view[i].cd != current_desktop) {
             select_desktop(view[i].cd);
             if(head != NULL) {
-                XSetInputFocus(dis,None,RevertToParent,CurrentTime);
+                XSetInputFocus(dis,root,RevertToParent,CurrentTime);
                 XSetWindowBorder(dis,current->win,theme[1].wincolor);
                 if(clicktofocus == 0)
                     XGrabButton(dis, AnyButton, AnyModifier, current->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
