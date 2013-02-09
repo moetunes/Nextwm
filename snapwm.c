@@ -315,6 +315,10 @@ void add_window(Window w, int tw, client *cl) {
     if(growth > 0) growth = growth*(numwins-1)/numwins;
     else growth = 0;
     save_desktop(current_desktop);
+    
+    if(mode == 4 && auto_num > 0 && numwins >= auto_num)
+            mode = auto_mode;
+
     // for folow mouse and statusbar updates
     if(followmouse == 0 && STATUS_BAR == 0)
         XSelectInput(dis, c->win, PointerMotionMask|PropertyChangeMask);
@@ -1022,8 +1026,6 @@ void maprequest(XEvent *e) {
 
     if(mode == 1 && head != NULL) XUnmapWindow(dis, current->win);
     add_window(ev->window, 0, NULL);
-    if(mode == 4 && auto_num > 0 && numwins >= auto_num)
-            mode = auto_mode;
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     warp_pointer();
