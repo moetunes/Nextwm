@@ -373,32 +373,32 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
 }
 
 void next_win() {
-    client *c;
+    client *c; Window w = current->win;
 
     if(numwins < 2) return;
-    //if(head->next == NULL) return;
-    if(mode == 1) XUnmapWindow(dis, current->win);
     c = (current->next == NULL) ? head : current->next;
-
     current = c;
     save_desktop(current_desktop);
-    if(mode == 1) tile();
+    if(mode == 1) {
+        tile();
+        XUnmapWindow(dis, w);
+    }
     update_current();
     warp_pointer();
 }
 
 void prev_win() {
-    client *c;
+    client *c; Window w = current->win;
 
     if(numwins < 2) return;
-    //if(head->next == NULL) return;
-    if(mode == 1) XUnmapWindow(dis, current->win);
     if(current->prev == NULL) for(c=head;c->next;c=c->next);
     else c = current->prev;
-
     current = c;
     save_desktop(current_desktop);
-    if(mode == 1) tile();
+    if(mode == 1) {
+        tile();
+        XUnmapWindow(dis, w);
+    }
     update_current();
     warp_pointer();
 }
@@ -409,15 +409,14 @@ void move_down(const Arg arg) {
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
         return;
     }
-    Window tmp;
     if(current == NULL || current->next == NULL || current->win == head->win || current->prev == NULL)
         return;
 
-    tmp = current->win;
+    Window tmp = current->win;
     current->win = current->next->win;
     current->next->win = tmp;
     //keep the moved window activated
-    //next_win();
+    next_win();
     update_current();
     save_desktop(current_desktop);
     tile();
@@ -429,11 +428,10 @@ void move_up(const Arg arg) {
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
         return;
     }
-    Window tmp;
-    if(current == NULL || current->prev == head || current->win == head->win) {
+    if(current == NULL || current->prev == head || current->win == head->win)
         return;
-    }
-    tmp = current->win;
+
+    Window tmp = current->win;
     current->win = current->prev->win;
     current->prev->win = tmp;
     prev_win();
@@ -971,7 +969,8 @@ void maprequest(XEvent *e) {
     unsigned int y=0;
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     // For fullscreen mplayer (and maybe some other program)
-    client *c;
+    client *c; Window w;
+    if(numwins > 0) w = current->win;
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
@@ -1005,9 +1004,9 @@ void maprequest(XEvent *e) {
                 if(j < 1) add_window(ev->window, 0, NULL);
                 for(j=0;j<num_screens;++j) {
                     if(view[j].cd == convenience[i].preferredd-1) {
-                        if(mode == 1 && head != NULL) XUnmapWindow(dis, current->win);
                         tile();
                         XMapWindow(dis, ev->window);
+                        if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
                         update_current();
                     }
                 }
@@ -1024,10 +1023,10 @@ void maprequest(XEvent *e) {
     if(ch.res_class) XFree(ch.res_class);
     if(ch.res_name) XFree(ch.res_name);
 
-    if(mode == 1 && head != NULL) XUnmapWindow(dis, current->win);
     add_window(ev->window, 0, NULL);
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
+    if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
     warp_pointer();
     update_current();
     if(STATUS_BAR == 0) update_bar();

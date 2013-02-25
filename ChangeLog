@@ -1,3 +1,6 @@
+25/2/13
+  In fullscreen mode map new/next/prev window before unmapping current
+
 9/2/12
   Remove input focus from current window when changing monitors
   Add option to automatically switch from stacking mode when
