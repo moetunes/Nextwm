@@ -352,7 +352,6 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
     } else {
         head = dummy;
         XUngrabButton(dis, AnyButton, AnyModifier, cl->win);
-        XUnmapWindow(dis, cl->win);
         numwins -= 1;
         if(head != NULL) {
             for(t=head;t;t=t->next) {
@@ -366,6 +365,7 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         if(nmaster > 0 && nmaster == (numwins-1)) nmaster -= 1;
         save_desktop(current_desktop);
         if(mode != 4) tile();
+        XUnmapWindow(dis, cl->win);
         warp_pointer();
         update_current();
         return;
@@ -970,13 +970,14 @@ void maprequest(XEvent *e) {
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
     // For fullscreen mplayer (and maybe some other program)
     client *c; Window w;
-    if(numwins > 0) w = current->win;
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XMapWindow(dis,ev->window);
             //XMoveResizeWindow(dis,c->win,0,y,sw+bdw,sh-y+bdw);
             return;
         }
+
+    w = (numwins > 0) ? current->win:0;
 
     Window trans = None;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
