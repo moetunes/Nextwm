@@ -499,6 +499,24 @@ void change_desktop(const Arg arg) {
     save_desktop(current_desktop);
     previous_desktop = current_desktop;
 
+    // Take "properties" from the new desktop
+    select_desktop(arg.i);
+
+    if(next_view == barmon && has_bar == 1 && show_bar == 0) mapbar();
+    if(next_view == barmon && has_bar == 0 && show_bar == 1) unmapbar();
+
+    // Map all windows
+    if(head != NULL) {
+        if(mode != 1)
+            for(c=head;c;c=c->next)
+                XMapWindow(dis,c->win);
+        tile();
+    }
+    if(transient != NULL)
+        for(c=transient;c;c=c->next)
+            XMapWindow(dis,c->win);
+
+    select_desktop(previous_desktop);
     if(arg.i != view[next_view].cd) {
         select_desktop(view[next_view].cd);
         // Unmap all window
@@ -511,24 +529,8 @@ void change_desktop(const Arg arg) {
                 XUnmapWindow(dis,c->win);
     }
 
-    // Take "properties" from the new desktop
     select_desktop(arg.i);
-
-    if(next_view == barmon && has_bar == 1 && show_bar == 0) mapbar();
-    if(next_view == barmon && has_bar == 0 && show_bar == 1) unmapbar();
-
-    // Map all windows
-    if(head != NULL) {
-        if(mode != 1)
-            for(c=head;c;c=c->next)
-                XMapWindow(dis,c->win);
-    }
-    if(transient != NULL)
-        for(c=transient;c;c=c->next)
-            XMapWindow(dis,c->win);
-
     view[next_view].cd = current_desktop;
-    tile();
     update_current();
     warp_pointer();
     if(STATUS_BAR == 0) update_bar();

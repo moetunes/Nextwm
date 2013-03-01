@@ -2,6 +2,8 @@
   Enable multimedia keys by default
   Add NULL for using no modifier key
   Don't change mode with windows open on update
+  Remove desktop showing/flicker in fullscreen mode when changing
+   desktops
 
 25/2/13
   In fullscreen mode map new/next/prev window before unmapping current
