@@ -267,10 +267,12 @@ void update_config() {
     }
     for(i=0;i<DESKTOPS;++i)
         desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;
-    Arg a = {.i = desktops[current_desktop].mode};
-    switch_mode(a);
-    select_desktop(current_desktop);
-    update_current();
+    if(numwins < 1) {
+        Arg a = {.i = desktops[current_desktop].mode};
+        switch_mode(a);
+        select_desktop(current_desktop);
+        update_current();
+    }
     if(STATUS_BAR == 0) update_bar();
 
     read_apps_file();
