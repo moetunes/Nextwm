@@ -1,4 +1,4 @@
-// readrc.c [ 0.7.5 ]
+// readrc.c [ 0.7.6 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -59,6 +59,16 @@ void read_rcfile() {
                 LA_WINDOWNAME = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
                 clicktofocus = atoi(strstr(buffer, " ")+1);
+            } else if(strstr(buffer, "NMASTER" ) != NULL) {
+                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
+                dummy[strlen(dummy)-1] = '\0';
+                dummy2 = strdup(dummy);
+                for(i=0;i<DESKTOPS; ++i) {
+                    j = atoi(strsep(&dummy2, ";"));
+                    if(j > -1 && j < 10) desktops[i].nmaster = j;
+                    else desktops[i].nmaster = 0;
+                    if(dummy2 == NULL) break;
+                }
             } else if(strstr(buffer, "AUTO_NUM_OPEN" ) != NULL) {
                 auto_num = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "AUTO_MODE" ) != NULL) {
@@ -68,10 +78,10 @@ void read_rcfile() {
                 dummy[strlen(dummy)-1] = '\0';
                 dummy2 = strdup(dummy);
                 for(i=0;i<DESKTOPS; ++i) {
+                    if(dummy2 == NULL) break;
                     j = atoi(strsep(&dummy2, ";"));
                     if(j > -1 && j < 5)
                         desktops[i].mode = j;
-                    if(dummy2 == NULL) break;
                 }
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
@@ -138,9 +148,9 @@ void read_rcfile() {
                         } else sb_bar[i].label = strdup(dummy3);
                     }
                 }
-                memset(buffer, '\0', 256);
-                memset(dummy, '\0', 256);
             }
+            memset(buffer, '\0', 256);
+            memset(dummy, '\0', 256);
         }
         fclose(rcfile);
     }
@@ -187,7 +197,6 @@ void get_font() {
 void set_defaults() {
     unsigned int i;
 
-    logger("\033[0;32m Setting default values");
     for(i=0;i<2;++i)
         theme[i].wincolor = getcolor(defaultwincolor[i]);
     if(STATUS_BAR == 0) {
@@ -207,6 +216,7 @@ void set_defaults() {
         sb_height = font.height+2;
         font.fh = ((sb_height - font.height)/2) + font.ascent;
     }
+    logger("\033[0;32m Setting default values");
     return;
 }
 

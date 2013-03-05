@@ -1,3 +1,8 @@
+4/3/13
+  Check for a window manager already running
+  Option to set the initial number of extra windows in the master area for
+   each desktop in rc.conf
+
 2/3/12
   Enable multimedia keys by default
   Add NULL for using no modifier key

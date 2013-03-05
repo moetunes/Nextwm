@@ -631,7 +631,7 @@ void tile() {
     if(head == NULL) return;
     client *c, *d=NULL;
     unsigned int x = 0, xpos = 0, ypos=0, wdt = 0, msw, ssw, ncols = 2, nrows = 1;
-    int ht = 0, y, n = 0;
+    int ht = 0, y, n = 0, nm = (numwins < 3) ? 0: (numwins-2 < nmaster) ? (numwins-2):nmaster;
     int scrx = desktops[current_desktop].x;
     int scry = desktops[current_desktop].y;
 
@@ -646,19 +646,19 @@ void tile() {
         switch(mode) {
             case 0: /* Vertical */
             	// Master window
-            	if(nmaster < 1)
+            	if(nm < 1)
                     XMoveResizeWindow(dis,head->win,scrx,scry+y,master_size - bdw,sh - bdw);
                 else {
                     for(d=head;d;d=d->next) {
-                        XMoveResizeWindow(dis,d->win,scrx,scry+ypos,master_size - bdw,sh/(nmaster+1) - bdw);
-                        if(x == nmaster) break;
-                        ypos += sh/(nmaster+1); ++x;
+                        XMoveResizeWindow(dis,d->win,scrx,scry+ypos,master_size - bdw,sh/(nm+1) - bdw);
+                        if(x == nm) break;
+                        ypos += sh/(nm+1); ++x;
                     }
                 }
 
                 // Stack
                 if(d == NULL) d = head;
-                n = numwins - (nmaster+1);
+                n = numwins - (nm+1);
                 XMoveResizeWindow(dis,d->next->win,scrx+master_size,scry+y,sw-master_size-bdw,(sh/n)+growth - bdw);
                 y += (sh/n)+growth;
                 for(c=d->next->next;c;c=c->next) {
@@ -672,19 +672,19 @@ void tile() {
                 break;
             case 2: /* Horizontal */
             	// Master window
-            	if(nmaster < 1)
+            	if(nm < 1)
                     XMoveResizeWindow(dis,head->win,scrx+xpos,scry+ypos,sw-bdw,master_size-bdw);
                 else {
                     for(d=head;d;d=d->next) {
-                        XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,sw/(nmaster+1)-bdw,master_size-bdw);
-                        if(x == nmaster) break;
-                        xpos += sw/(nmaster+1); ++x;
+                        XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,sw/(nm+1)-bdw,master_size-bdw);
+                        if(x == nm) break;
+                        xpos += sw/(nm+1); ++x;
                     }
                 }
 
                 // Stack
                 if(d == NULL) d = head;
-                n = numwins - (nmaster+1);
+                n = numwins - (nm+1);
                 XMoveResizeWindow(dis,d->next->win,scrx,scry+y+master_size,(sw/n)+growth-bdw,sh-master_size-bdw);
                 msw = (sw/n)+growth;
                 for(c=d->next->next;c;c=c->next) {
@@ -1344,15 +1344,15 @@ void init_desks() {
                 desktops[j].h = info[i].height - bdw;
                 desktops[j].showbar = 1;
             }
+            if(!(desktops[j].mode)) desktops[j].mode = mode;
+            if(!(desktops[j].nmaster)) desktops[j].nmaster = nmaster;
             if(desktops[j].w > 0) continue;
             //printf("**screen is %d - desktop is %d **\n", i, j);
             desktops[j].x = info[i].x_org + last_width;
             desktops[j].y = info[i].y_org;
             desktops[j].w = info[i].width - bdw;
             //printf(" x=%d - y=%d - w=%d - h=%d \n", desktops[j].x, desktops[j].y, desktops[j].w, desktops[j].h);
-            if(!(desktops[j].mode)) desktops[j].mode = mode;
             desktops[j].master_size = (desktops[j].mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
-            desktops[j].nmaster = 0;
             desktops[j].growth = 0;
             desktops[j].numwins = 0;
             desktops[j].head = NULL;
@@ -1373,11 +1373,12 @@ void setup() {
     // Screen and root window
     screen = DefaultScreen(dis);
     root = RootWindow(dis,screen);
+    XSelectInput(dis,root,SubstructureRedirectMask);
 
     // Initialize variables
     DESKTOPS = 4;
     topbar = followmouse = top_stack = mode = cstack = 0;
-    LA_WINDOWNAME = wnamebg = dowarp = doresize = 0;
+    LA_WINDOWNAME = wnamebg = dowarp = doresize = nmaster = 0;
     auto_mode = auto_num = 0;
     msize = 55;
     ufalpha = 75;
@@ -1424,7 +1425,6 @@ void setup() {
 
     // To catch maprequest and destroynotify (if other wm running)
     XSelectInput(dis,root,SubstructureNotifyMask|SubstructureRedirectMask|PropertyChangeMask);
-    XSetErrorHandler(xerror);
     logger("\033[0;32mWe're up and running!");
 }
 
@@ -1458,7 +1458,10 @@ int xerror(Display *dis, XErrorEvent *ee) {
     || (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
     || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
         return 0;
-    logger("\033[0;31mBad Window Error!");
+    if(ee->error_code == BadAccess) {
+        logger("\033[0;31mIs Another Window Manager Running? Exiting!");
+        exit(1);
+    } else logger("\033[0;31mBad Window Error!");
     return xerrorxlib(dis, ee); /* may call exit */
 }
 
@@ -1478,6 +1481,8 @@ int main() {
         logger("\033[0;31mCannot open display!");
         exit(1);
     }
+
+    XSetErrorHandler(xerror);
 
     // Setup env
     setup();
