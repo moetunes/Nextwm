@@ -1,6 +1,6 @@
-CFLAGS+= -g -std=c99 -pedantic -Wall
+CFLAGS+= -g -std=c99 -pedantic -Wall -march=i686 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
 LDADD+= -lX11 -lXinerama
-LDFLAGS=
+LDFLAGS= -Wl,-O1,--sort-common,--as-needed,-z,relro
 EXEC=snapwm
 
 PREFIX?= /usr/local
@@ -11,7 +11,7 @@ CC=gcc
 all: $(EXEC)
 
 snapwm: snapwm.o
-	$(CC) $(LDFLAGS) -s -O2 -ffast-math -fno-unit-at-a-time -o $@ $+ $(LDADD)
+	$(CC) $(LDFLAGS) -s -ffast-math -fno-unit-at-a-time -o $@ $+ $(LDADD)
 
 install: all
 	install -Dm 755 snapwm $(DESTDIR)$(BINDIR)/snapwm

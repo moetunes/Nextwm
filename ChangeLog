@@ -1,3 +1,6 @@
+11/3/13
+  Don't decrement nmaster when client is removed
+
 4/3/13
   Check for a window manager already running
   Option to set the initial number of extra windows in the master area for

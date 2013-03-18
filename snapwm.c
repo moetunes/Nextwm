@@ -361,30 +361,25 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         } else current = NULL;
         if(dr == 0) free(cl);
         if(numwins < 3) growth = 0;
-        //else growth = growth*(numwins-1)/numwins;
-        if(nmaster > 0 && nmaster == (numwins-1)) nmaster -= 1;
         save_desktop(current_desktop);
         if(mode != 4) tile();
         XUnmapWindow(dis, cl->win);
-        warp_pointer();
         update_current();
         return;
     }
 }
 
 void next_win() {
-    client *c; Window w = current->win;
-
     if(numwins < 2) return;
-    c = (current->next == NULL) ? head : current->next;
-    current = c;
+    Window w = current->win;
+
+    current = (current->next == NULL) ? head : current->next;
     save_desktop(current_desktop);
     if(mode == 1) {
         tile();
         XUnmapWindow(dis, w);
     }
     update_current();
-    warp_pointer();
 }
 
 void prev_win() {
@@ -400,7 +395,6 @@ void prev_win() {
         XUnmapWindow(dis, w);
     }
     update_current();
-    warp_pointer();
 }
 
 void move_down(const Arg arg) {
@@ -469,7 +463,6 @@ void swap_master() {
     }
     save_desktop(current_desktop);
     tile();
-    warp_pointer();
     update_current();
 }
 
@@ -532,7 +525,6 @@ void change_desktop(const Arg arg) {
     select_desktop(arg.i);
     view[next_view].cd = current_desktop;
     update_current();
-    warp_pointer();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -624,7 +616,6 @@ void more_master (const Arg arg) {
     }
     save_desktop(current_desktop);
     tile();
-    //update_current();
 }
 
 void tile() {
@@ -813,7 +804,7 @@ void update_current() {
             XRaiseWindow(dis,c->win);
     }
     if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
-
+    warp_pointer();
     XSync(dis, False);
 }
 
@@ -1030,7 +1021,6 @@ void maprequest(XEvent *e) {
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
-    warp_pointer();
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -1212,10 +1202,8 @@ void buttonrelease(XEvent *e) {
 void propertynotify(XEvent *e) {
     XPropertyEvent *ev = &e->xproperty;
 
-    if(ev->state == PropertyDelete) {
-        //logger("prop notify delete");
-        return;
-    } else
+    if(ev->state == PropertyDelete) return;
+    else
         if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output(0);
     else
         if(STATUS_BAR == 0) getwindowname();
@@ -1399,7 +1387,7 @@ void setup() {
     set_defaults();
     read_rcfile();
 
-    // Set up all desktop
+    // Set up all desktops
     init_desks();
 
     if(STATUS_BAR == 0) {
@@ -1473,7 +1461,6 @@ void start() {
             events[ev.type](&ev);
     }
 }
-
 
 int main() {
     // Open display
