@@ -1,4 +1,4 @@
-CFLAGS+= -g -std=c99 -pedantic -Wall -march=i686 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
+CFLAGS+= -g -std=c99 -pedantic -Wall -O2 -pipe -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2
 LDADD+= -lX11 -lXinerama
 LDFLAGS= -Wl,-O1,--sort-common,--as-needed,-z,relro
 EXEC=snapwm
