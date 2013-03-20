@@ -1026,31 +1026,32 @@ void maprequest(XEvent *e) {
 }
 
 void destroynotify(XEvent *e) {
-    unsigned int i = 0, tmp = current_desktop;
+    unsigned int i = 0, tmp = current_desktop, foundit = 0;
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
 
-    if(transient != NULL) {
-        for(c=transient;c;c=c->next)
-            if(ev->window == c->win) {
-                remove_client(c, 0, 1);
-                update_current();
-                return;
-            }
-    }
     save_desktop(tmp);
-    for(i=0;i<DESKTOPS;++i) {
-        select_desktop(i);
+    for(i=tmp;i<tmp+DESKTOPS;++i) {
+        select_desktop(i%DESKTOPS);
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
                 remove_client(c, 0, 0);
-                select_desktop(tmp);
-                update_current();
                 if(STATUS_BAR == 0) update_bar();
+                foundit = 1;
                 break;
             }
+        if(transient != NULL) {
+            for(c=transient;c;c=c->next)
+                if(ev->window == c->win) {
+                    remove_client(c, 0, 1);
+                    foundit = 1;
+                    break;
+                }
+        }
+        if(foundit == 1) break;
     }
     select_desktop(tmp);
+    update_current();
 }
 
 void enternotify(XEvent *e) {
