@@ -1,3 +1,9 @@
+22/3/13
+  Check number of windows before anything else in prev_win
+
+18/3/13
+  Updated Makefile
+
 11/3/13
   Don't decrement nmaster when client is removed
 

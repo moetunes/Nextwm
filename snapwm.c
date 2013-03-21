@@ -383,9 +383,9 @@ void next_win() {
 }
 
 void prev_win() {
+    if(numwins < 2) return;
     client *c; Window w = current->win;
 
-    if(numwins < 2) return;
     if(current->prev == NULL) for(c=head;c->next;c=c->next);
     else c = current->prev;
     current = c;
