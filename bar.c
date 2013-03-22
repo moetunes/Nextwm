@@ -108,6 +108,8 @@ void update_bar() {
             } else {
                 draw_desk(sb_bar[i].sb_win, 1, 2, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             }
+            if(i == previous_desktop)
+                XFillRectangle(dis, sb_bar[i].sb_win, theme[3].gc, 0, 0, 2, 2);
         } else {
             draw_desk(sb_bar[i].sb_win, 0, 1, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
             if(showopen < 1 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numwins > 1) {
