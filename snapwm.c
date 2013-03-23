@@ -1036,7 +1036,6 @@ void destroynotify(XEvent *e) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
                 remove_client(c, 0, 0);
-                if(STATUS_BAR == 0) update_bar();
                 foundit = 1;
                 break;
             }
@@ -1052,6 +1051,7 @@ void destroynotify(XEvent *e) {
     }
     select_desktop(tmp);
     update_current();
+    if(STATUS_BAR == 0) update_bar();
 }
 
 void enternotify(XEvent *e) {
