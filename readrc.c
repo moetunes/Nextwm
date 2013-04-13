@@ -281,9 +281,9 @@ void update_config() {
         Arg a = {.i = desktops[current_desktop].mode};
         switch_mode(a);
         select_desktop(current_desktop);
-        update_current();
     }
     if(STATUS_BAR == 0) update_bar();
+    update_current();
 
     read_apps_file();
     memset(keys, 0, keycount * sizeof(key));

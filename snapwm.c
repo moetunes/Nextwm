@@ -25,7 +25,7 @@
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 //#include <X11/keysym.h>
-/* If you have a multimedia keyboard uncomment the following line */
+/* For a multimedia keyboard */
 #include <X11/XF86keysym.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
@@ -97,7 +97,7 @@ typedef struct {
     XFontSet fontset;
     int height;
     int width;
-    unsigned int fh;            /* Y coordinate to draw characters */
+    unsigned int fh; /* Y coordinate to draw characters */
     int ascent;
     int descent;
 } Iammanyfonts;
