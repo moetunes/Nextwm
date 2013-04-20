@@ -1039,7 +1039,7 @@ void destroynotify(XEvent *e) {
                 foundit = 1;
                 break;
             }
-        if(transient != NULL) {
+        if(transient != NULL && foundit < 1) {
             for(c=transient;c;c=c->next)
                 if(ev->window == c->win) {
                     remove_client(c, 0, 1);
@@ -1050,7 +1050,7 @@ void destroynotify(XEvent *e) {
         if(foundit == 1) break;
     }
     select_desktop(tmp);
-    update_current();
+    if(foundit > 0) update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -1133,8 +1133,8 @@ void buttonpress(XEvent *e) {
             }
         }
 
-    if(ev->subwindow == None) return;
     select_desktop(cd);
+    if(ev->subwindow == None) return;
 
     i = 0;
     for(c=transient;c;c=c->next)
@@ -1152,7 +1152,6 @@ void buttonpress(XEvent *e) {
 }
 
 void motionnotify(XEvent *e) {
-    int xdiff, ydiff;
     client *c;
     XMotionEvent *ev = &e->xmotion;
 
@@ -1167,8 +1166,8 @@ void motionnotify(XEvent *e) {
     }
     if(doresize < 1) return;
     while(XCheckTypedEvent(dis, MotionNotify, e));
-    xdiff = ev->x_root - starter.x_root;
-    ydiff = ev->y_root - starter.y_root;
+    int xdiff = ev->x_root - starter.x_root;
+    int ydiff = ev->y_root - starter.y_root;
     XMoveResizeWindow(dis, ev->window,
         attr.x + (starter.button==1 ? xdiff : 0),
         attr.y + (starter.button==1 ? ydiff : 0),
