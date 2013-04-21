@@ -347,7 +347,6 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         transient = dummy;
         free(cl);
         save_desktop(current_desktop);
-        update_current();
         return;
     } else {
         head = dummy;
@@ -364,7 +363,6 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         save_desktop(current_desktop);
         if(mode != 4) tile();
         XUnmapWindow(dis, cl->win);
-        update_current();
         return;
     }
 }
@@ -1220,6 +1218,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
                 if(ev->window == c->win) {
                     remove_client(c, 1, 1);
                     select_desktop(tmp);
+                    update_current();
                     return;
                 }
         }
@@ -1230,6 +1229,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
                 if(ev->window == c->win) {
                     remove_client(c, 1, 0);
                     select_desktop(tmp);
+                    update_current();
                     if(STATUS_BAR == 0) update_bar();
                     return;
                 }
@@ -1252,6 +1252,7 @@ void kill_client() {
     if(head == NULL) return;
     kill_client_now(current->win);
     remove_client(current, 0, 0);
+    update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
