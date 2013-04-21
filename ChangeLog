@@ -1,6 +1,7 @@
 22/4/13
   Fix for TOO many destroy_notify events from mozilla products -
    remove update_current() from remove_client().
+  Option to show the bar in rc.conf actually does something now...
 
 21/4/13
   Fix for firefox menus disappearing when moving entries
