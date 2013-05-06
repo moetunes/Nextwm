@@ -543,13 +543,13 @@ void rotate_mode(const Arg arg) {
 }
 
 void follow_client_to_desktop(const Arg arg) {
-    if(arg.i >= DESKTOPS || arg.i == current_desktop) return;
+    if(current == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
     client_to_desktop(arg);
     change_desktop(arg);
 }
 
 void client_to_desktop(const Arg arg) {
-    if(arg.i == current_desktop || current == NULL || arg.i >= DESKTOPS) return;
+    if(current == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
 
     client *tmp = current;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
