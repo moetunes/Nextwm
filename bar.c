@@ -247,7 +247,6 @@ void update_output(unsigned int messg) {
 unsigned int wc_size(char *string) {
     unsigned int num;
     XRectangle rect;
-
     num = strlen(string);
 
     if(font.fontset) {
