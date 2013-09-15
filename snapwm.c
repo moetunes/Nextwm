@@ -70,7 +70,7 @@ struct client{
 typedef struct desktop desktop;
 struct desktop{
     unsigned int master_size, screen;
-    unsigned int mode, growth, numwins, nmaster, showbar;
+    unsigned int mode, growth, numwins, numtrans, nmaster, showbar;
     unsigned int x, y, w, h;
     client *head;
     client *current;
@@ -194,7 +194,7 @@ static unsigned int wc_size(char *string);
 // Variable
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
-static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins;
+static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins, numtrans;
 static unsigned int auto_mode, auto_num;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
@@ -307,7 +307,7 @@ void add_window(Window w, int tw, client *cl) {
     }
 
     if(tw == 1) {
-        transient = dummy;
+        transient = dummy; ++numtrans;
         save_desktop(current_desktop);
         return;
     } else head = dummy;
@@ -588,6 +588,7 @@ void save_desktop(int i) {
     desktops[i].current = current;
     desktops[i].transient = transient;
     desktops[i].numwins = numwins;
+    desktops[i].numtrans = numtrans;
 }
 
 void select_desktop(int i) {
@@ -600,6 +601,7 @@ void select_desktop(int i) {
     current = desktops[i].current;
     transient = desktops[i].transient;
     numwins = desktops[i].numwins;
+    numtrans = desktops[i].numtrans;
     current_desktop = i;
     sw = desktops[current_desktop].w;
     sh = desktops[current_desktop].h;
@@ -743,12 +745,8 @@ void tile() {
                 }
                 break;
             case 4: // Stacking
-                for(n=numwins-1;n>=0;--n) {
-                    for(c=head;c;c=c->next) {
-                        if(c->order == n)
-                            XMoveResizeWindow(dis,c->win,c->x,c->y,c->width,c->height);
-                    }
-                }
+                    for(c=head;c;c=c->next)
+                        XMoveResizeWindow(dis,c->win,c->x,c->y,c->width,c->height);
                 break;
             }
             default:
@@ -758,7 +756,7 @@ void tile() {
 }
 
 void update_current() {
-    client *c; unsigned int border, tmp = current_desktop, i;
+    client *c, *d; unsigned int border, tmp = current_desktop, i;
     unsigned long opacity = (ufalpha/100.00) * 0xffffffff;
 
     save_desktop(current_desktop);
@@ -778,29 +776,33 @@ void update_current() {
     if(head == NULL) return;
 
     border = ((head->next == NULL && mode != 4) || (mode == 1)) ? 0 : bdw;
-    for(c=head;c;c=c->next) {
-        XSetWindowBorderWidth(dis,c->win,border);
-        if(c != current) {
-            if(c->order < current->order) ++c->order;
-            if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
-            XSetWindowBorder(dis,c->win,theme[1].wincolor);
+    for(c=head;c->next;c=c->next);
+    for(d=c;d;d=d->prev) {
+        XSetWindowBorderWidth(dis,d->win,border);
+        if(d != current) {
+            if(d->order < current->order) ++d->order;
+            if(ufalpha < 100) XChangeProperty(dis, d->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
+            XSetWindowBorder(dis,d->win,theme[1].wincolor);
             if(clicktofocus == 0)
-                XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+                XGrabButton(dis, AnyButton, AnyModifier, d->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
         }
         else {
             // "Enable" current window
-            if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
-            XSetWindowBorder(dis,c->win,theme[0].wincolor);
-            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
-            XRaiseWindow(dis,c->win);
+            if(ufalpha < 100) XDeleteProperty(dis, d->win, alphaatom);
+            XSetWindowBorder(dis,d->win,theme[0].wincolor);
+            if(transient == NULL)
+                XSetInputFocus(dis,d->win,RevertToParent,CurrentTime);
+            XRaiseWindow(dis,d->win);
             if(clicktofocus == 0)
-                XUngrabButton(dis, AnyButton, AnyModifier, c->win);
+                XUngrabButton(dis, AnyButton, AnyModifier, d->win);
         }
     }
     current->order = 0;
     if(transient != NULL) {
-        for(c=transient;c;c=c->next)
-            XRaiseWindow(dis,c->win);
+        for(c=transient;c->next;c=c->next);
+        for(d=c;d;d=d->prev)
+            XRaiseWindow(dis,d->win);
+        XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
     }
     if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
     warp_pointer();
@@ -1346,6 +1348,7 @@ void init_desks() {
             desktops[j].master_size = (desktops[j].mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
             desktops[j].growth = 0;
             desktops[j].numwins = 0;
+            desktops[j].numtrans = 0;
             desktops[j].head = NULL;
             desktops[j].current = NULL;
             desktops[j].transient = NULL;

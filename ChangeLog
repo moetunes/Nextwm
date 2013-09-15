@@ -1,3 +1,7 @@
+15/9/13
+  Make sure the right transient window has the input focus
+   when changing desktops.
+
 7/5/13
   Added option to use apps' name for setting desktop to open on
    and/or size e.g. urxvt -name "Ralph"
