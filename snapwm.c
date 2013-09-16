@@ -70,7 +70,7 @@ struct client{
 typedef struct desktop desktop;
 struct desktop{
     unsigned int master_size, screen;
-    unsigned int mode, growth, numwins, numtrans, nmaster, showbar;
+    unsigned int mode, growth, numwins, nmaster, showbar;
     unsigned int x, y, w, h;
     client *head;
     client *current;
@@ -194,7 +194,7 @@ static unsigned int wc_size(char *string);
 // Variable
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
-static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins, numtrans;
+static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins;
 static unsigned int auto_mode, auto_num;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
@@ -272,14 +272,14 @@ void add_window(Window w, int tw, client *cl) {
             XGetWindowAttributes(dis, w, &attr);
             XMoveWindow(dis, w,desktops[current_desktop].x+desktops[current_desktop].w/2-(attr.width/2),desktops[current_desktop].y+(desktops[current_desktop].h+sb_height+4)/2-(attr.height/2));
         }
-        XGetWindowAttributes(dis, w, &attr);
-        c->x = attr.x;
-        if(topbar == 0 && attr.y < sb_height+4+bdw) c->y = sb_height+4+bdw;
-        else c->y = attr.y;
-        c->width = attr.width;
-        c->height = attr.height;
-        XMoveWindow(dis, w,c->x,c->y);
     }
+    XGetWindowAttributes(dis, w, &attr);
+    c->x = attr.x;
+    if(topbar == 0 && attr.y < sb_height+4+bdw) c->y = sb_height+4+bdw;
+    else c->y = attr.y;
+    c->width = attr.width;
+    c->height = attr.height;
+    XMoveWindow(dis, w,c->x,c->y);
 
     c->win = w; c->order = 0;
     dummy = (tw == 1) ? transient : head;
@@ -307,7 +307,7 @@ void add_window(Window w, int tw, client *cl) {
     }
 
     if(tw == 1) {
-        transient = dummy; ++numtrans;
+        transient = dummy;
         save_desktop(current_desktop);
         return;
     } else head = dummy;
@@ -588,7 +588,6 @@ void save_desktop(int i) {
     desktops[i].current = current;
     desktops[i].transient = transient;
     desktops[i].numwins = numwins;
-    desktops[i].numtrans = numtrans;
 }
 
 void select_desktop(int i) {
@@ -601,7 +600,6 @@ void select_desktop(int i) {
     current = desktops[i].current;
     transient = desktops[i].transient;
     numwins = desktops[i].numwins;
-    numtrans = desktops[i].numtrans;
     current_desktop = i;
     sw = desktops[current_desktop].w;
     sh = desktops[current_desktop].h;
@@ -800,8 +798,10 @@ void update_current() {
     current->order = 0;
     if(transient != NULL) {
         for(c=transient;c->next;c=c->next);
-        for(d=c;d;d=d->prev)
+        for(d=c;d;d=d->prev) {
+            XMoveResizeWindow(dis,d->win,d->x,d->y,d->width,d->height);
             XRaiseWindow(dis,d->win);
+        }
         XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
     }
     if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
@@ -1187,6 +1187,15 @@ void buttonrelease(XEvent *e) {
         return;
     }
     XUngrabPointer(dis, CurrentTime);
+    if(transient != NULL)
+        for(c=transient;c;c=c->next)
+            if(ev->window == c->win) {
+                XGetWindowAttributes(dis, c->win, &attr);
+                c->x = attr.x;
+                c->y = attr.y;
+                c->width = attr.width;
+                c->height = attr.height;
+            }
     if(mode == 4) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
@@ -1348,7 +1357,6 @@ void init_desks() {
             desktops[j].master_size = (desktops[j].mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
             desktops[j].growth = 0;
             desktops[j].numwins = 0;
-            desktops[j].numtrans = 0;
             desktops[j].head = NULL;
             desktops[j].current = NULL;
             desktops[j].transient = NULL;
