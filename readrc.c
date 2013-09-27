@@ -43,6 +43,8 @@ void read_rcfile() {
                 if(DESKTOPS > 10) DESKTOPS = 10;
             } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
+            } else if(strstr(buffer, "BAR_ALPHA" ) != NULL) {
+                baralpha = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "CENTER_STACK" ) != NULL) {
                 cstack = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
@@ -155,6 +157,8 @@ void read_rcfile() {
             memset(dummy, '\0', 256);
         }
         fclose(rcfile);
+        opacity = (ufalpha/100.00) * 0xffffffff;
+        baropacity = (baralpha/100.00) * 0xffffffff;
     }
     return;
 }
@@ -286,6 +290,7 @@ void update_config() {
     }
     if(STATUS_BAR == 0) update_bar();
     update_current();
+    setbaralpha();
 
     read_apps_file();
     memset(keys, 0, keycount * sizeof(key));

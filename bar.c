@@ -86,6 +86,15 @@ void mapbar() {
     has_bar = 0;
 }
 
+void setbaralpha() {
+    unsigned int i;
+    if(baralpha < 100) {
+        XChangeProperty(dis, sb_area, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &baropacity, 1l);
+        for(i=0;i<DESKTOPS;++i)
+            XChangeProperty(dis, sb_bar[i].sb_win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &baropacity, 1l);
+    }
+}
+
 void getwindowname() {
     char *win_name;
 
