@@ -1333,12 +1333,16 @@ void init_desks() {
     if(!(info = XineramaQueryScreens(dis, &num_screens))) {
         logger("XINERAMA Fail");
         num_screens = 1;
+        info[0].height = XDisplayHeight(dis,screen);
+        info[0].width = XDisplayWidth(dis,screen);
+        info[0].x_org = 0;
+        info[0].y_org = 0;
     }
     //printf("\t \nNumber of screens is %d\n\n", num_screens);
 
     if(barmon != barmonchange && barmonchange >= 0 && barmonchange < num_screens)
         barmon = barmonchange;
-    for (i = 0; i < num_screens; i++) {
+    for (i = 0; i < num_screens; ++i) {
         for(j=i;j<DESKTOPS;j+=num_screens) {
             if(i == barmon && STATUS_BAR == 0 && show_bar == 0) {
                 desktops[j].h = info[i].height - (sb_height+4+bdw);
@@ -1367,6 +1371,7 @@ void init_desks() {
         view[i].cd = i;
     }
     XFree(info);
+    printf("INIT DESKS COMPLETE\n");
 }
 
 void setup() {
