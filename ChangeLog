@@ -1,3 +1,6 @@
+6/10/13
+  Fix for failed start with Xinerama info not available
+
 28/9/13
   Added transparency value for the bar and an option for
    it in the config

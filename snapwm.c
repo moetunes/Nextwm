@@ -1327,16 +1327,13 @@ void logger(const char* e) {
 }
 
 void init_desks() {
-    int last_width=0, i, j;
+    int last_width=0, i, j, have_Xin = 0;
 
     XineramaScreenInfo *info = NULL;
     if(!(info = XineramaQueryScreens(dis, &num_screens))) {
         logger("XINERAMA Fail");
         num_screens = 1;
-        info[0].height = XDisplayHeight(dis,screen);
-        info[0].width = XDisplayWidth(dis,screen);
-        info[0].x_org = 0;
-        info[0].y_org = 0;
+        have_Xin = 1;
     }
     //printf("\t \nNumber of screens is %d\n\n", num_screens);
 
@@ -1345,19 +1342,19 @@ void init_desks() {
     for (i = 0; i < num_screens; ++i) {
         for(j=i;j<DESKTOPS;j+=num_screens) {
             if(i == barmon && STATUS_BAR == 0 && show_bar == 0) {
-                desktops[j].h = info[i].height - (sb_height+4+bdw);
+                desktops[j].h = ((have_Xin < 1) ? info[i].height:XDisplayHeight(dis, screen)) - (sb_height+4+bdw);
                 desktops[j].showbar = 0;
             } else {
-                desktops[j].h = info[i].height - bdw;
+                desktops[j].h = ((have_Xin < 1) ? info[i].height:XDisplayHeight(dis, screen)) - bdw;
                 desktops[j].showbar = 1;
             }
             if(!(desktops[j].mode)) desktops[j].mode = mode;
             if(!(desktops[j].nmaster)) desktops[j].nmaster = nmaster;
             if(desktops[j].w > 0) continue;
             //printf("**screen is %d - desktop is %d **\n", i, j);
-            desktops[j].x = info[i].x_org + last_width;
-            desktops[j].y = info[i].y_org;
-            desktops[j].w = info[i].width - bdw;
+            desktops[j].x = (have_Xin < 1) ? info[i].x_org + last_width:0;
+            desktops[j].y = (have_Xin < 1) ? info[i].y_org:0;
+            desktops[j].w = (have_Xin < 1) ? info[i].width - bdw:XDisplayWidth(dis, screen);
             //printf(" x=%d - y=%d - w=%d - h=%d \n", desktops[j].x, desktops[j].y, desktops[j].w, desktops[j].h);
             desktops[j].master_size = (desktops[j].mode == 2) ? (desktops[j].h*msize)/100 : (desktops[j].w*msize)/100;
             desktops[j].growth = 0;
@@ -1371,7 +1368,6 @@ void init_desks() {
         view[i].cd = i;
     }
     XFree(info);
-    printf("INIT DESKS COMPLETE\n");
 }
 
 void setup() {
