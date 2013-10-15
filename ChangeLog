@@ -1,3 +1,7 @@
+15/10/13
+  Better window management with transient windows open
+    - can now cycle through all open windows with the keyboard
+
 6/10/13
   Fix for failed start with Xinerama info not available
 

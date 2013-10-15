@@ -33,8 +33,8 @@
 #include <X11/Xlocale.h>
 #include <X11/extensions/Xinerama.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 // #include <signal.h>
 #include <sys/wait.h>
 #include <string.h>
@@ -72,9 +72,7 @@ struct desktop{
     unsigned int master_size, screen;
     unsigned int mode, growth, numwins, nmaster, showbar;
     unsigned int x, y, w, h;
-    client *head;
-    client *current;
-    client *transient;
+    client *head,  *current, *transient, *focus;
 };
 
 typedef struct {
@@ -209,7 +207,7 @@ static int (*xerrorxlib)(Display *, XErrorEvent *);
 unsigned int numlockmask, resizemovekey;        /* dynamic key lock mask */
 static Window root;
 static Window sb_area;
-static client *head, *current, *transient;
+static client *head, *current, *transient, *focus;
 static char font_list[256];
 static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
 static Atom alphaatom, wm_delete_window, protos, *protocols;
@@ -304,6 +302,7 @@ void add_window(Window w, int tw, client *cl, char *win_class, char *win_name) {
         }
     }
 
+    focus = dummy;
     if(tw == 1) {
         transient = dummy;
         save_desktop(current_desktop);
@@ -342,9 +341,12 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         cl->prev->next = cl->next;
         cl->next->prev = cl->prev;
     }
+    focus = dummy;
     if(tw == 1) {
         transient = dummy;
-        free(cl);
+        XUnmapWindow(dis, cl->win);
+        if(dr == 0) free(cl);
+        if(focus == NULL) focus = current;
         save_desktop(current_desktop);
         return;
     } else {
@@ -357,20 +359,41 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
                 if(t->order == 0) current = t;
             }
         } else current = NULL;
+        XUnmapWindow(dis, cl->win);
         if(dr == 0) free(cl);
         if(numwins < 3) growth = 0;
         save_desktop(current_desktop);
         if(mode != 4) tile();
-        XUnmapWindow(dis, cl->win);
         return;
     }
 }
 
 void next_win() {
     if(numwins < 2) return;
-    Window w = current->win;
+    Window w = current->win; client *c;
+    unsigned int set_focus = 0;
 
-    current = (current->next == NULL) ? head : current->next;
+    if(transient == NULL) {
+        current = (current->next == NULL) ? head : current->next;
+        focus = current;
+    } else {
+        if(current->next == NULL) {
+            for(c=transient;c;c=c->next) {
+                if(c == focus) {
+                    if(c->next != NULL) focus = c->next;
+                    else {
+                        current = focus = head;
+                        set_focus = 1;
+                        break;
+                    }
+                }
+            }
+            if(set_focus == 0) focus = transient;
+        } else {
+            current = current->next;
+            focus = current;
+        }
+    }
     save_desktop(current_desktop);
     if(mode == 1) {
         tile();
@@ -382,10 +405,26 @@ void next_win() {
 void prev_win() {
     if(numwins < 2) return;
     client *c; Window w = current->win;
+    unsigned int set_focus = 0;
 
-    if(current->prev == NULL) for(c=head;c->next;c=c->next);
-    else c = current->prev;
-    current = c;
+    if(transient == NULL) {
+        if(current->prev == NULL) for(c=head;c->next;c=c->next);
+        else c = current->prev;
+        current = focus = c;
+    } else {
+        if(current->prev == NULL) {
+            for(c=transient;c;c=c->next) {
+                if(c == focus) {
+                    if(c->next == NULL) {
+                        for(c=head;c->next;c=c->next);
+                        current = focus = c;
+                        set_focus = 1;
+                    } else focus = c->next;
+                }
+            }
+            if(set_focus == 0) focus = transient;
+        } else current = focus = current->prev;
+    }
     save_desktop(current_desktop);
     if(mode == 1) {
         tile();
@@ -456,7 +495,7 @@ void swap_master() {
         tmp = head->win;
         head->win = current->win;
         current->win = tmp;
-        current = head;
+        current = focus = head;
     }
     save_desktop(current_desktop);
     tile();
@@ -541,27 +580,31 @@ void rotate_mode(const Arg arg) {
 }
 
 void follow_client_to_desktop(const Arg arg) {
-    if(current == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
+    if(focus == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
     client_to_desktop(arg);
     change_desktop(arg);
 }
 
 void client_to_desktop(const Arg arg) {
-    if(current == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
+    if(focus == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
 
-    client *tmp = current;
+    client *tmp = focus, *c;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
+    unsigned int tr = 0;
 
+    if(transient != NULL)
+        for(c=transient;c;c=c->next)
+            if(c == focus) tr = 1;
     tmp->x -= desktops[current_desktop].x;
     tmp->y -= desktops[current_desktop].y;
     // Remove client from current desktop
-    remove_client(current, 1, 0);
+    remove_client(tmp, 1, tr);
 
     // Add client to desktop
     select_desktop(arg.i);
     tmp->x += desktops[current_desktop].x;
     tmp->y += desktops[current_desktop].y;
-    add_window(tmp->win, 0, tmp, "" , "");
+    add_window(tmp->win, tr, tmp, "" , "");
     save_desktop(arg.i);
 
     for(j=cd;j<cd+num_screens;++j) {
@@ -585,6 +628,7 @@ void save_desktop(int i) {
     desktops[i].head = head;
     desktops[i].current = current;
     desktops[i].transient = transient;
+    desktops[i].focus = focus;
     desktops[i].numwins = numwins;
 }
 
@@ -597,6 +641,7 @@ void select_desktop(int i) {
     head = desktops[i].head;
     current = desktops[i].current;
     transient = desktops[i].transient;
+    focus = desktops[i].focus;
     numwins = desktops[i].numwins;
     current_desktop = i;
     sw = desktops[current_desktop].w;
@@ -784,9 +829,10 @@ void update_current() {
         else {
             // "Enable" current window
             if(ufalpha < 100) XDeleteProperty(dis, d->win, alphaatom);
-            XSetWindowBorder(dis,d->win,theme[0].wincolor);
-            if(transient == NULL)
+            if(d == focus) {
+                XSetWindowBorder(dis,d->win,theme[0].wincolor);
                 XSetInputFocus(dis,d->win,RevertToParent,CurrentTime);
+            } else XSetWindowBorder(dis,d->win,theme[1].wincolor);
             XRaiseWindow(dis,d->win);
             if(clicktofocus == 0)
                 XUngrabButton(dis, AnyButton, AnyModifier, d->win);
@@ -797,9 +843,13 @@ void update_current() {
         for(c=transient;c->next;c=c->next);
         for(d=c;d;d=d->prev) {
             XMoveResizeWindow(dis,d->win,d->x,d->y,d->width,d->height);
+            XSetWindowBorderWidth(dis,d->win,bdw);
             XRaiseWindow(dis,d->win);
+            if(d == focus) {
+                XSetWindowBorder(dis,d->win,theme[0].wincolor);
+                XSetInputFocus(dis,d->win,RevertToParent,CurrentTime);
+            } else XSetWindowBorder(dis,d->win,theme[1].wincolor);
         }
-        XSetInputFocus(dis,transient->win,RevertToParent,CurrentTime);
     }
     if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
     warp_pointer();
@@ -975,10 +1025,8 @@ void maprequest(XEvent *e) {
         add_window(ev->window, 1, NULL, "", ""); 
         if((attr.y + attr.height) > sh)
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
-        XSetWindowBorderWidth(dis,ev->window,bdw);
-        XSetWindowBorder(dis,ev->window,theme[0].wincolor);
         XMapRaised(dis,ev->window);
-        XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
+        update_current();
         return;
     }
 
@@ -1108,7 +1156,7 @@ void buttonpress(XEvent *e) {
 
     for(c=transient;c;c=c->next)
         if(ev->window == c->win) {
-            XSetInputFocus(dis,ev->window,RevertToParent,CurrentTime);
+            focus = c; update_current();
             return;
         }
     // change focus with LMB
@@ -1122,7 +1170,7 @@ void buttonpress(XEvent *e) {
                     Arg a = {.i = current_desktop};
                     select_desktop(cd); dowarp = 1;
                     change_desktop(a); dowarp = 0;
-                    current = c;
+                    current = focus = c;
                     update_current();
                     XSendEvent(dis, PointerWindow, False, 0xfff, e);
                     update_bar();
@@ -1157,7 +1205,7 @@ void motionnotify(XEvent *e) {
     if(ev->window != current->win) {
         for(c=head;c;c=c->next)
            if(ev->window == c->win) {
-                current = c;
+                current = focus = c;
                 update_current();
                 dowarp = 0;
                 return;
@@ -1219,7 +1267,6 @@ void propertynotify(XEvent *e) {
 
 void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
     XUnmapEvent *ev = &e->xunmap;
-    unsigned int i = 0, tmp = current_desktop;
     client *c;
 
     if(ev->send_event == 1) {
@@ -1227,24 +1274,17 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
             for(c=transient;c;c=c->next)
                 if(ev->window == c->win) {
                     remove_client(c, 1, 1);
-                    select_desktop(tmp);
                     update_current();
                     return;
                 }
         }
-        save_desktop(tmp);
-        for(i=0;i<TABLENGTH(desktops);++i) {
-            select_desktop(i);
-            for(c=head;c;c=c->next)
-                if(ev->window == c->win) {
-                    remove_client(c, 1, 0);
-                    select_desktop(tmp);
-                    update_current();
-                    if(STATUS_BAR == 0) update_bar();
-                    return;
-                }
-        }
-        select_desktop(tmp);
+        for(c=head;c;c=c->next)
+            if(ev->window == c->win) {
+                remove_client(c, 1, 0);
+                update_current();
+                if(STATUS_BAR == 0) update_bar();
+                return;
+            }
     }
 }
 
@@ -1259,9 +1299,14 @@ void expose(XEvent *e) {
 }
 
 void kill_client() {
-    if(head == NULL) return;
-    kill_client_now(current->win);
-    remove_client(current, 0, 0);
+    if(head == NULL && transient == NULL) return;
+    unsigned int tr = 0; client *c;
+    kill_client_now(focus->win);
+    if(transient != NULL) {
+        for(c=transient;c;c=c->next)
+            if(c == focus) tr = 1;
+    }
+    remove_client(focus, 0, tr);
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -1358,6 +1403,7 @@ void init_desks() {
             desktops[j].head = NULL;
             desktops[j].current = NULL;
             desktops[j].transient = NULL;
+            desktops[i].focus = NULL;
             desktops[j].screen = i;
         }
         last_width += desktops[j].w;
