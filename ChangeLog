@@ -1,3 +1,7 @@
+20/10/13
+  Fix for focus not changing with one open window and a
+   transient window
+
 15/10/13
   Better window management with transient windows open
     - can now cycle through all open windows with the keyboard

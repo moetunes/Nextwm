@@ -302,7 +302,7 @@ void add_window(Window w, int tw, client *cl, char *win_class, char *win_name) {
         }
     }
 
-    focus = dummy;
+    focus = c;
     if(tw == 1) {
         transient = dummy;
         save_desktop(current_desktop);
@@ -341,9 +341,9 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         cl->prev->next = cl->next;
         cl->next->prev = cl->prev;
     }
-    focus = dummy;
+    
     if(tw == 1) {
-        transient = dummy;
+        transient = focus = dummy;
         XUnmapWindow(dis, cl->win);
         if(dr == 0) free(cl);
         if(focus == NULL) focus = current;
@@ -359,6 +359,7 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
                 if(t->order == 0) current = t;
             }
         } else current = NULL;
+        focus = current;
         XUnmapWindow(dis, cl->win);
         if(dr == 0) free(cl);
         if(numwins < 3) growth = 0;
@@ -369,33 +370,35 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
 }
 
 void next_win() {
-    if(numwins < 2) return;
+    if(numwins < 2) {
+        if(transient == NULL) return;
+        else if(numwins == 0 && transient->next == NULL) return;
+    }
     Window w = current->win; client *c;
-    unsigned int set_focus = 0;
 
     if(transient == NULL) {
         current = (current->next == NULL) ? head : current->next;
         focus = current;
     } else {
         if(current->next == NULL) {
+            unsigned int set_focus = 0;
             for(c=transient;c;c=c->next) {
                 if(c == focus) {
                     if(c->next != NULL) focus = c->next;
-                    else {
-                        current = focus = head;
-                        set_focus = 1;
-                        break;
-                    }
+                    else current = focus = head;
+                    set_focus = 1;
+                    break;
                 }
             }
             if(set_focus == 0) focus = transient;
         } else {
-            current = current->next;
+            current = (focus == current) ? current->next:current;
             focus = current;
         }
     }
+
     save_desktop(current_desktop);
-    if(mode == 1) {
+    if( current == focus && mode == 1) {
         tile();
         XUnmapWindow(dis, w);
     }
@@ -403,9 +406,11 @@ void next_win() {
 }
 
 void prev_win() {
-    if(numwins < 2) return;
+    if(numwins < 2) {
+        if(transient == NULL) return;
+        else if(numwins == 0 && transient->next == NULL) return;
+    }
     client *c; Window w = current->win;
-    unsigned int set_focus = 0;
 
     if(transient == NULL) {
         if(current->prev == NULL) for(c=head;c->next;c=c->next);
@@ -413,20 +418,24 @@ void prev_win() {
         current = focus = c;
     } else {
         if(current->prev == NULL) {
+            unsigned int set_focus = 0;
             for(c=transient;c;c=c->next) {
                 if(c == focus) {
                     if(c->next == NULL) {
                         for(c=head;c->next;c=c->next);
                         current = focus = c;
-                        set_focus = 1;
                     } else focus = c->next;
+                    set_focus = 1;
                 }
             }
             if(set_focus == 0) focus = transient;
-        } else current = focus = current->prev;
+        } else {
+            current = (focus == current) ? current->prev:current;
+            focus = current;
+        }
     }
     save_desktop(current_desktop);
-    if(mode == 1) {
+    if(mode == 1 && current == focus) {
         tile();
         XUnmapWindow(dis, w);
     }
@@ -847,8 +856,12 @@ void update_current() {
             XRaiseWindow(dis,d->win);
             if(d == focus) {
                 XSetWindowBorder(dis,d->win,theme[0].wincolor);
+                if(ufalpha < 100) XDeleteProperty(dis, d->win, alphaatom);
                 XSetInputFocus(dis,d->win,RevertToParent,CurrentTime);
-            } else XSetWindowBorder(dis,d->win,theme[1].wincolor);
+            } else {
+                XSetWindowBorder(dis,d->win,theme[1].wincolor);
+                if(ufalpha < 100) XChangeProperty(dis, d->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
+            }
         }
     }
     if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
@@ -1170,7 +1183,7 @@ void buttonpress(XEvent *e) {
                     Arg a = {.i = current_desktop};
                     select_desktop(cd); dowarp = 1;
                     change_desktop(a); dowarp = 0;
-                    current = focus = c;
+                    current = c; focus = c;
                     update_current();
                     XSendEvent(dis, PointerWindow, False, 0xfff, e);
                     update_bar();
