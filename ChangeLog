@@ -1,3 +1,7 @@
+22/10/13
+  Fix for focus not changing when transient window had focus
+   and current window was clicked on
+
 20/10/13
   Fix for focus not changing with one open window and a
    transient window

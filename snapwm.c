@@ -841,10 +841,14 @@ void update_current() {
             if(d == focus) {
                 XSetWindowBorder(dis,d->win,theme[0].wincolor);
                 XSetInputFocus(dis,d->win,RevertToParent,CurrentTime);
-            } else XSetWindowBorder(dis,d->win,theme[1].wincolor);
+                if(clicktofocus == 0)
+                    XUngrabButton(dis, AnyButton, AnyModifier, d->win);
+            } else {
+                XSetWindowBorder(dis,d->win,theme[1].wincolor);
+                if(clicktofocus == 0)
+                    XGrabButton(dis, AnyButton, AnyModifier, d->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+            }
             XRaiseWindow(dis,d->win);
-            if(clicktofocus == 0)
-                XUngrabButton(dis, AnyButton, AnyModifier, d->win);
         }
     }
     current->order = 0;
@@ -1180,9 +1184,11 @@ void buttonpress(XEvent *e) {
             select_desktop(view[i%num_screens].cd);
             for(c=head;c;c=c->next) {
                 if(ev->window == c->win) {
-                    Arg a = {.i = current_desktop};
-                    select_desktop(cd); dowarp = 1;
-                    change_desktop(a); dowarp = 0;
+                    if(cd != current_desktop) {
+                        Arg a = {.i = current_desktop};
+                        select_desktop(cd); dowarp = 1;
+                        change_desktop(a); dowarp = 0;
+                    }
                     current = c; focus = c;
                     update_current();
                     XSendEvent(dis, PointerWindow, False, 0xfff, e);
