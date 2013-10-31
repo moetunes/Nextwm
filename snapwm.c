@@ -269,13 +269,14 @@ void add_window(Window w, int tw, client *cl, char *win_class, char *win_name) {
             XMoveWindow(dis, w,desktops[current_desktop].x+desktops[current_desktop].w/2-(attr.width/2),desktops[current_desktop].y+(desktops[current_desktop].h+sb_height+4)/2-(attr.height/2));
         }
     }
-    XGetWindowAttributes(dis, w, &attr);
-    c->x = attr.x;
-    if(topbar == 0 && attr.y < sb_height+4+bdw) c->y = sb_height+4+bdw;
-    else c->y = attr.y;
-    c->width = attr.width;
-    c->height = attr.height;
-    //XMoveWindow(dis, w,c->x,c->y);
+    if(cl == NULL) {
+        XGetWindowAttributes(dis, w, &attr);
+        c->x = attr.x;
+        if(topbar == 0 && attr.y < sb_height+4+bdw) c->y = sb_height+4+bdw;
+        else c->y = attr.y;
+        c->width = attr.width;
+        c->height = attr.height;
+    }
 
     c->win = w; c->order = 0;
     dummy = (tw == 1) ? transient : head;
@@ -360,7 +361,6 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
             }
         } else current = NULL;
         focus = current;
-        XUnmapWindow(dis, cl->win);
         if(dr == 0) free(cl);
         if(numwins < 3) growth = 0;
         save_desktop(current_desktop);
@@ -604,15 +604,13 @@ void client_to_desktop(const Arg arg) {
     if(transient != NULL)
         for(c=transient;c;c=c->next)
             if(c == focus) tr = 1;
-    tmp->x -= desktops[current_desktop].x;
-    tmp->y -= desktops[current_desktop].y;
     // Remove client from current desktop
+    tmp->x = tmp->x - desktops[current_desktop].x + desktops[arg.i].x;
+    tmp->y = tmp->y - desktops[current_desktop].y + desktops[arg.i].y;
     remove_client(tmp, 1, tr);
 
     // Add client to desktop
     select_desktop(arg.i);
-    tmp->x += desktops[current_desktop].x;
-    tmp->y += desktops[current_desktop].y;
     add_window(tmp->win, tr, tmp, "" , "");
     save_desktop(arg.i);
 
