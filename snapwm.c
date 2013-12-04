@@ -896,7 +896,7 @@ void switch_mode(const Arg arg) {
 
 void resize_master(const Arg arg) {
     if(mode == 4 && current != NULL) {
-        current->width += arg.i;
+        current->width = (current->width + arg.i > 50) ? current->width + arg.i: 50;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height);
     } else if(arg.i > 0) {
         if((mode != 2 && sw-master_size > 70) || (mode == 2 && sh-master_size > 70))
@@ -907,7 +907,7 @@ void resize_master(const Arg arg) {
 
 void resize_stack(const Arg arg) {
     if(mode == 4 && current != NULL) {
-        current->height += arg.i;
+        current->height = (current->height + arg.i > 50) ? current->height + arg.i: 50;
         XMoveResizeWindow(dis,current->win,current->x,current->y,current->width,current->height+arg.i);
     } else if(mode == 3) {
         if(arg.i > 0 && ((sh/2+growth) < (sh-100))) growth += arg.i;

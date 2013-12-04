@@ -1,3 +1,7 @@
+5/12/13
+  Add minimum size for window when resizing with keyboard
+   in stacking mode
+
 31/10/13
   Fix for windows not moving desktops with multiple monitors
    in stacking mode
