@@ -1,8 +1,3 @@
-25/1/14
-  Add new function "terminate" for keyboard shortcut to
-  close any open windows, exit the window manager and shutdown(1)
-  or reboot(2)
-
 5/12/13
   Add minimum size for window when resizing with keyboard
    in stacking mode
