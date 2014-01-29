@@ -1384,33 +1384,27 @@ unsigned long getcolor(const char* color) {
 
 void terminate(const Arg arg) {
     unsigned int i, j=0;
+    char *search, *msg;
     Arg a;
     
     shutting_down = 1;
     quit();
     if(arg.i == 1) {
-        for(i=0;i<cmdcount;++i) {
-            if(strncmp("shutdowncmd", cmds[i].name, 11) == 0) {
-                while(strncmp(cmds[i].list[j], "NULL", 4) != 0) {
-                    a.com[j] = cmds[i].list[j];
-                    ++j;
-                }
-                a.com[j] = NULL;
-                logger("SHUTTING DOWN");
-                execvp((char*)a.com[0],(char**)a.com);
+        search = "shutdowncmd";
+        msg = "SHUTTING DOWN";
+    } else {
+        search = "rebootcmd";
+        msg = "REBOOTING";
+    }
+    for(i=0;i<cmdcount;++i) {
+        if(strcmp(search, cmds[i].name) == 0) {
+            while(strncmp(cmds[i].list[j], "NULL", 4) != 0) {
+                a.com[j] = cmds[i].list[j];
+                ++j;
             }
-        }
-    } else if(arg.i == 2) {
-        for(i=0;i<cmdcount;++i) {
-            if(strncmp("rebootcmd", cmds[i].name, 11) == 0) {
-                while(strcmp(cmds[i].list[j], "NULL") != 0) {
-                    a.com[j] = cmds[i].list[j];
-                    ++j;
-                }
-                a.com[j] = NULL;
-                logger("REBOOTING");
-                execvp((char*)a.com[0],(char**)a.com);
-            }
+            a.com[j] = NULL;
+            logger(msg);
+            execvp((char*)a.com[0],(char**)a.com);
         }
     }
     bool_quit = 1;

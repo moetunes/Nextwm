@@ -101,8 +101,7 @@ void read_keys_file() {
                     dummy4 = strsep(&dummy2, ";");
                     for(i=0;i<cmdcount;++i) {
                         if(strcmp(dummy4, cmds[i].name) == 0) {
-                            keys[keycount].arg.com[0] = cmds[i].list[0];
-                            j=1;
+                            j=0;
                             while(strcmp(cmds[i].list[j], "NULL") != 0) {
                                 keys[keycount].arg.com[j] = cmds[i].list[j];
                                 ++j;

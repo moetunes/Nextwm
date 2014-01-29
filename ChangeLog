@@ -1,4 +1,7 @@
 29/1/14
+  Code tidy up in terminate() and readkeysapps.c
+
+29/1/14
   Add new function "terminate" for keyboard shortcut to
   close any open windows, exit the window manager and shutdown(1)
   or reboot(2)
