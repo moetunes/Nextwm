@@ -176,6 +176,7 @@ static void status_bar();
 static void status_text(char* sb_text);
 static void swap_master();
 static void switch_mode(const Arg arg);
+static void terminate(const Arg arg);
 static void tile();
 static void toggle_bar();
 static void unmapbar();
@@ -194,7 +195,7 @@ static unsigned int wc_size(char *string);
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
 static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins;
-static unsigned int auto_mode, auto_num;
+static unsigned int auto_mode, auto_num, shutting_down;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange;
@@ -1366,7 +1367,8 @@ void quit() {
     XSync(dis, False);
     XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
     logger("\033[0;34mYou Quit : Bye!");
-    bool_quit = 1;
+    if(shutting_down > 0) return;
+    else bool_quit = 1;
 }
 
 unsigned long getcolor(const char* color) {
@@ -1380,8 +1382,43 @@ unsigned long getcolor(const char* color) {
     return c.pixel;
 }
 
+void terminate(const Arg arg) {
+    unsigned int i, j=0;
+    Arg a;
+    
+    shutting_down = 1;
+    quit();
+    if(arg.i == 1) {
+        for(i=0;i<cmdcount;++i) {
+            if(strncmp("shutdowncmd", cmds[i].name, 11) == 0) {
+                while(strncmp(cmds[i].list[j], "NULL", 4) != 0) {
+                    a.com[j] = cmds[i].list[j];
+                    ++j;
+                }
+                a.com[j] = NULL;
+                logger("SHUTTING DOWN");
+                execvp((char*)a.com[0],(char**)a.com);
+            }
+        }
+    } else if(arg.i == 2) {
+        for(i=0;i<cmdcount;++i) {
+            if(strncmp("rebootcmd", cmds[i].name, 11) == 0) {
+                while(strcmp(cmds[i].list[j], "NULL") != 0) {
+                    a.com[j] = cmds[i].list[j];
+                    ++j;
+                }
+                a.com[j] = NULL;
+                logger("REBOOTING");
+                execvp((char*)a.com[0],(char**)a.com);
+            }
+        }
+    }
+    bool_quit = 1;
+}
+
 void logger(const char* e) {
     fprintf(stderr,"\n\033[0;34m:: snapwm : %s \033[0;m\n", e);
+    fflush(stderr);
 }
 
 void init_desks() {
@@ -1442,7 +1479,7 @@ void setup() {
     DESKTOPS = 4;
     topbar = followmouse = top_stack = mode = cstack = 0;
     LA_WINDOWNAME = wnamebg = dowarp = doresize = nmaster = 0;
-    auto_mode = auto_num = 0;
+    auto_mode = auto_num = shutting_down = 0;
     msize = 55;
     ufalpha = 75; baralpha = 90;
     bdw = 2;
