@@ -1318,8 +1318,9 @@ void expose(XEvent *e) {
 
 void kill_client() {
     if(head == NULL && transient == NULL) return;
-    unsigned int tr = 0; client *c;
-    kill_client_now(focus->win);
+    unsigned int tr = 0; client *c; Window w = focus->win;
+    kill_client_now(w);
+    if(w) return;
     if(transient != NULL) {
         for(c=transient;c;c=c->next)
             if(c == focus) tr = 1;
@@ -1350,14 +1351,13 @@ void kill_client_now(Window w) {
 }
 
 void quit() {
-    unsigned int i;
-    client *c;
+    unsigned int i, j;
 
     for(i=0;i<DESKTOPS;++i) {
         if(desktops[i].head != NULL) select_desktop(i);
         else continue;
-        for(c=head;c;c=c->next)
-            kill_client_now(c->win);
+        for(j=0;j<numwins;++j)
+            kill_client();
     }
     XClearWindow(dis, root);
     XUngrabKey(dis, AnyKey, AnyModifier, root);
@@ -1404,10 +1404,10 @@ void terminate(const Arg arg) {
             }
             a.com[j] = NULL;
             logger(msg);
+            bool_quit = 1;
             execvp((char*)a.com[0],(char**)a.com);
         }
     }
-    bool_quit = 1;
 }
 
 void logger(const char* e) {

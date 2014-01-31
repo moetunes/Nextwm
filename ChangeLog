@@ -1,3 +1,6 @@
+31/1/14
+  Fix for kill_client() when window has save dialog
+
 29/1/14
   Code tidy up in terminate() and readkeysapps.c
 
