@@ -80,7 +80,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 10/10/12
 
-  * Added multi monitor support
+  * Add option BAR_SHORT to rc.conf to shorten the bar's 
+     length to have room for an external app
 
 
 ###Status
@@ -113,6 +114,19 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * No need to rebuild the wm to change a setting
   * Colours changed in rc.conf
   * Background colour can be changed
+  * Added multi monitor support
+  * Added option in rc.conf to select the monitor the bar is on
+  * Added option in rc.conf to switch from stacking mode to another
+     mode when reaching a set number of open windows
+  * Use 'NULL' for no modifier key in key.conf
+  * Added option in rc.conf to set the initial number of extra
+     windows in the master area for each desktop
+  * Added a marker for the previous desktop in the switcher
+  * The BAR can have a transparency value in rc.conf
+  * Transient windows can be cycled through with normal windows
+  * Add new function "terminate" for keyboard shortcut to
+     close any open windows, exit the window manager and shutdown(1)
+     or reboot(2)
 
 
 ###Installation

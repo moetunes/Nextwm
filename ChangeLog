@@ -1,3 +1,7 @@
+20/2/14
+  Add option BAR_SHORT to rc.conf to shorten the bar's 
+  length to have room for an external app
+
 31/1/14
   Fix for kill_client() when window has save dialog
 

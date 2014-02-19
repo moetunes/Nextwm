@@ -112,6 +112,8 @@ void read_rcfile() {
                     }
                 } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
                     barmonchange = atoi(strstr(buffer, " ")+1);
+                } else if(strstr(buffer, "BAR_SHORT" ) != NULL) {
+                    lessbar = atoi(strstr(buffer, " ")+1);
                 } else if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
                     showopen = atoi(strstr(buffer, " ")+1);
                 } else if(strstr(buffer, "WNAMEBG" ) != NULL) {
@@ -266,7 +268,7 @@ void update_config() {
             }
             XSetWindowBorder(dis,sb_area,theme[3].barcolor);
             XSetWindowBackground(dis, sb_area, theme[1].barcolor);
-            XMoveResizeWindow(dis, sb_area, desktops[barmon].x+sb_desks, y, desktops[barmon].w-(sb_desks+4)+bdw,sb_height);
+            XMoveResizeWindow(dis, sb_area, desktops[barmon].x+sb_desks, y, desktops[barmon].w-(sb_desks+4)+bdw-lessbar,sb_height);
             XGetWindowAttributes(dis, sb_area, &attr);
             total_w = attr.width;
             if(area_sb != 0) {

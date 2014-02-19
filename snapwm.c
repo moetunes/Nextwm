@@ -198,7 +198,7 @@ static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS
 static unsigned int auto_mode, auto_num, shutting_down;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
-static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange;
+static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange, lessbar;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
 static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, LA_WINDOWNAME;
 static int ufalpha, baralpha;
@@ -1480,7 +1480,7 @@ void setup() {
     showopen = clicktofocus = attachaside = 1;
     resizemovekey = Mod1Mask;
     windownamelength = 35;
-    show_bar = STATUS_BAR = barmon = barmonchange = 0;
+    show_bar = STATUS_BAR = barmon = barmonchange = lessbar = 0;
 
     char *loc;
     loc = setlocale(LC_ALL, "");
