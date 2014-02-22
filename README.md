@@ -78,10 +78,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-10/10/12
+22/2/14
 
-  * Add option BAR_SHORT to rc.conf to shorten the bar's 
-     length to have room for an external app
+  * Don't manage apps with '_NET_WM_WINDOW_TYPE_DOCK' set
+      e.g. trayer
 
 
 ###Status
@@ -127,6 +127,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Add new function "terminate" for keyboard shortcut to
      close any open windows, exit the window manager and shutdown(1)
      or reboot(2)
+  * Add option BAR_SHORT to rc.conf to shorten the bar's 
+     length to have room for an external app
 
 
 ###Installation

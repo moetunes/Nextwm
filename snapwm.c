@@ -123,6 +123,7 @@ static void add_window(Window w, int tw, client *cl, char *win_class, char *win_
 static void buttonpress(XEvent *e);
 static void buttonrelease(XEvent *e);
 static void change_desktop(const Arg arg);
+static int check_dock(Window w);
 static void client_to_desktop(const Arg arg);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
@@ -211,7 +212,7 @@ static Window sb_area;
 static client *head, *current, *transient, *focus;
 static char font_list[256];
 static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
-static Atom alphaatom, wm_delete_window, protos, *protocols;
+static Atom alphaatom, wm_delete_window, protos, *protocols, dockatom, typeatom;
 static XWindowAttributes attr;
 static XButtonEvent starter;
 
@@ -1017,11 +1018,34 @@ void configurerequest(XEvent *e) {
     XSync(dis, False);
 }
 
+int check_dock(Window w) {
+    unsigned long count, j, extra;
+    Atom realType;
+    int realFormat;
+    unsigned char *temp;
+    Atom *type;
+
+    if(XGetWindowProperty(dis, w, typeatom, 0, 32,
+       False, XA_ATOM, &realType, &realFormat, &count, &extra,
+        &temp) == Success) {
+        if(count > 0) {
+            type = (unsigned long*)temp;
+            for(j=0; j<count; j++)
+                if(type[j] == dockatom) return 0;
+        }
+    }
+    return 1;
+}
+
 void maprequest(XEvent *e) {
     XMapRequestEvent *ev = &e->xmaprequest;
 
     XGetWindowAttributes(dis, ev->window, &attr);
     if(attr.override_redirect == True) return;
+    if(check_dock(ev->window) == 0) {
+         XMapWindow(dis,ev->window);
+         return;
+    }
 
     // For fullscreen mplayer (and maybe some other program)
     client *c;
@@ -1515,6 +1539,8 @@ void setup() {
     alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
     protos = XInternAtom(dis, "WM_PROTOCOLS", False);
+    typeatom = XInternAtom(dis, "_NET_WM_WINDOW_TYPE", False);
+    dockatom = XInternAtom(dis, "_NET_WM_WINDOW_TYPE_DOCK", False);
     update_current();
     setbaralpha();
 
