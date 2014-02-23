@@ -1033,6 +1033,7 @@ int check_dock(Window w) {
             for(j=0; j<count; j++)
                 if(type[j] == dockatom) return 0;
         }
+        XFree(temp);
     }
     return 1;
 }
