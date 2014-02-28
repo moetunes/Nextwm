@@ -196,7 +196,7 @@ static unsigned int wc_size(char *string);
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
 static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins;
-static unsigned int auto_mode, auto_num, shutting_down;
+static unsigned int auto_mode, auto_num, shutting_down, default_desk;
 static int num_screens, growth, sh, sw, master_size, nmaster;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange, lessbar;
@@ -345,9 +345,9 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         cl->next->prev = cl->prev;
     }
     
+    XUnmapWindow(dis, cl->win);
     if(tw == 1) {
         transient = focus = dummy;
-        XUnmapWindow(dis, cl->win);
         if(dr == 0) free(cl);
         if(focus == NULL) focus = current;
         save_desktop(current_desktop);
@@ -1476,7 +1476,7 @@ void init_desks() {
             desktops[j].head = NULL;
             desktops[j].current = NULL;
             desktops[j].transient = NULL;
-            desktops[i].focus = NULL;
+            desktops[j].focus = NULL;
             desktops[j].screen = i;
         }
         last_width += desktops[j].w;
@@ -1496,7 +1496,7 @@ void setup() {
 
     // Initialize variables
     DESKTOPS = 4;
-    topbar = followmouse = top_stack = mode = cstack = 0;
+    topbar = followmouse = top_stack = mode = cstack = default_desk = 0;
     LA_WINDOWNAME = wnamebg = dowarp = doresize = nmaster = 0;
     auto_mode = auto_num = shutting_down = 0;
     msize = 55;
@@ -1535,8 +1535,12 @@ void setup() {
     // For exiting
     bool_quit = 0;
 
-    // Select first dekstop by default
+    // Select default desktop
     select_desktop(0);
+    if(default_desk > 0) {
+        Arg a = {.i = default_desk};
+        change_desktop(a);
+    }
     alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
     protos = XInternAtom(dis, "WM_PROTOCOLS", False);

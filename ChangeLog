@@ -1,3 +1,6 @@
+1/3/14
+  Add option in rc.conf to select which desktop to start on
+
 22/2/14
   Don't manage dock apps with '_NET_WM_WINDOW_TYPE_DOCK' set
 

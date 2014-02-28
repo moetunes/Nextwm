@@ -41,6 +41,9 @@ void read_rcfile() {
             } else if(strstr(buffer, "DESKTOPS" ) != NULL) {
                 DESKTOPS = atoi(strstr(buffer, " ")+1);
                 if(DESKTOPS > 10) DESKTOPS = 10;
+            } else if(strstr(buffer, "DEFAULT_DESK" ) != NULL) {
+                default_desk = atoi(strstr(buffer, " ")+1);
+                if(default_desk > DESKTOPS) default_desk = DESKTOPS;
             } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
                 ufalpha = atoi(strstr(buffer, " ")+1);
             } else if(strstr(buffer, "BAR_ALPHA" ) != NULL) {
