@@ -78,10 +78,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-22/2/14
+4/3/14
 
-  * Don't manage apps with '_NET_WM_WINDOW_TYPE_DOCK' set
-      e.g. trayer
+  * Right click an unfocused desktop in the switcher to move the
+     focused window to that desktop
 
 
 ###Status
@@ -129,6 +129,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
      or reboot(2)
   * Add option BAR_SHORT to rc.conf to shorten the bar's 
      length to have room for an external app
+  *  Don't manage apps with '_NET_WM_WINDOW_TYPE_DOCK' set
+      e.g. trayer
 
 
 ###Installation

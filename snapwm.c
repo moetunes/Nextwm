@@ -1185,8 +1185,13 @@ void buttonpress(XEvent *e) {
         for(i=0;i<DESKTOPS;++i)
             if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i != current_desktop) {
                 Arg a = {.i = i};
-                change_desktop(a);
-                return;
+                if(ev->button == Button1) {
+                    change_desktop(a);
+                    return;
+                } else if(ev->button == Button3) {
+                    follow_client_to_desktop(a);
+                    return;
+                }
             } else {
                 if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i == current_desktop) {
                     next_win();
