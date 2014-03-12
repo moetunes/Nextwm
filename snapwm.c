@@ -1176,26 +1176,28 @@ void buttonpress(XEvent *e) {
     int i=0, cd = current_desktop;
 
     if(STATUS_BAR == 0) {
-        if(sb_area == ev->subwindow || sb_area == ev->window) {
+        if(sb_area == (ev->subwindow | ev->window)) {
             Arg a = {.i = previous_desktop};
             dowarp = 1;
             change_desktop(a);
             return;
         }
         for(i=0;i<DESKTOPS;++i)
-            if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i != current_desktop) {
-                Arg a = {.i = i};
-                if(ev->button == Button1) {
-                    change_desktop(a);
-                    return;
-                } else if(ev->button == Button3) {
-                    follow_client_to_desktop(a);
-                    return;
-                }
-            } else {
-                if((sb_bar[i].sb_win == ev->window || sb_bar[i].sb_win == ev->subwindow) && i == current_desktop) {
-                    next_win();
-                    return;
+            if(sb_bar[i].sb_win == (ev->window | ev->subwindow)) {
+                if(i != current_desktop) {
+                    Arg a = {.i = i};
+                    if(ev->button == Button1) {
+                        change_desktop(a);
+                        return;
+                    } else if(ev->button == Button3) {
+                        follow_client_to_desktop(a);
+                        return;
+                    }
+                } else {
+                    if(ev->button == Button1) {
+                        next_win();
+                        return;
+                    }
                 }
             }
     }
