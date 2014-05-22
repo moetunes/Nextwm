@@ -1,4 +1,4 @@
-// readrc.c [ 0.8.0 ]
+// readrc.c [ 0.8.1 ]
 
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
@@ -93,9 +93,9 @@ void read_rcfile() {
                     strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
                     dummy[strlen(dummy)-1] = '\0';
                     dummy2 = strdup(dummy);
-                    for(i=0;i<4;++i) {
+                    for(i=0;i<5;++i) {
                         dummy3 = strsep(&dummy2, ";");
-                        if(getcolor(dummy3) == 1) {
+                        if((dummy3 == NULL) || getcolor(dummy3) == 1) {
                             theme[i].barcolor = getcolor(defaultbarcolor[i]);
                             logger("Default bar colour");
                         } else

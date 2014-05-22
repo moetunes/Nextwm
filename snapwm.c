@@ -1307,12 +1307,29 @@ void buttonrelease(XEvent *e) {
 
 void propertynotify(XEvent *e) {
     XPropertyEvent *ev = &e->xproperty;
+    unsigned int i, tmp = current_desktop; client *c;
 
     if(ev->state == PropertyDelete) return;
-    else
-        if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output(0);
-    else
-        if(STATUS_BAR == 0) getwindowname();
+    else if(ev->atom == XA_WM_HINTS) {
+        save_desktop(tmp);
+        for(i=tmp;i<tmp+DESKTOPS;++i) {
+            select_desktop(i%DESKTOPS);
+            for(c=head;c;c=c->next)
+                if(ev->window == c->win) {
+                    XWMHints *wmh = XGetWMHints(dis, c->win);
+                    if(wmh && (wmh->flags & XUrgencyHint)) {
+                        current = focus = c;
+                        if(i == tmp) update_current();
+                        draw_desk(sb_bar[i].sb_win, 4, 3, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                    }
+                    if(wmh) XFree(wmh);
+                    break;
+                }
+        }
+        select_desktop(tmp);
+    }
+    else if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output(0);
+    else if(STATUS_BAR == 0) getwindowname();
 }
 
 void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
@@ -1407,11 +1424,12 @@ unsigned long getcolor(const char* color) {
     XColor c;
     Colormap map = DefaultColormap(dis,screen);
 
-    if(!XAllocNamedColor(dis,map,color,&c,&c)) {
+    if(XAllocNamedColor(dis,map,color,&c,&c)) return c.pixel;
+    else {
         logger("\033[0;31mError parsing color!");
         return 1;
     }
-    return c.pixel;
+    
 }
 
 void terminate(const Arg arg) {

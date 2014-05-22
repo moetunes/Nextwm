@@ -1,4 +1,4 @@
-// bar.c [ 0.8.0 ]
+// bar.c [ 0.8.1 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
@@ -194,6 +194,7 @@ void update_output(unsigned int messg) {
             output[text_length] = win_name[text_length];
             ++text_length;
         }
+        text_length += 1;
         output[text_length] = '\0';
     }
     XFree(win_name);
