@@ -1310,6 +1310,8 @@ void propertynotify(XEvent *e) {
     unsigned int i, tmp = current_desktop; client *c;
 
     if(ev->state == PropertyDelete) return;
+    else if(ev->atom == XA_WM_NAME && ev->window == root) update_output(0);
+    else if(ev->atom == XA_WM_NAME) getwindowname();
     else if(ev->atom == XA_WM_HINTS) {
         save_desktop(tmp);
         for(i=tmp;i<tmp+DESKTOPS;++i) {
@@ -1319,8 +1321,9 @@ void propertynotify(XEvent *e) {
                     XWMHints *wmh = XGetWMHints(dis, c->win);
                     if(wmh && (wmh->flags & XUrgencyHint)) {
                         current = focus = c;
-                        if(i == tmp) update_current();
-                        draw_desk(sb_bar[i].sb_win, 4, 3, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
+                        if(current_desktop == tmp) update_current();
+                        draw_desk(sb_bar[current_desktop].sb_win, 4, 3, (sb_bar[current_desktop].width-sb_bar[current_desktop].labelwidth)/2,\
+                          sb_bar[current_desktop].label, strlen(sb_bar[current_desktop].label));
                     }
                     if(wmh) XFree(wmh);
                     break;
@@ -1328,8 +1331,6 @@ void propertynotify(XEvent *e) {
         }
         select_desktop(tmp);
     }
-    else if(STATUS_BAR == 0 && ev->window == root && ev->atom == XA_WM_NAME) update_output(0);
-    else if(STATUS_BAR == 0) getwindowname();
 }
 
 void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
