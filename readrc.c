@@ -24,7 +24,7 @@ void read_rcfile() {
                 dummy2 = strdup(dummy);
                 for(i=0;i<2;++i) {
                     dummy3 = strsep(&dummy2, ";");
-                    if(getcolor(dummy3) == 1) {
+                    if((dummy3 == NULL) || (getcolor(dummy3) == 1)) {
                         theme[i].wincolor = getcolor(defaultwincolor[i]);
                         logger("Default colour");
                     } else
@@ -107,7 +107,7 @@ void read_rcfile() {
                     dummy2 = strdup(dummy);
                     for(i=0;i<10;++i) {
                         dummy3 = strsep(&dummy2, ";");
-                        if(getcolor(dummy3) == 1) {
+                        if((dummy3 == NULL) || (getcolor(dummy3) == 1)) {
                             theme[i].textcolor = getcolor(defaulttextcolor[i]);
                             logger("Default text colour");
                         } else
