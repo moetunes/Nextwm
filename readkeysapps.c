@@ -15,7 +15,7 @@ void read_keys_file() {
     } else {
         while(fgets(buffer,sizeof buffer,keyfile) != NULL) {
             /* Check for comments */
-            if(buffer[0] == '#') continue;
+            if(buffer[0] == '#' || buffer[0] == ' ') continue;
             /* Now look for commands */
             if(strstr(buffer, "CMD" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
@@ -131,7 +131,7 @@ void read_apps_file() {
     } else {
         while(fgets(buffer,sizeof buffer,appsfile) != NULL) {
             /* Check for comments */
-            if(buffer[0] == '#') continue;
+            if(buffer[0] == '#' || buffer[0] == ' ') continue;
             /* Now look for commands */
             if(strstr(buffer, "DESKTOP" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
