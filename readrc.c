@@ -16,7 +16,7 @@ void read_rcfile() {
     } else {
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
             /* Check for comments */
-            if(buffer[0] == '#') continue;
+            if(buffer[0] == '#' || buffer[0] == ' ') continue;
             /* Now look for info */
             if(strstr(buffer, "WINDOWTHEME" ) != NULL) {
                 strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
