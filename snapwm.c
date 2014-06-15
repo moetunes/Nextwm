@@ -653,8 +653,8 @@ void select_desktop(int i) {
     focus = desktops[i].focus;
     numwins = desktops[i].numwins;
     current_desktop = i;
-    sw = desktops[current_desktop].w;
-    sh = desktops[current_desktop].h;
+    sw = desktops[i].w;
+    sh = desktops[i].h;
 }
 
 void more_master (const Arg arg) {
@@ -1475,7 +1475,7 @@ void init_desks() {
         num_screens = 1;
         have_Xin = 1;
     }
-    //printf("\t \nNumber of screens is %d\n\n", num_screens);
+    //fprintf(stderr, "Number of screens is %d\n", num_screens);
 
     if(barmon != barmonchange && barmonchange >= 0 && barmonchange < num_screens)
         barmon = barmonchange;
@@ -1551,7 +1551,7 @@ void setup() {
         setup_status_bar();
         status_bar();
         update_output(1);
-        if(show_bar > 0) toggle_bar();
+        if(show_bar > 0) unmapbar();
     }
     read_apps_file();
 
