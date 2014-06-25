@@ -24,7 +24,7 @@ int get_value() {
 void read_rcfile() {
     FILE *rcfile;
 
-    rcfile = fopen( "/home/pnewm/.config/snapwm/rc.conf", "r" );
+    rcfile = fopen( RC_FILE, "r" );
     if (rcfile == NULL) {
         fprintf(stdout, "\033[0;34m:: readrc : \033[0;31m Couldn't find /home/pnewm/.config/snapwm/rc.conf\033[0m \n");
         return;
@@ -39,10 +39,11 @@ void read_rcfile() {
                 k = 12; // eleven letters in windowtheme plus a space
                 for(i=0;i<2;++i) {
                     if(get_value() == 0) {
-                        if((theme[i].wincolor = getcolor(dummy)) == 1) {
+                        theme[i].wincolor = getcolor(dummy);
+                        if(theme[i].wincolor == 1) {
                             theme[i].wincolor = getcolor(defaultwincolor[i]);
                             logger("Default Window Border Colour");
-                        }
+                        } 
                     }
                 }
             } else if(strstr(buffer, "RESIZEMOVEKEY" ) != NULL) {
@@ -152,7 +153,8 @@ void read_rcfile() {
                     k = 14;
                     for(i=0;i<5;++i) {
                         if(get_value() == 0) {
-                            if((theme[i].barcolor = getcolor(dummy)) == 1) {
+                            theme[i].barcolor = getcolor(dummy);
+                            if(theme[i].barcolor == 1) {
                                 theme[i].barcolor = getcolor(defaultbarcolor[i]);
                                 logger("Default Switcher Colour");
                             }
@@ -162,10 +164,11 @@ void read_rcfile() {
                     k = 12;
                     for(i=0;i<10;++i) {
                         if(get_value() == 0) {
-                            if(getcolor(dummy) == 1) {
+                            theme[i].textcolor = getcolor(dummy);
+                            if(theme[i].textcolor == 1) {
                                 theme[i].textcolor = getcolor(defaulttextcolor[i]);
                                 logger("Default text colour");
-                            } else theme[i].textcolor = getcolor(dummy);
+                            }
                         }
                     }
                 } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
