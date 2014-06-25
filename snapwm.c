@@ -188,6 +188,7 @@ static void update_current();
 static void update_output(unsigned int messg);
 static void warp_pointer();
 static unsigned int wc_size(char *string);
+static int get_value();
 
 // Include configuration file (need struct key)
 #include "config.h"
@@ -210,7 +211,7 @@ unsigned int numlockmask, resizemovekey;        /* dynamic key lock mask */
 static Window root;
 static Window sb_area;
 static client *head, *current, *transient, *focus;
-static char font_list[256];
+static char font_list[256], buffer[256], dummy[256];
 static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
 static Atom alphaatom, wm_delete_window, protos, *protocols, dockatom, typeatom;
 static XWindowAttributes attr;

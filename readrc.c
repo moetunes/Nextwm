@@ -1,170 +1,242 @@
 // readrc.c [ 0.8.1 ]
 
+unsigned int i, k=0, c=0;
+int j=-1;
+
+int get_value() {
+    memset(dummy, '\0', 256); c = 0;
+    while(buffer[k] != ';' && buffer[k] != ' ' && buffer[k] != 0) {
+        if(buffer[k] == '"') {
+            ++k; continue;
+        }
+        dummy[c] = buffer[k];
+        ++c; ++k;
+    }
+    ++k;
+    if(c > 0) {
+        ++c; dummy[c] = '\0';
+        return 0;
+    }
+    else return 1;
+}
+
 /* *********************** Read Config File ************************ */
 void read_rcfile() {
-    FILE *rcfile ;
-    char buffer[256];
-    char dummy[256];
-    char *dummy2, *dummy3;
-    unsigned int i; int j=-1;
+    FILE *rcfile;
 
-    rcfile = fopen( RC_FILE, "r" ) ;
-    if ( rcfile == NULL ) {
-        fprintf(stderr, "\033[0;34m:: snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,RC_FILE);
-        set_defaults();
+    rcfile = fopen( "/home/pnewm/.config/snapwm/rc.conf", "r" );
+    if (rcfile == NULL) {
+        fprintf(stdout, "\033[0;34m:: readrc : \033[0;31m Couldn't find /home/pnewm/.config/snapwm/rc.conf\033[0m \n");
         return;
     } else {
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
             /* Check for comments */
-            if(buffer[0] == '#' || buffer[0] == ' ') continue;
+            if(buffer[0] == '#' || buffer[0] == ' ' || buffer[0] == '\n') continue;
+            if(buffer[strlen(buffer)-1] == '\n')
+                buffer[strlen(buffer)-1] = 0;
             /* Now look for info */
             if(strstr(buffer, "WINDOWTHEME" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                dummy[strlen(dummy)-1] = '\0';
-                dummy2 = strdup(dummy);
+                k = 12; // eleven letters in windowtheme plus a space
                 for(i=0;i<2;++i) {
-                    dummy3 = strsep(&dummy2, ";");
-                    if((dummy3 == NULL) || (getcolor(dummy3) == 1)) {
-                        theme[i].wincolor = getcolor(defaultwincolor[i]);
-                        logger("Default colour");
-                    } else
-                        theme[i].wincolor = getcolor(dummy3);
+                    if(get_value() == 0) {
+                        if((theme[i].wincolor = getcolor(dummy)) == 1) {
+                            theme[i].wincolor = getcolor(defaultwincolor[i]);
+                            logger("Default Window Border Colour");
+                        }
+                    }
                 }
             } else if(strstr(buffer, "RESIZEMOVEKEY" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                //dummy[strlen(dummy)-1] = '\0';
-                dummy2 = strdup(dummy);
-                if(strncmp(dummy2, "Super", 5) == 0)
-                    resizemovekey = Mod4Mask;
-                else
-                    resizemovekey = Mod1Mask;
+                k = 14;
+                if(get_value() == 0) {
+                    if(strncmp(dummy, "Super", 5))
+                        resizemovekey = Mod4Mask;
+                    else
+                        resizemovekey = Mod1Mask;
+                }
             } else if(strstr(buffer, "DESKTOPS" ) != NULL) {
-                DESKTOPS = atoi(strstr(buffer, " ")+1);
-                if(DESKTOPS > 10) DESKTOPS = 10;
+                k = 9;
+                if(get_value() == 0) {
+                    DESKTOPS = strtol(dummy, NULL, 10);
+                    if(DESKTOPS > 10) DESKTOPS = 10;
+                }
             } else if(strstr(buffer, "DEFAULT_DESK" ) != NULL) {
-                default_desk = atoi(strstr(buffer, " ")+1);
+                k = 13;
+                if(get_value() == 0)
+                    default_desk = strtol(dummy, NULL, 10);
                 if(default_desk > DESKTOPS) default_desk = DESKTOPS;
             } else if(strstr(buffer, "UF_WIN_ALPHA" ) != NULL) {
-                ufalpha = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "BAR_ALPHA" ) != NULL) {
-                baralpha = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "CENTER_STACK" ) != NULL) {
-                cstack = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
-                bdw = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "MASTERSIZE" ) != NULL) {
-                msize = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
-                attachaside = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "TOPSTACK" ) != NULL) {
-                top_stack = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
-                followmouse = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "LEFT_WINDOWNAME" ) != NULL) {
-                LA_WINDOWNAME = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
-                clicktofocus = atoi(strstr(buffer, " ")+1);
-            } else if(strstr(buffer, "NMASTER" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                dummy[strlen(dummy)-1] = '\0';
-                dummy2 = strdup(dummy);
-                for(i=0;i<DESKTOPS; ++i) {
-                    j = atoi(strsep(&dummy2, ";"));
-                    if(j > -1 && j < 10) desktops[i].nmaster = j;
-                    else desktops[i].nmaster = 0;
-                    if(dummy2 == NULL) break;
+                k = 13;
+                if(get_value() == 0) {
+                    ufalpha = strtol(dummy, NULL, 10);
+                    if(ufalpha < 1 || ufalpha > 100)
+                        ufalpha = 100;
                 }
+            } else if(strstr(buffer, "BAR_ALPHA" ) != NULL) {
+                k = 10;
+                if(get_value() <1) {
+                    baralpha = strtol(dummy, NULL, 10);
+                    if(baralpha < 1 || baralpha > 100)
+                        baralpha = 100;
+                }
+            } else if(strstr(buffer, "CENTER_STACK" ) != NULL) {
+                k = 13;
+                if(get_value() == 0) {
+                    if(dummy[0] == '0' || dummy[0] == '1')
+                        cstack = strtol(dummy, NULL, 10);
+                }
+            } else if(strstr(buffer, "BORDERWIDTH" ) != NULL) {
+                k = 12;
+                if(get_value() == 0)
+                    bdw = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "MASTERSIZE" ) != NULL) {
+                k = 11;
+                if(get_value() == 0)
+                    msize = strtol(dummy, NULL, 10);
+                if(msize > 80 || msize < 20) msize = 50;
+            } else if(strstr(buffer, "ATTACHASIDE" ) != NULL) {
+                k = 12;
+                if(get_value() == 0) 
+                    if(dummy[0] == '0' || dummy[0] == '1')
+                        attachaside = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "TOPSTACK" ) != NULL) {
+                k = 9;
+                if(get_value() == 0)
+                    if(dummy[0] == '0' || dummy[0] == '1')
+                        top_stack = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "FOLLOWMOUSE" ) != NULL) {
+                k = 12;
+                if(get_value() == 0)
+                    if(dummy[0] == '0' || dummy[0] == '1')
+                        followmouse = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "LEFT_WINDOWNAME" ) != NULL) {
+                k = 16;
+                if(get_value() == 0)
+                    if(dummy[0] == '0' || dummy[0] == '1')
+                        LA_WINDOWNAME = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "CLICKTOFOCUS" ) != NULL) {
+                k = 13;
+                if(get_value() == 0)
+                    if(dummy[0] == '0' || dummy[0] == '1')
+                        clicktofocus = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "AUTO_NUM_OPEN" ) != NULL) {
-                auto_num = atoi(strstr(buffer, " ")+1);
+                k = 14;
+                if(get_value() <1)
+                    auto_num = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "AUTO_MODE" ) != NULL) {
-                auto_mode = atoi(strstr(buffer, " ")+1);
+                k = 10;
+                if(get_value() <1) {
+                    k = strtol(dummy, NULL, 10);
+                    if(k >= 0 && k < 5)
+                        auto_mode = k;
+                }
             } else if(strstr(buffer, "DEFAULTMODE" ) != NULL) {
-                strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                dummy[strlen(dummy)-1] = '\0';
-                dummy2 = strdup(dummy);
+                k = 12;
                 for(i=0;i<DESKTOPS; ++i) {
-                    if(dummy2 == NULL) break;
-                    j = atoi(strsep(&dummy2, ";"));
-                    if(j > -1 && j < 5)
+                    if(get_value() == 0) {
+                        j = strtol(dummy, NULL, 10);
+                        if(j > -1 && j < 5)
                         desktops[i].mode = j;
+                    }
+                }
+            } else if(strstr(buffer, "NMASTER" ) != NULL) {
+                k = 8;
+                for(i=0;i<DESKTOPS; ++i) {
+                    if(get_value() == 0) {
+                        j = strtol(dummy, NULL, 10);
+                        if(j > -1 && j < 10) desktops[i].nmaster = j;
+                        else desktops[i].nmaster = 0;
+                    }
                 }
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    dummy[strlen(dummy)-1] = '\0';
-                    dummy2 = strdup(dummy);
+                    k = 14;
                     for(i=0;i<5;++i) {
-                        dummy3 = strsep(&dummy2, ";");
-                        if((dummy3 == NULL) || getcolor(dummy3) == 1) {
-                            theme[i].barcolor = getcolor(defaultbarcolor[i]);
-                            logger("Default bar colour");
-                        } else
-                            theme[i].barcolor = getcolor(dummy3);
+                        if(get_value() == 0) {
+                            if((theme[i].barcolor = getcolor(dummy)) == 1) {
+                                theme[i].barcolor = getcolor(defaultbarcolor[i]);
+                                logger("Default Switcher Colour");
+                            }
+                        }
                     }
                 } else if(strstr(buffer, "STATUSTHEME" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    dummy[strlen(dummy)-1] = '\0';
-                    dummy2 = strdup(dummy);
+                    k = 12;
                     for(i=0;i<10;++i) {
-                        dummy3 = strsep(&dummy2, ";");
-                        if((dummy3 == NULL) || (getcolor(dummy3) == 1)) {
-                            theme[i].textcolor = getcolor(defaulttextcolor[i]);
-                            logger("Default text colour");
-                        } else
-                            theme[i].textcolor = getcolor(dummy3);
+                        if(get_value() == 0) {
+                            if(getcolor(dummy) == 1) {
+                                theme[i].textcolor = getcolor(defaulttextcolor[i]);
+                                logger("Default text colour");
+                            } else theme[i].textcolor = getcolor(dummy);
+                        }
                     }
                 } else if(strstr(buffer, "BAR_MONITOR" ) != NULL) {
-                    barmonchange = atoi(strstr(buffer, " ")+1);
+                    k = 12;
+                    if(get_value() == 0)
+                        barmonchange = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "BAR_SHORT" ) != NULL) {
-                    lessbar = atoi(strstr(buffer, " ")+1);
+                    k = 10;
+                    if(get_value() == 0)
+                        lessbar = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "SHOWNUMOPEN" ) != NULL) {
-                    showopen = atoi(strstr(buffer, " ")+1);
+                    k = 12;
+                    if(get_value() == 0)
+                        if(dummy[0] == '0' || dummy[0] == '1')
+                            showopen = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "WNAMEBG" ) != NULL) {
-                    wnamebg = atoi(strstr(buffer, " ")+1);
+                    k = 8;
+                    if(get_value() == 0)
+                        wnamebg = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "TOPBAR" ) != NULL) {
-                    topbar = atoi(strstr(buffer, " ")+1);
+                    k = 7;
+                    if(get_value() == 0)
+                       if(dummy[0] == '0' || dummy[0] == '1')
+                           topbar = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "SHOW_BAR" ) != NULL) {
-                    show_bar = atoi(strstr(buffer, " ")+1);
-                } else if(strstr(buffer, "MODENAME" ) != NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    dummy[strlen(dummy)-1] = '\0';
-                    dummy2 = strdup(dummy);
-                    for(i=0;i<5;++i) {
-                        dummy3 = strsep(&dummy2, ";");
-                        if(strlen(dummy3) < 1)
-                            theme[i].modename = strdup(defaultmodename[i]);
-                        else
-                            theme[i].modename = strdup(dummy3);
-                    }
-                } else if(strstr(buffer,"FONTNAME" ) != NULL) {
-                    memset(font_list, '\0', 256);
-                    strncpy(font_list, strstr(buffer, " ")+2, strlen(strstr(buffer, " ")+2)-2);
-                    get_font();
-                    sb_height = font.height+2;
-                    font.fh = ((sb_height - font.height)/2) + font.ascent;
+                    k = 9;
+                    if(get_value() == 0)
+                        if(dummy[0] == '0' || dummy[0] == '1')
+                            show_bar = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
-                    windownamelength = atoi(strstr(buffer, " ")+1);
+                    k = 17;
+                    if(get_value() == 0)
+                        windownamelength = strtol(dummy, NULL, 10);
+                } else if(strstr(buffer,"FONTNAME" ) != NULL) {
+                    k = 9;
+                    if(get_value() == 0) {
+                        memset(font_list, '\0', 256);
+                        strncpy(font_list, dummy, c);
+                        get_font();
+                        sb_height = font.height+2;
+                        font.fh = ((sb_height - font.height)/2) + font.ascent;
+                    }
+                } else if(strstr(buffer, "MODENAME" ) != NULL) {
+                    k = 9;
+                    for(i=0;i<5;++i) {
+                        if(get_value() == 0)
+                            theme[i].modename = strdup(dummy);
+                        else
+                            theme[i].modename = strdup(defaultmodename[i]);
+                    }
                 } else if(strstr(buffer, "DESKTOP_NAMES") !=NULL) {
-                    strncpy(dummy, strstr(buffer, " ")+1, strlen(strstr(buffer, " ")+1)-1);
-                    dummy[strlen(dummy)-1] = '\0';
-                    dummy2 = strdup(dummy);
+                    k = 14;
                     for(i=0;i<DESKTOPS;++i) {
-                        dummy3 = strsep(&dummy2, ";");
-                        if(!(dummy3)) {
+                        if(get_value() == 0)
+                            sb_bar[i].label = strdup(dummy);
+                        else {
                             if(!(defaultdesktopnames[i]))
                                 sb_bar[i].label = strdup("?");
                             else sb_bar[i].label = strdup(defaultdesktopnames[i]);
-                        } else sb_bar[i].label = strdup(dummy3);
+                        }
                     }
                 }
             }
             memset(buffer, '\0', 256);
             memset(dummy, '\0', 256);
+            k=0; c=0;
         }
-        fclose(rcfile);
-        opacity = (ufalpha/100.00) * 0xffffffff;
-        baropacity = (baralpha/100.00) * 0xffffffff;
     }
+    fclose(rcfile);
+    opacity = (ufalpha/100.00) * 0xffffffff;
+    baropacity = (baralpha/100.00) * 0xffffffff;
     return;
 }
 
