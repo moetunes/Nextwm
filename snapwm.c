@@ -235,9 +235,9 @@ static void (*events[LASTEvent])(XEvent *e) = {
 };
 
 // Desktop array
-static desktop desktops[10];
+static desktop desktops[12];
 static MonitorView view[5];
-static Barwin sb_bar[10];
+static Barwin sb_bar[12];
 static Theme theme[10];
 static Iammanyfonts font;
 static key keys[80];

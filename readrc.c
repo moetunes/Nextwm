@@ -43,7 +43,7 @@ void read_rcfile() {
                         if(theme[i].wincolor == 1) {
                             theme[i].wincolor = getcolor(defaultwincolor[i]);
                             logger("Default Window Border Colour");
-                        } 
+                        }
                     }
                 }
             } else if(strstr(buffer, "RESIZEMOVEKEY" ) != NULL) {
@@ -58,7 +58,7 @@ void read_rcfile() {
                 k = 9;
                 if(get_value() == 0) {
                     DESKTOPS = strtol(dummy, NULL, 10);
-                    if(DESKTOPS > 10) DESKTOPS = 10;
+                    if(DESKTOPS > 12) DESKTOPS = 12;
                 }
             } else if(strstr(buffer, "DEFAULT_DESK" ) != NULL) {
                 k = 13;
@@ -290,13 +290,14 @@ void set_defaults() {
             theme[i].barcolor = getcolor(defaultbarcolor[i]);
         for(i=0;i<5;++i)
             theme[i].modename = strdup(defaultmodename[i]);
-        for(i=0;i<10;++i) {
+        for(i=0;i<12;++i) {
             if(!(defaultdesktopnames[i]))
                 sb_bar[i].label = strdup("?");
             else sb_bar[i].label = strdup(defaultdesktopnames[i]);
-            theme[i].textcolor = getcolor(defaulttextcolor[i]);
             desktops[i].mode = mode;
         }
+        for(i=0;i<10;++i)
+            theme[i].textcolor = getcolor(defaulttextcolor[i]);
         strncpy(font_list, defaultfontlist, strlen(defaultfontlist));
         get_font();
         sb_height = font.height+2;
