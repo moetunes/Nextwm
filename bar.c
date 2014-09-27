@@ -95,13 +95,14 @@ void setbaralpha() {
     }
 }
 
-void getwindowname() {
+char *getwindowname(Window win) {
     char *win_name;
 
     if(head != NULL) {
-        (XFetchName(dis, current->win, &win_name) != 0) ? status_text(win_name) : status_text("");
+        if(XFetchName(dis, win, &win_name) != 0) return win_name;
+        else return "";
         XFree(win_name);
-    } else status_text("");
+    } else return "";
 }
 
 void update_bar() {
@@ -126,7 +127,7 @@ void update_bar() {
             }
         }
     }
-    getwindowname();
+    if(head != NULL) status_text(getwindowname(current->win));
 }
 
 void draw_desk(Window win, unsigned int barcolor, unsigned int gc, unsigned int x, char *string, unsigned int len) {
@@ -156,6 +157,7 @@ void draw_text(Window win, unsigned int gc, unsigned int x, char *string, unsign
 }
 
 void status_text(char *sb_text) {
+    if(sb_text == NULL) sb_text = "";
     unsigned int text_length, text_start, blank_start, wsize, count = 0, wnl;
     char win_name[256];
 

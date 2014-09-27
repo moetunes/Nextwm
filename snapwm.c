@@ -135,7 +135,7 @@ static void expose(XEvent *e);
 static void follow_client_to_desktop(const Arg arg);
 static unsigned long getcolor(const char* color);
 static void get_font();
-static void getwindowname();
+static char *getwindowname(Window win);
 static void grabkeys();
 static void init_desks();
 static void keypress(XEvent *e);
@@ -242,8 +242,8 @@ static Theme theme[10];
 static Iammanyfonts font;
 static key keys[80];
 static Commands cmds[50];
-static Convenience convenience[20];
-static Positional positional[20];
+static Convenience convenience[40];
+static Positional positional[40];
 #include "bar.c"
 #include "readrc.c"
 #include "readkeysapps.c"
@@ -262,7 +262,8 @@ void add_window(Window w, int tw, client *cl, char *win_class, char *win_name) {
         if(strcmp(win_class, "") != 0)
             for(i=0;i<pcount;++i) {
                 if((strcmp(win_class, positional[i].class) == 0) ||
-                  (strcmp(win_name, positional[i].class) == 0)) {
+                  (strcmp(win_name, positional[i].class) == 0) ||
+                  (strcmp(getwindowname(w), positional[i].class) == 0)) {
                     XMoveResizeWindow(dis,w,desktops[current_desktop].x+positional[i].x,desktops[current_desktop].y+positional[i].y,positional[i].width,positional[i].height);
                     ++j;
             }
@@ -869,7 +870,7 @@ void update_current() {
             }
         }
     }
-    if(STATUS_BAR == 0 && show_bar == 0) getwindowname();
+    if(STATUS_BAR == 0 && show_bar == 0) status_text(getwindowname(current->win));
     warp_pointer();
     XSync(dis, False);
 }
@@ -1076,7 +1077,8 @@ void maprequest(XEvent *e) {
     unsigned int i=0, j=0, tmp = current_desktop, tmp2;
     if(XGetClassHint(dis, ev->window, &ch))
         for(i=0;i<dtcount;++i)
-            if((strcmp(ch.res_class, convenience[i].class) == 0) ||
+            if((strcmp(getwindowname(ev->window), convenience[i].class) == 0) ||
+              (strcmp(ch.res_class, convenience[i].class) == 0) ||
               (strcmp(ch.res_name, convenience[i].class) == 0)) {
                 tmp2 = (convenience[i].preferredd > DESKTOPS) ? DESKTOPS-1 : convenience[i].preferredd-1;
                 save_desktop(tmp);
@@ -1312,7 +1314,7 @@ void propertynotify(XEvent *e) {
 
     if(ev->state == PropertyDelete) return;
     else if(ev->atom == XA_WM_NAME && ev->window == root) update_output(0);
-    else if(ev->atom == XA_WM_NAME) getwindowname();
+    else if(ev->atom == XA_WM_NAME) status_text(getwindowname(current->win));
     else if(ev->atom == XA_WM_HINTS) {
         save_desktop(tmp);
         for(i=tmp;i<tmp+DESKTOPS;++i) {
@@ -1362,7 +1364,7 @@ void expose(XEvent *e) {
 
     if(STATUS_BAR == 0 && ev->count == 0 && ev->window == sb_area) {
         update_output(1);
-        getwindowname();
+        if(head != NULL) status_text(getwindowname(current->win));
         update_bar();
     }
 }
