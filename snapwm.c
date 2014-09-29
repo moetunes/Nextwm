@@ -119,7 +119,7 @@ typedef struct {
 } Commands;
 
 // Functions
-static void add_window(Window w, int tw, client *cl, char *win_class, char *win_name);
+static void add_window(Window w, int tw, client *cl);
 static void buttonpress(XEvent *e);
 static void buttonrelease(XEvent *e);
 static void change_desktop(const Arg arg);
@@ -249,31 +249,15 @@ static Positional positional[40];
 #include "readkeysapps.c"
 
 /* ***************************** Window Management ******************************* */
-void add_window(Window w, int tw, client *cl, char *win_class, char *win_name) {
-    client *c,*t, *dummy; unsigned int i, j=0;
+void add_window(Window w, int tw, client *cl) {
+    client *c,*t, *dummy;
 
     if(cl != NULL) c = cl;
-    else if(!(c = (client *)calloc(1,sizeof(client)))) {
-        logger("\033[0;31mError calloc!");
-        exit(1);
-    }
-
-    if(tw == 0 && cl == NULL) {
-        if(strcmp(win_class, "") != 0)
-            for(i=0;i<pcount;++i) {
-                if((strcmp(win_class, positional[i].class) == 0) ||
-                  (strcmp(win_name, positional[i].class) == 0) ||
-                  (strcmp(getwindowname(w), positional[i].class) == 0)) {
-                    XMoveResizeWindow(dis,w,desktops[current_desktop].x+positional[i].x,desktops[current_desktop].y+positional[i].y,positional[i].width,positional[i].height);
-                    ++j;
-            }
+    else {
+        if(!(c = (client *)calloc(1,sizeof(client)))) {
+            logger("\033[0;31mError calloc!");
+            exit(1);
         }
-        if(j == 0 && cstack == 0) {
-            XGetWindowAttributes(dis, w, &attr);
-            XMoveWindow(dis, w,desktops[current_desktop].x+desktops[current_desktop].w/2-(attr.width/2),desktops[current_desktop].y+(desktops[current_desktop].h+sb_height+4)/2-(attr.height/2));
-        }
-    }
-    if(cl == NULL) {
         XGetWindowAttributes(dis, w, &attr);
         c->x = attr.x;
         if(topbar == 0 && attr.y < sb_height+4+bdw) c->y = sb_height+4+bdw;
@@ -284,13 +268,13 @@ void add_window(Window w, int tw, client *cl, char *win_class, char *win_name) {
 
     c->win = w; c->order = 0;
     dummy = (tw == 1) ? transient : head;
-    for(t=dummy;t;t=t->next)
-        ++t->order;
 
     if(dummy == NULL) {
         c->next = NULL; c->prev = NULL;
         dummy = c;
     } else {
+        for(t=dummy;t;t=t->next)
+            ++t->order;
         if(attachaside == 0) {
             if(top_stack == 0) {
                 c->next = dummy->next; c->prev = dummy;
@@ -615,7 +599,7 @@ void client_to_desktop(const Arg arg) {
 
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win, tr, tmp, "" , "");
+    add_window(tmp->win, tr, tmp);
     save_desktop(arg.i);
 
     for(j=cd;j<cd+num_screens;++j) {
@@ -895,7 +879,7 @@ void switch_mode(const Arg arg) {
     save_desktop(current_desktop);
     tile();
     update_current();
-    if(STATUS_BAR == 0) update_bar();
+    if(STATUS_BAR == 0) status_text("");
 }
 
 void resize_master(const Arg arg) {
@@ -1065,7 +1049,7 @@ void maprequest(XEvent *e) {
 
     Window trans = None;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
-        add_window(ev->window, 1, NULL, "", ""); 
+        add_window(ev->window, 1, NULL); 
         if((attr.y + attr.height) > sh)
             XMoveResizeWindow(dis,ev->window,attr.x,y,attr.width,attr.height-10);
         XMapRaised(dis,ev->window);
@@ -1075,8 +1059,21 @@ void maprequest(XEvent *e) {
 
     XClassHint ch = {0};
     unsigned int i=0, j=0, tmp = current_desktop, tmp2;
-    if(XGetClassHint(dis, ev->window, &ch))
-        for(i=0;i<dtcount;++i)
+    if(XGetClassHint(dis, ev->window, &ch)) {
+        for(i=0;i<pcount;++i) {
+            if((strcmp(getwindowname(ev->window), positional[i].class) == 0) ||
+              (strcmp(ch.res_class, positional[i].class) == 0) ||
+              (strcmp(ch.res_name, positional[i].class) == 0)) {
+                XMoveResizeWindow(dis,ev->window,desktops[current_desktop].x+positional[i].x,desktops[current_desktop].y+positional[i].y,positional[i].width,positional[i].height);
+                ++j;
+            }
+        }
+        if(j == 0 && cstack == 0) {
+            XGetWindowAttributes(dis, ev->window, &attr);
+            XMoveWindow(dis, ev->window,desktops[current_desktop].x+desktops[current_desktop].w/2-(attr.width/2),desktops[current_desktop].y+(desktops[current_desktop].h+sb_height+4)/2-(attr.height/2));
+        }
+        j = 0;
+        for(i=0;i<dtcount;++i) {
             if((strcmp(getwindowname(ev->window), convenience[i].class) == 0) ||
               (strcmp(ch.res_class, convenience[i].class) == 0) ||
               (strcmp(ch.res_name, convenience[i].class) == 0)) {
@@ -1086,7 +1083,7 @@ void maprequest(XEvent *e) {
                 for(c=head;c;c=c->next)
                     if(ev->window == c->win)
                         ++j;
-                if(j < 1) add_window(ev->window, 0, NULL, ch.res_class, ch.res_name);
+                if(j < 1) add_window(ev->window, 0, NULL);
                 for(j=0;j<num_screens;++j) {
                     if(view[j].cd == convenience[i].preferredd-1) {
                         tile();
@@ -1105,8 +1102,10 @@ void maprequest(XEvent *e) {
                 if(ch.res_name) XFree(ch.res_name);
                 return;
             }
+        }
+    }
 
-    add_window(ev->window, 0, NULL, "", "");
+    add_window(ev->window, 0, NULL);
     if(mode != 4) tile();
     if(mode != 1) XMapWindow(dis,ev->window);
     if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
@@ -1314,7 +1313,7 @@ void propertynotify(XEvent *e) {
 
     if(ev->state == PropertyDelete) return;
     else if(ev->atom == XA_WM_NAME && ev->window == root) update_output(0);
-    else if(ev->atom == XA_WM_NAME) status_text(getwindowname(current->win));
+    else if(ev->atom == XA_WM_NAME && head != NULL) status_text(getwindowname(current->win));
     else if(ev->atom == XA_WM_HINTS) {
         save_desktop(tmp);
         for(i=tmp;i<tmp+DESKTOPS;++i) {

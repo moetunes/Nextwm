@@ -128,6 +128,7 @@ void update_bar() {
         }
     }
     if(head != NULL) status_text(getwindowname(current->win));
+    else status_text("");
 }
 
 void draw_desk(Window win, unsigned int barcolor, unsigned int gc, unsigned int x, char *string, unsigned int len) {
@@ -157,7 +158,6 @@ void draw_text(Window win, unsigned int gc, unsigned int x, char *string, unsign
 }
 
 void status_text(char *sb_text) {
-    if(sb_text == NULL) sb_text = "";
     unsigned int text_length, text_start, blank_start, wsize, count = 0, wnl;
     char win_name[256];
 
