@@ -1,11 +1,11 @@
-// readrc.c [ 0.8.1 ]
+// readrc.c [ 0.8.2 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
 
 int get_value() {
     memset(dummy, '\0', 256); c = 0;
-    while(buffer[k] != ';' && buffer[k] != ' ' && buffer[k] != 0) {
+    while(buffer[k] != ';' && buffer[k] != 0) {
         if(buffer[k] == '"') {
             ++k; continue;
         }

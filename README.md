@@ -80,8 +80,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 4/3/14
 
-  * Right click an unfocused desktop in the switcher to move the
-     focused window to that desktop
+  * Watch for WM_NAME on new windows for the apps.conf file
 
 
 ###Status
@@ -131,6 +130,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
      length to have room for an external app
   *  Don't manage apps with '_NET_WM_WINDOW_TYPE_DOCK' set
       e.g. trayer
+  * Right click an unfocused desktop in the switcher to move the
+     focused window to that desktop
 
 
 ###Installation
@@ -159,3 +160,4 @@ Need Xlib, then:
 ----
 
   * Maybe xft fonts
+  * Maybe Xrandr

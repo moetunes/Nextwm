@@ -1,4 +1,4 @@
-// bar.c [ 0.8.1 ]
+// bar.c [ 0.8.2 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
@@ -98,11 +98,9 @@ void setbaralpha() {
 char *getwindowname(Window win) {
     char *win_name;
 
-    if(head != NULL) {
-        if(XFetchName(dis, win, &win_name) != 0) return win_name;
-        else return "";
-        XFree(win_name);
-    } else return "";
+    if(XFetchName(dis, win, &win_name) != 0) return win_name;
+    else return "";
+    XFree(win_name);
 }
 
 void update_bar() {
@@ -127,7 +125,7 @@ void update_bar() {
             }
         }
     }
-    if(head != NULL) status_text(getwindowname(current->win));
+    if(head != NULL || transient != NULL) status_text(getwindowname(focus->win));
     else status_text("");
 }
 
@@ -192,7 +190,7 @@ void update_output(unsigned int messg) {
         strcpy(output, "&3 snapwm inc. ");
         text_length = 15;
     } else {
-        while(win_name[text_length] != '\0' && text_length < 256) {
+        while(&win_name[text_length] != '\0' && text_length < 256) {
             output[text_length] = win_name[text_length];
             ++text_length;
         }
