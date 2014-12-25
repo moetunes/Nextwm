@@ -1,3 +1,21 @@
+29/11/14
+  Allow one window on a desktop in stacking mode to
+   be resized horizontally
+
+12/11/14
+  Add ability to handle monitor connects/disconnects
+  Some minor bug fixes
+  Moved event functions to events.c 'cause who likes
+   scrolling through large files...
+
+20/10/14
+  Add option for application name(WM_NAME) to be used in
+   apps.conf
+  Add transient windows to applications that can be used
+   in apps.conf
+  Fix for spaces in application names used in apps.conf
+  More code tidying in buttonpress()
+
 13/3/14
   Code tidy in buttonpress()
 

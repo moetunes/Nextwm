@@ -1,4 +1,4 @@
-// bar.c [ 0.8.2 ]
+// bar.c [ 0.8.4 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
@@ -125,7 +125,7 @@ void update_bar() {
             }
         }
     }
-    if(head != NULL || transient != NULL) status_text(getwindowname(focus->win));
+    if(focus != NULL) status_text(getwindowname(focus->win));
     else status_text("");
 }
 

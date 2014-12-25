@@ -1,4 +1,4 @@
-// readrc.c [ 0.8.2 ]
+// readrc.c [ 0.8.4 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
@@ -16,8 +16,7 @@ int get_value() {
     if(c > 0) {
         ++c; dummy[c] = '\0';
         return 0;
-    }
-    else return 1;
+    } else return 1;
 }
 
 /* *********************** Read Config File ************************ */
@@ -367,9 +366,14 @@ void update_config() {
     if(numwins < 1) {
         Arg a = {.i = desktops[current_desktop].mode};
         switch_mode(a);
-        select_desktop(current_desktop);
+        select_desktop(tmp);
     }
     if(STATUS_BAR == 0) update_bar();
+    for(i=0;i<num_screens;++i) {
+        select_desktop(view[i].cd);
+        tile();
+    }
+    select_desktop(tmp);
     update_current();
     setbaralpha();
 

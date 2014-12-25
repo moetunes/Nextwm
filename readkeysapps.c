@@ -1,11 +1,11 @@
-/* readkeysapps.c [ 0.8.2 ] */
+/* readkeysapps.c [ 0.8.4 ] */
 
 void read_keys_file() {
     FILE *keyfile ;
     keycount = cmdcount = 0;
     unsigned int i, j;
 
-    keyfile = fopen( KEY_FILE, "rb" ) ;
+    keyfile = fopen( KEY_FILE, "r" ) ;
     if ( keyfile == NULL ) {
         fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,KEY_FILE);
         return;
@@ -133,7 +133,7 @@ void read_apps_file() {
     FILE *appsfile ;
     dtcount = pcount = 0;
 
-    appsfile = fopen( APPS_FILE, "rb" ) ;
+    appsfile = fopen( APPS_FILE, "r" ) ;
     if ( appsfile == NULL ) {
         fprintf(stderr, "\033[0;34m snapwm : \033[0;31m Couldn't find %s\033[0m \n" ,APPS_FILE);
         return;
