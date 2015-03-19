@@ -10,7 +10,7 @@ Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=
 -------
 
 
-**snapwm** is a xinerama aware, very minimal and lightweight dynamic tiling window manager.
+**snapwm** is a xinerama and xrandr aware, very minimal and lightweight dynamic tiling window manager.
 
 All configuration is read from three files in ~/.config/snapwm/ .
 
@@ -78,9 +78,14 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-4/3/14
+14/3/15
 
-  * Watch for WM_NAME on new windows for the apps.conf file
+  * Missed updating the Readme a bit so:
+
+     * Transient windows can be used in apps.conf
+     * Fixed a space in an apps name causing issues in apps.conf
+     * Monitor connects/disconnects are handled with Xrandr(no need to restart the window manager)
+     * Plus some minor bug fixes(bugs? what bugs!)
 
 
 ###Status
@@ -132,12 +137,13 @@ It allows the "normal" method of tiling window managers(with the new window as t
       e.g. trayer
   * Right click an unfocused desktop in the switcher to move the
      focused window to that desktop
+  * Watch for WM_NAME on new windows for the apps.conf file
 
 
 ###Installation
 ------------
 
-Need Xlib, then:
+Need Xlib, Xrandr, then:
 
     Copy the sample.rc.conf file to $HOME/.config/snapwm/rc.conf and edit it to suit.
 
@@ -160,4 +166,3 @@ Need Xlib, then:
 ----
 
   * Maybe xft fonts
-  * Maybe Xrandr

@@ -134,7 +134,7 @@ void destroynotify(XEvent *e) {
                 foundit = 1;
                 break;
             }
-        if(transient != NULL && foundit < 1) {
+        if(transient != NULL && foundit == 0) {
             for(c=transient;c;c=c->next)
                 if(ev->window == c->win) {
                     remove_client(c, 0, 1);
@@ -145,7 +145,7 @@ void destroynotify(XEvent *e) {
         if(foundit == 1) break;
     }
     select_desktop(tmp);
-    if(foundit > 0) update_current();
+    if(foundit == 1) update_current();
     if(STATUS_BAR == 0) update_bar();
 }
 
@@ -330,7 +330,7 @@ void propertynotify(XEvent *e) {
     unsigned int i, tmp = current_desktop; client *c;
 
     if(ev->state == PropertyDelete) return;
-    else if(ev->atom == XA_WM_NAME && ev->window == root && sb_area) update_output(0);
+    else if(ev->atom == XA_WM_NAME && ev->window == root) update_output(0);
     else if(ev->atom == XA_WM_NAME && (head != NULL || transient != NULL)) status_text(getwindowname(focus->win));
     else if(ev->atom == XA_WM_HINTS) {
         save_desktop(tmp);
