@@ -1,3 +1,6 @@
+24/3/15
+  Fix for bar not toggling after monitor disconnect
+
 29/11/14
   Allow one window on a desktop in stacking mode to
    be resized horizontally

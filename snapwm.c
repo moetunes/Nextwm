@@ -1104,6 +1104,7 @@ void plugnplay(XEvent *e) {
         for(c=transient;c;c=c->next) XUnmapWindow(dis, c->win);
     }
     select_desktop(tmp);
+    unmapbar();
     XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
     XSync(dis, False);
     XCloseDisplay(dis);
@@ -1127,7 +1128,6 @@ void plugnplay(XEvent *e) {
     }
     Arg a = {.i = tmp};
     change_desktop(a);
-    update_current();
 }
 
 void init_start() {
@@ -1158,6 +1158,7 @@ void init_desks() {
 
     if(barmon != barmonchange && barmonchange >= 0 && barmonchange < num_screens)
         barmon = barmonchange;
+    else barmon = (num_screens - 1);
     for (i = 0; i < num_screens; ++i) {
         for(j=i;j<DESKTOPS;j+=num_screens) {
             if(i == barmon && STATUS_BAR == 0) {
