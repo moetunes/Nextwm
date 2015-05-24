@@ -1,3 +1,8 @@
+23/5/15
+  Fix for bar not starting on the right monitor
+  Added option in rc file to set SHOW_BAR for each
+   desktop like DEFAULTMODE
+
 24/3/15
   Fix for bar not toggling after monitor disconnect
 

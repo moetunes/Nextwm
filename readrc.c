@@ -4,8 +4,8 @@ unsigned int i, k=0, c=0;
 int j=-1;
 
 int get_value() {
-    memset(dummy, '\0', 256); c = 0;
-    while(buffer[k] != ';' && buffer[k] != 0) {
+    memset(dummy, 0, 256); c = 0;
+    while(buffer[k] != ';' && buffer[k] != 0 && buffer[k] != '\n') {
         if(buffer[k] == '"') {
             ++k; continue;
         }
@@ -25,7 +25,7 @@ void read_rcfile() {
 
     rcfile = fopen( RC_FILE, "r" );
     if (rcfile == NULL) {
-        fprintf(stdout, "\033[0;34m:: readrc : \033[0;31m Couldn't find /home/pnewm/.config/snapwm/rc.conf\033[0m \n");
+        fprintf(stderr, "\033[0;34m:: readrc : \033[0;31m Couldn't find %s\033[0m \n", RC_FILE);
         return;
     } else {
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
@@ -48,7 +48,7 @@ void read_rcfile() {
             } else if(strstr(buffer, "RESIZEMOVEKEY" ) != NULL) {
                 k = 14;
                 if(get_value() == 0) {
-                    if(strncmp(dummy, "Super", 5))
+                    if(strncmp(dummy, "Super", 5) == 0)
                         resizemovekey = Mod4Mask;
                     else
                         resizemovekey = Mod1Mask;
@@ -135,7 +135,7 @@ void read_rcfile() {
                     if(get_value() == 0) {
                         j = strtol(dummy, NULL, 10);
                         if(j > -1 && j < 5)
-                        desktops[i].mode = j;
+                            desktops[i].mode = j;
                     }
                 }
             } else if(strstr(buffer, "NMASTER" ) != NULL) {
@@ -149,15 +149,12 @@ void read_rcfile() {
                 }
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
-                    k = 14;
+                    k = 14; XGCValues values;
                     for(i=0;i<5;++i) {
-                        if(get_value() == 0) {
-                            theme[i].barcolor = getcolor(dummy);
-                            if(theme[i].barcolor == 1) {
-                                theme[i].barcolor = getcolor(defaultbarcolor[i]);
-                                logger("Default Switcher Colour");
-                            }
-                        }
+                        if(get_value() == 0)
+                            theme[i].barcolor = (getcolor(dummy) == 1)? getcolor(defaultbarcolor[i]):getcolor(dummy);
+                        values.foreground = theme[i].barcolor;
+                        theme[i].swgc = XCreateGC(dis, root, GCForeground,&values);
                     }
                 } else if(strstr(buffer, "STATUSTHEME" ) != NULL) {
                     k = 12;
@@ -187,6 +184,7 @@ void read_rcfile() {
                     k = 8;
                     if(get_value() == 0)
                         wnamebg = strtol(dummy, NULL, 10);
+                        wnamebg = (wnamebg < 5) ? wnamebg:0;
                 } else if(strstr(buffer, "TOPBAR" ) != NULL) {
                     k = 7;
                     if(get_value() == 0)
@@ -194,9 +192,12 @@ void read_rcfile() {
                            topbar = strtol(dummy, NULL, 10);
                 } else if(strstr(buffer, "SHOW_BAR" ) != NULL) {
                     k = 9;
-                    if(get_value() == 0)
-                        if(dummy[0] == '0' || dummy[0] == '1')
-                            show_bar = strtol(dummy, NULL, 10);
+                    for(i=0;i<DESKTOPS; ++i) {
+                        if(get_value() == 0) {
+                            if(dummy[0] == '0' || dummy[0] == '1')
+                                desktops[i].showbar = strtol(dummy, NULL, 10);
+                        }
+                    }
                 } else if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
                     k = 17;
                     if(get_value() == 0)
@@ -285,7 +286,7 @@ void set_defaults() {
     for(i=0;i<2;++i)
         theme[i].wincolor = getcolor(defaultwincolor[i]);
     if(STATUS_BAR == 0) {
-        for(i=0;i<4;++i)
+        for(i=0;i<5;++i)
             theme[i].barcolor = getcolor(defaultbarcolor[i]);
         for(i=0;i<5;++i)
             theme[i].modename = strdup(defaultmodename[i]);

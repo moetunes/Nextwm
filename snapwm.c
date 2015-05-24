@@ -108,7 +108,7 @@ typedef struct {
 typedef struct {
     char *modename;
     unsigned long barcolor, wincolor, textcolor;
-    GC gc;
+    GC gc, swgc;
 } Theme;
 
 typedef struct {
@@ -1097,6 +1097,7 @@ void plugnplay(XEvent *e) {
     XUngrabKey(dis, AnyKey, AnyModifier, root);
     for(i=0;i<10;++i)
         XFreeGC(dis, theme[i].gc);
+            if(i < 5) XFreeGC(dis, theme[i].swgc);
     XFreePixmap(dis, area_sb);
     for(i=0;i<num_screens;++i) {
         select_desktop(view[i].cd);
@@ -1156,14 +1157,14 @@ void init_desks() {
     }
     //fprintf(stderr, "Number of screens is %d -- HAVE_XIN = %d\n", num_screens, have_Xin);
 
-    if(barmon != barmonchange && barmonchange >= 0 && barmonchange < num_screens)
+    if(barmonchange >= 0 && barmonchange < num_screens)
         barmon = barmonchange;
     else barmon = (num_screens - 1);
     for (i = 0; i < num_screens; ++i) {
         for(j=i;j<DESKTOPS;j+=num_screens) {
             if(i == barmon && STATUS_BAR == 0) {
                 desktops[j].h = ((have_Xin == 0) ? info[i].height:XDisplayHeight(dis, screen)) - (sb_height+4+bdw);
-                desktops[j].showbar = 0;
+                if(desktops[j].showbar != 1) desktops[j].showbar = 0;
             } else {
                 desktops[j].h = ((have_Xin == 0) ? info[i].height:XDisplayHeight(dis, screen)) - bdw;
                 desktops[j].showbar = 1;
