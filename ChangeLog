@@ -1,3 +1,6 @@
+28/5/15
+  Don't take bar height of screen height if show_bar == 1
+
 23/5/15
   Fix for bar not starting on the right monitor
   Added option in rc file to set SHOW_BAR for each
