@@ -1,3 +1,6 @@
+30/5/15
+  Added useless gaps to the three tiling modes
+
 28/5/15
   Don't take bar height of screen height if show_bar == 1
 

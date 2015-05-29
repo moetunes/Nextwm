@@ -1,4 +1,4 @@
-// readrc.c [ 0.8.4 ]
+// readrc.c [ 0.8.5 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
@@ -147,6 +147,14 @@ void read_rcfile() {
                         else desktops[i].nmaster = 0;
                     }
                 }
+            } else if(strstr(buffer, "UG_OUT" ) != NULL) {
+                k = 7;
+                if(get_value() <1)
+                    ug_out = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "UG_IN" ) != NULL) {
+                k = 6;
+                if(get_value() <1)
+                    ug_in = strtol(dummy, NULL, 10);
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
                     k = 14; XGCValues values;
@@ -194,9 +202,11 @@ void read_rcfile() {
                     k = 9;
                     for(i=0;i<DESKTOPS; ++i) {
                         if(get_value() == 0) {
-                            if(dummy[0] == '0' || dummy[0] == '1')
-                                desktops[i].showbar = strtol(dummy, NULL, 10);
-                        }
+                            if(dummy[0] == '0' && desktops[i].screen == barmonchange)
+                                desktops[i].showbar = 0;
+                            else
+                                desktops[i].showbar = 1;
+                        } else desktops[i].showbar = 1;
                     }
                 } else if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
                     k = 17;

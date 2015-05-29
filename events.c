@@ -1,4 +1,4 @@
-// events.c [ 0.8.4 ]
+// events.c [ 0.8.5 ]
 
 void configurenotify(XEvent *e) {
     // Do nothing for the moment

@@ -80,12 +80,8 @@ It allows the "normal" method of tiling window managers(with the new window as t
 
 14/3/15
 
-  * Missed updating the Readme a bit so:
+  * Added option for useless gaps for the tiling modes
 
-     * Transient windows can be used in apps.conf
-     * Fixed a space in an apps name causing issues in apps.conf
-     * Monitor connects/disconnects are handled with Xrandr(no need to restart the window manager)
-     * Plus some minor bug fixes(bugs? what bugs!)
 
 
 ###Status
@@ -138,6 +134,11 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Right click an unfocused desktop in the switcher to move the
      focused window to that desktop
   * Watch for WM_NAME on new windows for the apps.conf file
+  * Transient windows can be used in apps.conf
+  * Fixed a space in an apps name causing issues in apps.conf
+  * Monitor connects/disconnects are handled with Xrandr(no need to restart the window manager)
+  * Plus some minor bug fixes(bugs? what bugs!)
+  * SHOW_BAR in rc.conf now can be set for each desktop
 
 
 ###Installation

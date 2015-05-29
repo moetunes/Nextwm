@@ -203,6 +203,7 @@ static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange, lessbar;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
 static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, LA_WINDOWNAME;
+static unsigned int ug_out, ug_in;
 static int ufalpha, baralpha;
 static unsigned long opacity, baropacity;
 static int xerror(Display *dis, XErrorEvent *ee);
@@ -660,24 +661,26 @@ void tile() {
         switch(mode) {
             case 0: /* Vertical */
             	// Master window
+            	scrx += ug_out; scry += ug_out;
+            	sw = desktops[current_desktop].w-2*ug_out; sh = desktops[current_desktop].h-2*ug_out;
             	if(nm < 1)
-                    XMoveResizeWindow(dis,head->win,scrx,scry+y,master_size - bdw,sh - bdw);
+                    XMoveResizeWindow(dis,head->win,scrx,scry+y,master_size-bdw-ug_in/2,sh - bdw);
                 else {
                     for(d=head;d;d=d->next) {
-                        XMoveResizeWindow(dis,d->win,scrx,scry+ypos,master_size - bdw,sh/(nm+1) - bdw);
+                        XMoveResizeWindow(dis,d->win,scrx,scry+ypos,master_size-bdw-(ug_in/2),sh/(nm+1)-bdw-(nm*(ug_in/2)));
                         if(x == nm) break;
-                        ypos += sh/(nm+1); ++x;
+                        ypos += sh/(nm+1)+(ug_in/2); ++x;
                     }
                 }
 
                 // Stack
                 if(d == NULL) d = head;
                 n = numwins - (nm+1);
-                XMoveResizeWindow(dis,d->next->win,scrx+master_size,scry+y,sw-master_size-bdw,(sh/n)+growth - bdw);
-                y += (sh/n)+growth;
+                XMoveResizeWindow(dis,d->next->win,scrx+master_size+ug_in,scry+y,sw-master_size-bdw-ug_in,(sh/n)+growth-bdw-((n-1)*(ug_in/2)));
+                y += (sh/n)+growth+(ug_in/2);
                 for(c=d->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,scrx+master_size,scry+y,sw-master_size-bdw,(sh/n)-(growth/(n-1)) - bdw);
-                    y += (sh/n)-(growth/(n-1));
+                    XMoveResizeWindow(dis,c->win,scrx+master_size+ug_in,scry+y,sw-master_size-bdw-ug_in,(sh/n)-(growth/(n-1))-bdw-((n-1)*(ug_in/2)));
+                    y += (sh/n)-(growth/(n-1))+(ug_in/2);
                 }
                 break;
             case 1: /* Fullscreen */
@@ -686,46 +689,50 @@ void tile() {
                 break;
             case 2: /* Horizontal */
             	// Master window
+            	scrx += ug_out; scry += ug_out;
+            	sw = desktops[current_desktop].w-2*ug_out; sh = desktops[current_desktop].h-2*ug_out;
             	if(nm < 1)
-                    XMoveResizeWindow(dis,head->win,scrx+xpos,scry+ypos,sw-bdw,master_size-bdw);
+                    XMoveResizeWindow(dis,head->win,scrx+xpos,scry+ypos,sw-bdw-(nm*(ug_in/2)),master_size-bdw-ug_in/2);
                 else {
                     for(d=head;d;d=d->next) {
-                        XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,sw/(nm+1)-bdw,master_size-bdw);
+                        XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,sw/(nm+1)-bdw-(nm*(ug_in/2)),master_size-bdw-ug_in/2);
                         if(x == nm) break;
-                        xpos += sw/(nm+1); ++x;
+                        xpos += sw/(nm+1)+(ug_in/2); ++x;
                     }
                 }
 
                 // Stack
                 if(d == NULL) d = head;
-                n = numwins - (nm+1);
-                XMoveResizeWindow(dis,d->next->win,scrx,scry+y+master_size,(sw/n)+growth-bdw,sh-master_size-bdw);
-                msw = (sw/n)+growth;
+                n = numwins - (nm+1); y += ug_in/2;
+                XMoveResizeWindow(dis,d->next->win,scrx,scry+y+master_size,(sw/n)+growth-bdw-ug_in/2,sh-master_size-bdw-ug_in/2);
+                msw = (sw/n)+growth+(ug_in/2);
                 for(c=d->next->next;c;c=c->next) {
-                    XMoveResizeWindow(dis,c->win,scrx+msw,scry+y+master_size,(sw/n)-(growth/(n-1)) - bdw,sh-master_size-bdw);
+                    XMoveResizeWindow(dis,c->win,scrx+msw,scry+y+master_size,(sw/n)-(growth/(n-1))-bdw-((n-1)*(ug_in/2)),sh-master_size-bdw-ug_in/2);
                     msw += (sw/n)-(growth/(n-1));
                 }
                 break;
             case 3: { // Grid
+            	scrx += ug_out; scry += ug_out;
+            	sw = desktops[current_desktop].w-2*ug_out; sh = desktops[current_desktop].h-2*ug_out;
                 if(numwins < 5) {
                     for(c=head;c;c=c->next) {
                         ++n;
                         if(numwins > 2) {
                             if((n == 1) || (n == 2))
-                                ht = (sh/2) + growth - bdw;
+                                ht = (sh/2)+growth-bdw-ug_in/2;
                             if(n > 2)
-                                ht = (sh/2) - growth - bdw;
+                                ht = (sh/2)-growth-bdw-ug_in/2;
                         } else ht = sh - bdw;
                         if((n == 1) || (n == 3)) {
                             xpos = 0;
-                            wdt = master_size - bdw;
+                            wdt = master_size-bdw-ug_in/2;
                         }
                         if((n == 2) || (n == 4)) {
-                            xpos = master_size;
-                            wdt = (sw - master_size) - bdw;
+                            xpos = master_size+ug_in/2;
+                            wdt = (sw-master_size)-bdw-ug_in/2;
                         }
                         if(n == 3)
-                            ypos += (sh/2) + growth;
+                            ypos += (sh/2)+growth+ug_in/2;
                         if((n == numwins) && (n == 3))
                             wdt = sw - bdw;
                         XMoveResizeWindow(dis,c->win,scrx+xpos,scry+ypos,wdt,ht);
@@ -1210,6 +1217,7 @@ void setup() {
     resizemovekey = Mod1Mask;
     windownamelength = 35;
     show_bar = STATUS_BAR = barmon = barmonchange = lessbar = 0;
+    ug_out = ug_in = 0;
 
     char *loc;
     loc = setlocale(LC_ALL, "");
