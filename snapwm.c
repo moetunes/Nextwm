@@ -133,7 +133,7 @@ static void expose(XEvent *e);
 static void follow_client_to_desktop(const Arg arg);
 static unsigned long getcolor(const char* color);
 static void get_font();
-static char *getwindowname(Window win);
+static void getwindowname(Window win, unsigned int stext);
 static void grabkeys();
 static void init_desks();
 static void init_start();
@@ -214,6 +214,7 @@ static Window sb_area;
 static client *head, *current, *transient, *focus;
 static char font_list[256], buffer[256], dummy[256];
 static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
+static char winname[101];
 static Atom alphaatom, wm_delete_window, protos, *protocols, dockatom, typeatom;
 static XWindowAttributes attr;
 static XButtonEvent starter;
@@ -849,7 +850,7 @@ void update_current() {
             }
         }
     }
-    if(STATUS_BAR == 0 && show_bar == 0) status_text(getwindowname(focus->win));
+    if(STATUS_BAR == 0 && show_bar == 0) getwindowname(focus->win, 0);
     warp_pointer();
     XSync(dis, False);
 }

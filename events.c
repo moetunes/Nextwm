@@ -53,12 +53,12 @@ void maprequest(XEvent *e) {
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None)
         tranny = 0;
 
-    char *this = getwindowname(ev->window);
+    getwindowname(ev->window, 1);
     XClassHint ch = {0};
     unsigned int i=0, j=0, tmp = current_desktop, tmp2;
     if(XGetClassHint(dis, ev->window, &ch)) {
         for(i=0;i<pcount;++i) {
-            if((strcmp(this, positional[i].class) == 0) ||
+            if((strcmp(winname, positional[i].class) == 0) ||
               (tranny == 1 && strcmp(ch.res_class, positional[i].class) == 0) ||
               (tranny == 1 && strcmp(ch.res_name, positional[i].class) == 0)) {
                 XMoveResizeWindow(dis,ev->window,positional[i].x,positional[i].y,positional[i].width,positional[i].height);
@@ -72,7 +72,7 @@ void maprequest(XEvent *e) {
         }
         j = 0;
         for(i=0;i<dtcount;++i) {
-            if((strcmp(this, convenience[i].class) == 0) ||
+            if((strcmp(winname, convenience[i].class) == 0) ||
               (tranny == 1 && strcmp(ch.res_class, convenience[i].class) == 0) ||
               (tranny == 1 && strcmp(ch.res_name, convenience[i].class) == 0)) {
                 tmp2 = (convenience[i].preferredd > DESKTOPS) ? DESKTOPS-1 : convenience[i].preferredd-1;
@@ -111,8 +111,17 @@ void maprequest(XEvent *e) {
         if(mode != 1) XMapWindow(dis,ev->window);
         if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
     } else {
-        add_window(ev->window, 1, NULL);
-        XMapWindow(dis, ev->window);
+        tmp2 = current_desktop;
+        save_desktop(tmp2);
+        for(i=tmp2;i<tmp2+DESKTOPS;++i) {
+            select_desktop(i%DESKTOPS);
+            for(c=head;c;c=c->next)
+                if(trans == c->win) {
+                    add_window(ev->window, 1, NULL);
+                    XMapWindow(dis, ev->window);
+                }
+        }
+        select_desktop(tmp2);
     }
     update_current();
     if(STATUS_BAR == 0) update_bar();
@@ -331,7 +340,8 @@ void propertynotify(XEvent *e) {
 
     if(ev->state == PropertyDelete) return;
     else if(ev->atom == XA_WM_NAME && ev->window == root) update_output(0);
-    else if(ev->atom == XA_WM_NAME && (head != NULL || transient != NULL)) status_text(getwindowname(focus->win));
+    else if(ev->atom == XA_WM_NAME && (head != NULL || transient != NULL))
+        getwindowname(focus->win, 0);
     else if(ev->atom == XA_WM_HINTS) {
         save_desktop(tmp);
         for(i=tmp;i<tmp+DESKTOPS;++i) {
@@ -381,7 +391,7 @@ void expose(XEvent *e) {
 
     if(STATUS_BAR == 0 && ev->count == 0 && ev->window == sb_area) {
         update_output(1);
-        if(head != NULL || transient != NULL) status_text(getwindowname(focus->win));
+        if(head != NULL || transient != NULL) getwindowname(focus->win, 0);
         update_bar();
     }
 }

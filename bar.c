@@ -95,13 +95,13 @@ void setbaralpha() {
     }
 }
 
-char *getwindowname(Window win) {
+void getwindowname(Window win, unsigned int stext) {
     char *win_name;
 
-    if(XFetchName(dis, win, &win_name) != 0) {
-        return win_name;
-        XFree(win_name);
-    } else return "";
+    if(XFetchName(dis, win, &win_name) != 0) strncpy(winname, win_name, 100);
+    else winname[0] = '\0';
+    if(win_name) XFree(win_name);
+    if(stext == 0) status_text(winname);
 }
 
 void update_bar() {
@@ -126,7 +126,7 @@ void update_bar() {
             }
         }
     }
-    if(focus != NULL) status_text(getwindowname(focus->win));
+    if(focus != NULL) getwindowname(focus->win, 0);
     else status_text("");
 }
 
