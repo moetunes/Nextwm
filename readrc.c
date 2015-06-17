@@ -202,7 +202,7 @@ void read_rcfile() {
                     k = 9;
                     for(i=0;i<DESKTOPS; ++i) {
                         if(get_value() == 0) {
-                            if(dummy[0] == '0' && desktops[i].screen == barmonchange)
+                            if(dummy[0] == '0')
                                 desktops[i].showbar = 0;
                             else
                                 desktops[i].showbar = 1;

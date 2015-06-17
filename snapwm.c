@@ -850,7 +850,7 @@ void update_current() {
             }
         }
     }
-    if(STATUS_BAR == 0 && show_bar == 0) getwindowname(focus->win, 0);
+    if(STATUS_BAR == 0) getwindowname(focus->win, 0);
     warp_pointer();
     XSync(dis, False);
 }
