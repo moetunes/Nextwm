@@ -1,5 +1,6 @@
 18/6/15
   Fix for bar not working on monitor 2
+  Default SHOW_BAR to 0 in rc
 
 17/6/15
   Fix for transient child window not being placed on

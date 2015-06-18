@@ -206,7 +206,7 @@ void read_rcfile() {
                                 desktops[i].showbar = 0;
                             else
                                 desktops[i].showbar = 1;
-                        } else desktops[i].showbar = 1;
+                        } else desktops[i].showbar = 0;
                     }
                 } else if(strstr(buffer, "WINDOWNAMELENGTH" ) != NULL) {
                     k = 17;
