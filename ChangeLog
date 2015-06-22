@@ -1,3 +1,7 @@
+22/6/15
+  init_desks in update_config so room for bar not used
+   on not barmon
+
 18/6/15
   Fix for bar not working on monitor 2
   Default SHOW_BAR to 0 in rc

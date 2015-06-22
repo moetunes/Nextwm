@@ -339,8 +339,7 @@ void update_config() {
         select_desktop(tmp);
         if(current_desktop > (DESKTOPS-1)) change_desktop(a);
     }
-    if(old_desktops < DESKTOPS || barmon != barmonchange)
-        init_desks();
+    init_desks();
     if(STATUS_BAR == 0) {
         setup_status_bar();
         if(DESKTOPS != old_desktops) {
