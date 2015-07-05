@@ -6,10 +6,11 @@ void configurenotify(XEvent *e) {
 
 void configurerequest(XEvent *e) {
     XConfigureRequestEvent *ev = &e->xconfigurerequest;
+
     XWindowChanges wc;
     int y = 0;
-
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4;
+
     wc.x = ev->x;
     wc.y = ev->y + y;
     if(mode == 4) {
@@ -47,16 +48,37 @@ void maprequest(XEvent *e) {
         }
 
     Window w;
-    w = (numwins > 0) ? current->win:0;
+    w = (numwins > 0) ? focus->win:0;
 
+    unsigned int i=0, j=0, tmp = current_desktop, tmp2, move = 0;
+    save_desktop(tmp);
     Window trans = None; unsigned int tranny = 1;
-    if (XGetTransientForHint(dis, ev->window, &trans) && trans != None)
+    if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
         tranny = 0;
+        for(i=current_desktop;i<current_desktop+DESKTOPS;++i) {
+            select_desktop(i%DESKTOPS);
+            for(c=head;c;c=c->next)
+                if(c->win == trans) {
+                    j = 1; break;
+                }
+            if(j == 1) break;
+        }
+    }
 
     getwindowname(ev->window, 1);
     XClassHint ch = {0};
-    unsigned int i=0, j=0, tmp = current_desktop, tmp2;
     if(XGetClassHint(dis, ev->window, &ch)) {
+        for(i=0;i<dtcount;++i) {
+            if((strcmp(winname, convenience[i].class) == 0) ||
+              (tranny == 1 && strcmp(ch.res_class, convenience[i].class) == 0) ||
+              (tranny == 1 && strcmp(ch.res_name, convenience[i].class) == 0)) {
+                tmp2 = (convenience[i].preferredd > DESKTOPS) ? DESKTOPS-1 : convenience[i].preferredd-1;
+                select_desktop(tmp2);
+                move = i+1;
+                break;
+            }
+        }
+        j = 0;
         for(i=0;i<pcount;++i) {
             if((strcmp(winname, positional[i].class) == 0) ||
               (tranny == 1 && strcmp(ch.res_class, positional[i].class) == 0) ||
@@ -67,66 +89,31 @@ void maprequest(XEvent *e) {
             }
         }
         if(tranny == 1 && j == 0 && cstack == 0) {
-            XGetWindowAttributes(dis, ev->window, &attr);
             XMoveWindow(dis, ev->window,desktops[current_desktop].w/2-(attr.width/2),(desktops[current_desktop].h+sb_height+4)/2-(attr.height/2));
         }
-        j = 0;
-        for(i=0;i<dtcount;++i) {
-            if((strcmp(winname, convenience[i].class) == 0) ||
-              (tranny == 1 && strcmp(ch.res_class, convenience[i].class) == 0) ||
-              (tranny == 1 && strcmp(ch.res_name, convenience[i].class) == 0)) {
-                tmp2 = (convenience[i].preferredd > DESKTOPS) ? DESKTOPS-1 : convenience[i].preferredd-1;
-                save_desktop(tmp);
-                if(convenience[i].followwin == 0) {
-                    Arg a = {.i = tmp2};
-                    change_desktop(a);
-                } else select_desktop(tmp2);
-                for(c=head;c;c=c->next)
-                    if(ev->window == c->win)
-                        ++j;
-                if(tranny == 1 && j < 1) add_window(ev->window, 0, NULL);
-                if(tranny == 0) add_window(ev->window, 1, NULL);
-                for(j=0;j<num_screens;++j) {
-                    if(view[j].cd == convenience[i].preferredd-1) {
-                        if(tranny == 1) {
-                            tile();
-                            if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
-                        }
-                        if(mode != 1) XMapWindow(dis, ev->window);
-                        update_current();
-                    }
-                }
-                if(convenience[i].followwin != 0) select_desktop(tmp);
-                if(STATUS_BAR == 0) update_bar();
-                if(ch.res_class) XFree(ch.res_class);
-                if(ch.res_name) XFree(ch.res_name);
-                return;
-            }
-        }
     }
+    if(ch.res_class) XFree(ch.res_class);
+    if(ch.res_name) XFree(ch.res_name);
 
     if(tranny == 1) {
         add_window(ev->window, 0, NULL);
-        tile();
-        if(mode != 1) XMapWindow(dis,ev->window);
         if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
-    } else {
-        tmp2 = current_desktop;
-        save_desktop(tmp2);
-        for(i=tmp2;i<tmp2+DESKTOPS;++i) {
-            select_desktop(i%DESKTOPS);
-            for(c=head;c;c=c->next)
-                if(trans == c->win) {
-                    add_window(ev->window, 1, NULL);
-                    XMapWindow(dis, ev->window);
-                }
+    } else add_window(ev->window, 1, NULL);
+    for(i=0;i<num_screens;++i)
+        if(current_desktop == view[i].cd) {
+            if(tranny == 0 || mode != 1)
+                XMapWindow(dis,ev->window);
+            tile();
         }
-        select_desktop(tmp2);
+    select_desktop(tmp);
+    if(move > 0) {
+        if(convenience[move-1].followwin == 0) {
+            Arg a = {.i = tmp2};
+            change_desktop(a);
+        }
     }
     update_current();
     if(STATUS_BAR == 0) update_bar();
-    if(ch.res_class) XFree(ch.res_class);
-    if(ch.res_name) XFree(ch.res_name);
 }
 
 void destroynotify(XEvent *e) {
@@ -305,13 +292,13 @@ void buttonrelease(XEvent *e) {
     client *c;
     XButtonEvent *ev = &e->xbutton;
 
+    XUngrabPointer(dis, CurrentTime);
     if(doresize == 0) {
         XSendEvent(dis, PointerWindow, False, 0xfff, e);
         XFlush(dis);
         return;
     }
     doresize = 0;
-    XUngrabPointer(dis, CurrentTime);
     if(mode == 4) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {

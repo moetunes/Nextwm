@@ -1,3 +1,6 @@
+5/7/15
+  Reworked maprequest()
+
 22/6/15
   init_desks in update_config so room for bar not used
    on not barmon
