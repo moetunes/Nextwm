@@ -1,3 +1,18 @@
+8/7/15
+  Added keyboard shortcut to pop a window out from the
+   tiles
+  Added option in apps.conf to match window to be popped
+   on opening
+  Added option in the rc.conf to have useless gaps around
+   the bar
+
+7/7/15
+  Reworked change_desktop()
+  Fix for transient windows not being focused when clicked
+   on
+  Reworked how transient windows are handled
+  Fixed window visibilty in fullscreen mode
+
 5/7/15
   Reworked maprequest()
 

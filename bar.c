@@ -1,4 +1,4 @@
-// bar.c [ 0.8.5 ]
+// bar.c [ 0.8.6 ]
 
 static void draw_numopen(unsigned int cd, unsigned int gc);
 static Drawable area_sb;
@@ -32,8 +32,8 @@ void setup_status_bar() {
 void status_bar() {
     unsigned int i, y;
 
-    y = (topbar == 0) ? 0 : desktops[barmon].h+bdw;
-    sb_width = 0;
+    y = (topbar == 0) ? 0+ug_bar : desktops[barmon].h+bdw-ug_bar;
+    sb_width = ug_bar;
     for(i=0;i<DESKTOPS;++i) {
         sb_bar[i].sb_win = XCreateSimpleWindow(dis, root, desktops[barmon].x+sb_width, y,
                                             sb_bar[i].width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
@@ -42,8 +42,8 @@ void status_bar() {
         XMapWindow(dis, sb_bar[i].sb_win);
         sb_width += sb_bar[i].width;
     }
-    sb_area = XCreateSimpleWindow(dis, root, desktops[barmon].x+sb_desks, y,
-             desktops[barmon].w-lessbar-(sb_desks+2),sb_height,2,theme[3].barcolor,theme[1].barcolor);
+    sb_area = XCreateSimpleWindow(dis, root, desktops[barmon].x+sb_desks+ug_bar, y,
+             desktops[barmon].w-lessbar-(sb_desks+2)-2*ug_bar,sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ButtonPressMask|ExposureMask|EnterWindowMask|LeaveWindowMask);
     XMapWindow(dis, sb_area);
@@ -61,11 +61,11 @@ void toggle_bar() {
         if(has_bar == 0) {
             show_bar = 1;
             unmapbar();
-            desktops[current_desktop].h += sb_height+4;
+            desktops[current_desktop].h += sb_height+4+ug_bar;
         } else {
             show_bar = 0;
             mapbar();
-            desktops[current_desktop].h -= sb_height+4;
+            desktops[current_desktop].h -= sb_height+4+ug_bar;
             update_bar();
         }
 
@@ -111,7 +111,7 @@ void update_bar() {
         if(i != current_desktop) {
             if(desktops[i].head != NULL) {
                 draw_desk(sb_bar[i].sb_win, 2, 3, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
-                if(showopen < 1 && desktops[i].numwins > 1) {
+                if(showopen < 1 && desktops[i].numorder > 1) {
                     draw_numopen(i, 3);
                 }
             } else {
@@ -121,7 +121,7 @@ void update_bar() {
                 XFillRectangle(dis, sb_bar[i].sb_win, theme[3].gc, 0, 0, 2, 2);
         } else {
             draw_desk(sb_bar[i].sb_win, 0, 1, (sb_bar[i].width-sb_bar[i].labelwidth)/2, sb_bar[i].label, strlen(sb_bar[i].label));
-            if(showopen < 1 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numwins > 1) {
+            if(showopen == 0 && (desktops[i].mode == 1 || desktops[i].mode == 4) && desktops[i].numorder > 1) {
                 draw_numopen(i, 1);
             }
         }
@@ -142,7 +142,7 @@ void draw_desk(Window win, unsigned int barcolor, unsigned int gc, unsigned int 
 void draw_numopen(unsigned int cd, unsigned int gc) {
     unsigned int i, x=0, y=sb_height-2;
 
-    for(i=0;i<desktops[cd].numwins; ++i) {
+    for(i=0;i<desktops[cd].numorder; ++i) {
         XFillRectangle(dis, sb_bar[cd].sb_win, theme[gc].gc, x, y, 2, 2);
         x += 3;
         if((x+3) >= sb_bar[cd].width) return;

@@ -1,4 +1,4 @@
-// readrc.c [ 0.8.5 ]
+// readrc.c [ 0.8.6 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
@@ -155,6 +155,10 @@ void read_rcfile() {
                 k = 6;
                 if(get_value() <1)
                     ug_in = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "UG_BAR" ) != NULL) {
+                k = 6;
+                if(get_value() <1)
+                    ug_bar = strtol(dummy, NULL, 10);
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
                     k = 14; XGCValues values;
@@ -324,14 +328,14 @@ void update_config() {
     XUngrabButton(dis, AnyButton, AnyModifier, root);
     if(font.fontset) XFreeFontSet(dis, font.fontset);
     read_rcfile();
-    y = (topbar == 0) ? 0 : desktops[barmon].h+bdw;
+    y = (topbar == 0) ? ug_bar : desktops[barmon].h+bdw;
     if(DESKTOPS < old_desktops) {
         save_desktop(current_desktop);
         Arg a = {.i = DESKTOPS-1};
         for(i=DESKTOPS;i<old_desktops;++i) {
             select_desktop(i);
             if(head != NULL) {
-                while(desktops[current_desktop].numwins > 0) {
+                while(desktops[current_desktop].numorder > 0) {
                     client_to_desktop(a);
                 }
             }
@@ -348,7 +352,7 @@ void update_config() {
             XDestroyWindow(dis, sb_area);
             status_bar();
         } else {
-            sb_width = 0;
+            sb_width = ug_bar;
             for(i=0;i<DESKTOPS;++i) {
                 XSetWindowBorder(dis,sb_bar[i].sb_win,theme[3].barcolor);
                 XMoveResizeWindow(dis, sb_bar[i].sb_win, desktops[barmon].x+sb_width, y,sb_bar[i].width-2,sb_height);
@@ -356,7 +360,7 @@ void update_config() {
             }
             XSetWindowBorder(dis,sb_area,theme[3].barcolor);
             XSetWindowBackground(dis, sb_area, theme[1].barcolor);
-            XMoveResizeWindow(dis, sb_area, desktops[barmon].x+sb_desks, y, desktops[barmon].w-(sb_desks+4)+bdw-lessbar,sb_height);
+            XMoveResizeWindow(dis, sb_area, desktops[barmon].x+sb_width, y, desktops[barmon].w-(sb_desks+4)+bdw-lessbar-2*ug_bar,sb_height);
             XGetWindowAttributes(dis, sb_area, &attr);
             total_w = attr.width;
             if(area_sb != 0) {
@@ -373,11 +377,12 @@ void update_config() {
     }
     for(i=0;i<DESKTOPS;++i)
         desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;
-    if(numwins < 1) {
-        Arg a = {.i = desktops[current_desktop].mode};
-        switch_mode(a);
-        select_desktop(tmp);
-    }
+        if(numwins < 1) {
+            Arg a = {.i = desktops[current_desktop].mode};
+            switch_mode(a);
+        }
+    select_desktop(tmp);
+
     if(STATUS_BAR == 0) update_bar();
     for(i=0;i<num_screens;++i) {
         select_desktop(view[i].cd);

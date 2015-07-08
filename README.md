@@ -10,9 +10,9 @@ Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=
 -------
 
 
-**snapwm** is a xinerama and xrandr aware, very minimal and lightweight dynamic tiling window manager.
+**snapwm** is a xinerama and xrandr aware, minimal and lightweight dynamic tiling window manager.
 
-All configuration is read from three files in ~/.config/snapwm/ .
+All configuration is read from three files in ~/.config/snapwm/ and is reloadable on the run.
 
 *rc.conf* has colours and window manager configurations.
 
@@ -72,15 +72,17 @@ It allows the "normal" method of tiling window managers(with the new window as t
  * Changing a tiling mode or window size on one desktop doesn't affect the other desktops.
  * Windows can be added/removed to/from the master area with keyboard shortcuts
  * There is a bar with a desktop switcher, space to show the focused window's name and space to show external text.
- * The rc file is reloadable 'on the run'.
+ * The rc files are reloadable 'on the run'.
 
 
 ###Recent Changes
 --------------
 
-14/3/15
+8/7/15
 
-  * Added option for useless gaps for the tiling modes
+  * Useless gaps around the bar too
+  * A keyboard shortcut to float a window on top of tiled windows
+  * Match a window and float it from apps.conf
 
 
 
@@ -139,6 +141,7 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Monitor connects/disconnects are handled with Xrandr(no need to restart the window manager)
   * Plus some minor bug fixes(bugs? what bugs!)
   * SHOW_BAR in rc.conf now can be set for each desktop
+  * Added option for useless gaps for the tiling modes
 
 
 ###Installation

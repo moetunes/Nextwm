@@ -1,4 +1,4 @@
-/* readkeysapps.c [ 0.8.5 ] */
+/* readkeysapps.c [ 0.8.6 ] */
 
 void read_keys_file() {
     FILE *keyfile ;
@@ -105,6 +105,7 @@ void read_keys_file() {
                     else if(strcmp(dummy, "next_win") == 0) keys[keycount].myfunction = next_win;
                     else if(strcmp(dummy, "prev_win") == 0) keys[keycount].myfunction = prev_win;
                     else if(strcmp(dummy, "swap_master") == 0) keys[keycount].myfunction = swap_master;
+                    else if(strcmp(dummy, "pop_window") == 0) keys[keycount].myfunction = pop_window;
                     else if(strcmp(dummy, "toggle_bar") == 0) keys[keycount].myfunction = toggle_bar;
                     else if(strcmp(dummy, "update_config") == 0) keys[keycount].myfunction = update_config;
                     else if(strcmp(dummy, "spawn") == 0) {
@@ -131,7 +132,7 @@ void read_keys_file() {
 
 void read_apps_file() {
     FILE *appsfile ;
-    dtcount = pcount = 0;
+    dtcount = pcount = tcount = 0;
 
     appsfile = fopen( APPS_FILE, "r" ) ;
     if ( appsfile == NULL ) {
@@ -157,6 +158,11 @@ void read_apps_file() {
                 if(get_value() == 0) positional[pcount].width = strtol(dummy, NULL, 10);
                 if(get_value() == 0) positional[pcount].height = strtol(dummy, NULL, 10);
                 ++pcount;
+                continue;
+            } else if(strstr(buffer, "POPPED" ) != NULL) {
+                k = 7;
+                if(get_value() == 0) popped[tcount].class = strdup(dummy);
+                ++tcount;
                 continue;
             } else continue;
         }
