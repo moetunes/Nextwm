@@ -46,7 +46,7 @@ void maprequest(XEvent *e) {
     Window w;
     w = (numwins > 0) ? current->win:0;
 
-    unsigned int i=0, j=0, tmp = current_desktop, tmp2, move = 0, x = 0;
+    unsigned int i=0, j=0, tmp = current_desktop, tmp2, move = 0;
     save_desktop(tmp);
     Window trans = None; unsigned int tranny = 0;
     if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
@@ -69,9 +69,14 @@ void maprequest(XEvent *e) {
               (tranny == 0 && strcmp(ch.res_class, convenience[i].class) == 0) ||
               (tranny == 0 && strcmp(ch.res_name, convenience[i].class) == 0)) {
                 tmp2 = (convenience[i].preferredd > DESKTOPS) ? DESKTOPS-1 : convenience[i].preferredd-1;
-                select_desktop(tmp2);
-                move = i+1;
-                break;
+                if(convenience[i].followwin == 0) {
+                    Arg a = {.i = tmp2};
+                    change_desktop(a);
+                    move += 1;
+                } else {
+                    select_desktop(tmp2);
+                    break;
+                }
             }
         }
         j = 0;
@@ -81,7 +86,6 @@ void maprequest(XEvent *e) {
               (tranny == 0 && strcmp(ch.res_name, positional[i].class) == 0)) {
                 XMoveResizeWindow(dis,ev->window,positional[i].x,positional[i].y,positional[i].width,positional[i].height);
                 ++j;
-                XGetWindowAttributes(dis, ev->window, &attr);
                 break;
             }
         }
@@ -91,34 +95,27 @@ void maprequest(XEvent *e) {
               (tranny == 0 && strcmp(ch.res_name, popped[i].class) == 0)) {
                 ++j;
                 tranny = 1;
-                x = desktops[current_desktop].x + attr.x;
+                XMoveResizeWindow(dis, ev->window, desktops[current_desktop].x+attr.x, attr.y, attr.width, attr.height);
                 break;
             }
         }
         if(tranny == 0 && j == 0 && cstack == 0) {
+            ++j;
             XMoveWindow(dis, ev->window,desktops[current_desktop].w/2-(attr.width/2),(desktops[current_desktop].h+sb_height+4+ug_bar)/2-(attr.height/2));
-            XGetWindowAttributes(dis, ev->window, &attr);
         }
     }
     if(ch.res_class) XFree(ch.res_class);
     if(ch.res_name) XFree(ch.res_name);
+    if(j > 0) XGetWindowAttributes(dis, ev->window, &attr);
 
-    if(x == 0) x = attr.x;
-    add_window(ev->window, tranny, NULL, x, attr.y, attr.width, attr.height);
+    add_window(ev->window, tranny, NULL, attr.x, attr.y, attr.width, attr.height);
     if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
     for(i=0;i<num_screens;++i)
         if(current_desktop == view[i].cd) {
-            if(tranny == 1) XMoveResizeWindow(dis, ev->window, x, attr.y, attr.width, attr.height);
             if(mode != 1) XMapWindow(dis,ev->window);
             tile();
         }
-    select_desktop(tmp);
-    if(move > 0) {
-        if(convenience[move-1].followwin == 0) {
-            Arg a = {.i = tmp2};
-            change_desktop(a);
-        }
-    }
+    if(move == 0) select_desktop(tmp);
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -140,6 +137,10 @@ void destroynotify(XEvent *e) {
         if(foundit == 1) break;
     }
     select_desktop(tmp);
+    for(i=0;i<num_screens;++i)
+        if(current_desktop == view[i].cd) {
+            if(mode != 4) tile();
+        }
     if(foundit == 1) update_current();
     if(STATUS_BAR == 0) update_bar();
 }

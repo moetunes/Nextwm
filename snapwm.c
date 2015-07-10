@@ -360,7 +360,6 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
     if(dr == 0) free(cl);
     if((numwins - nmaster) < 3) growth = 0;
     save_desktop(current_desktop);
-    if(mode != 4) tile();
     return;
 }
 
