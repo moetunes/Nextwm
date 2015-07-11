@@ -136,12 +136,12 @@ void destroynotify(XEvent *e) {
             }
         if(foundit == 1) break;
     }
-    select_desktop(tmp);
     for(i=0;i<num_screens;++i)
         if(current_desktop == view[i].cd) {
             if(mode != 4) tile();
         }
-    if(foundit == 1) update_current();
+    if(foundit == 1 && current_desktop == tmp) update_current();
+    select_desktop(tmp);
     if(STATUS_BAR == 0) update_bar();
 }
 
