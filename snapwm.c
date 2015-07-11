@@ -485,10 +485,12 @@ void pop_window() {
         }
         tile();
     } else {
+        Window win = current->win;
         focus->trans = 0;
         numwins += 1;
         current = focus;
         tile();
+        if(mode == 1) XUnmapWindow(dis, win);
     }
     update_current();
 }
@@ -561,15 +563,16 @@ void follow_client_to_desktop(const Arg arg) {
 void client_to_desktop(const Arg arg) {
     if(focus == NULL || arg.i == current_desktop || arg.i >= DESKTOPS) return;
 
-    client *tmp = focus;
+    client *c = focus;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
 
     // Remove client from current desktop
-    remove_client(tmp, 1, 0);
+    remove_client(c, 1, 0);
+    if(mode != 4) tile();
 
     // Add client to desktop
     select_desktop(arg.i);
-    add_window(tmp->win, tmp->trans, tmp, tmp->x, tmp->y, tmp->w, tmp->h);
+    add_window(c->win, c->trans, c, c->x, c->y, c->w, c->h);
     save_desktop(arg.i);
 
     if(focus->trans == 1) XMoveResizeWindow(dis, focus->win,

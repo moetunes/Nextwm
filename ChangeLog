@@ -1,5 +1,6 @@
 10/7/15
   Fix for remove_window mapping error
+  Fix for client_to_desktop mapping error
 
 8/7/15
   Added keyboard shortcut to pop a window out from the
