@@ -333,8 +333,6 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
         cl->next->prev = cl->prev;
     }
     
-    XUnmapWindow(dis, cl->win);
-    XUngrabButton(dis, AnyButton, AnyModifier, cl->win);
     if(cl->trans == 0) numwins -= 1;
     numorder -= 1;
     if(head != NULL) {
@@ -802,28 +800,32 @@ void update_current() {
     for(c=head;c;c=c->next) {
         XSetWindowBorderWidth(dis,c->win,border);
         if(c != focus) {
-            if(c->order < focus->order) ++c->order;
+            if(c->order <= focus->order) ++c->order;
             if(ufalpha < 100) XChangeProperty(dis, c->win, alphaatom, XA_CARDINAL, 32, PropModeReplace, (unsigned char *) &opacity, 1l);
             XSetWindowBorder(dis,c->win,theme[1].wincolor);
             if(clicktofocus == 0)
                 XGrabButton(dis, AnyButton, AnyModifier, c->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
-        } else {
-            // "Enable" current window
-            c->order = 0;
-            if(ufalpha < 100) XDeleteProperty(dis, c->win, alphaatom);
-            XSetWindowBorder(dis,c->win,theme[0].wincolor);
-            XSetInputFocus(dis,c->win,RevertToParent,CurrentTime);
-            if(clicktofocus == 0)
-                XUngrabButton(dis, AnyButton, AnyModifier, c->win);
-            XRaiseWindow(dis,c->win);
         }
     }
-    //for(i=numorder;i>0;--i)
-        for(c=head;c;c=c->next)
-            if(c->trans == 1) {
-                if(mode == 1 || numwins == 1) XSetWindowBorderWidth(dis,c->win,bdw);
-                XMapRaised(dis,c->win);
+    // "Enable" current window
+    focus->order = 0;
+    if(ufalpha < 100) XDeleteProperty(dis, focus->win, alphaatom);
+    XSetWindowBorder(dis,focus->win,theme[0].wincolor);
+    XSetInputFocus(dis,focus->win,RevertToParent,CurrentTime);
+    if(clicktofocus == 0)
+        XUngrabButton(dis, AnyButton, AnyModifier, focus->win);
+    XRaiseWindow(dis,focus->win);
+
+    if(numorder != numwins)
+        for(i=numorder;i>0;--i)
+            for(c=head;c;c=c->next) {
+                if(c->order != i-1) continue;
+                if(c->trans == 1) {
+                    if(mode == 1 || numwins == 1) XSetWindowBorderWidth(dis,c->win,bdw);
+                    XMapRaised(dis,c->win);
+                }
             }
+
     if(STATUS_BAR == 0) getwindowname(focus->win, 0);
     warp_pointer();
     XSync(dis, False);

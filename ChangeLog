@@ -1,3 +1,6 @@
+12/7/15
+  Fix floating window mapping order
+
 10/7/15
   Fix for remove_window mapping error
   Fix for client_to_desktop mapping error

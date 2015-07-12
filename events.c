@@ -136,10 +136,11 @@ void destroynotify(XEvent *e) {
             }
         if(foundit == 1) break;
     }
-    for(i=0;i<num_screens;++i)
-        if(current_desktop == view[i].cd) {
-            if(mode != 4) tile();
-        }
+    if(foundit == 1)
+        for(i=0;i<num_screens;++i)
+            if(current_desktop == view[i].cd) {
+                if(mode != 4) tile();
+            }
     if(foundit == 1 && current_desktop == tmp) update_current();
     select_desktop(tmp);
     if(STATUS_BAR == 0) update_bar();
@@ -352,6 +353,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
                 remove_client(c, 1, 0);
+                if(mode != 4) tile();
                 update_current();
                 if(STATUS_BAR == 0) update_bar();
                 return;
