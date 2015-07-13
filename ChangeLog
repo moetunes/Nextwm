@@ -1,3 +1,7 @@
+13/7/15
+  Fix for floating window not mapped on focused desktop
+   on unfocused screen
+
 12/7/15
   Fix floating window mapping order
 
