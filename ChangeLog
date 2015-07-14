@@ -1,3 +1,7 @@
+14/7/15
+  Fix for clicking on the focused desktop in the
+   switcher with no open windows killing the wm
+
 13/7/15
   Fix for floating window not mapped on focused desktop
    on unfocused screen

@@ -362,7 +362,7 @@ void remove_client(client *cl, unsigned int dr, unsigned int tw) {
 }
 
 void next_win() {
-    if(head->next == NULL) return;
+    if(numorder < 2) return;
 
     client *c = focus;
 
@@ -378,7 +378,7 @@ void next_win() {
 }
 
 void prev_win() {
-    if(head->next == NULL) return;
+    if(numorder < 2) return;
 
     client *d = focus;
     client *c;
