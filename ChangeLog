@@ -1,3 +1,6 @@
+17/7/15
+  Fix for floating windows mapping off screen
+
 14/7/15
   Fix for clicking on the focused desktop in the
    switcher with no open windows killing the wm

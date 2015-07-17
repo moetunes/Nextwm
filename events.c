@@ -95,7 +95,10 @@ void maprequest(XEvent *e) {
               (tranny == 0 && strcmp(ch.res_name, popped[i].class) == 0)) {
                 ++j;
                 tranny = 1;
-                XMoveResizeWindow(dis, ev->window, desktops[current_desktop].x+attr.x, attr.y, attr.width, attr.height);
+                if((desktops[current_desktop].x+attr.x+attr.width) < (desktops[current_desktop].x+sw))
+                    XMoveResizeWindow(dis, ev->window, desktops[current_desktop].x+attr.x, attr.y, attr.width, attr.height);
+                else
+                    XMoveResizeWindow(dis, ev->window, desktops[current_desktop].x+(sw/2)-attr.width/2, attr.y, attr.width, attr.height);
                 break;
             }
         }
