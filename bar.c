@@ -191,7 +191,7 @@ void update_output(unsigned int messg) {
         strcpy(output, "&3 snapwm inc. ");
         text_length = 15;
     } else {
-        while(&win_name[text_length] != '\0' && text_length < 256) {
+        while(&win_name[text_length] != '\0' && text_length < 255) {
             output[text_length] = win_name[text_length];
             ++text_length;
         }
