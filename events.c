@@ -112,7 +112,7 @@ void maprequest(XEvent *e) {
     if(j > 0) XGetWindowAttributes(dis, ev->window, &attr);
 
     add_window(ev->window, tranny, NULL, attr.x, attr.y, attr.width, attr.height);
-    if(mode == 1 && numwins > 1) XUnmapWindow(dis, w);
+    if(mode == 1 && numwins > 1 && move == 0) XUnmapWindow(dis, w);
     for(i=0;i<num_screens;++i)
         if(current_desktop == view[i].cd) {
             if(mode != 1 ) XMapWindow(dis,ev->window);
