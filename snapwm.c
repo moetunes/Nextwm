@@ -641,7 +641,7 @@ void tile() {
     y = (STATUS_BAR == 0 && topbar == 0 && show_bar == 0) ? sb_height+4+ug_bar : 0; ypos = y;
 
     // If only one window
-    if(mode != 4 && numwins == 1) {
+    if(numwins == 1 && mode != 4 && mode != 1) {
         for(c=head;c;c=c->next)
             if(c->trans == 0) {
                 XMoveResizeWindow(dis,c->win,scrx+ug_out,scry+y+ug_out,sw+bdw-2*ug_out,sh+bdw-2*ug_out);
@@ -674,7 +674,7 @@ void tile() {
                 }
                 break;
             case 1: /* Fullscreen */
-                XMoveResizeWindow(dis,current->win,scrx+ug_out,scry+y+ug_out,sw+bdw-2*ug_out,sh+bdw-2*ug_out);
+                XMoveResizeWindow(dis,current->win,scrx,scry+y,sw+bdw,sh+bdw);
                 XMapWindow(dis, current->win);
                 break;
             case 2: /* Horizontal */
