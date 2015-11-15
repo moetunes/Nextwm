@@ -1,4 +1,4 @@
-/* readkeysapps.c [ 0.8.6 ] */
+/* readkeysapps.c [ 0.8.7 ] */
 
 void read_keys_file() {
     FILE *keyfile ;
@@ -29,14 +29,14 @@ void read_keys_file() {
             } else if(strstr(buffer, "KEY" ) != NULL) {
                 k = 4;
                 if(get_value() == 0) {
-                    if(strncmp(dummy, "Alt", 3) == 0) keys[keycount].mod = Mod1Mask;
+                    if(strncmp(dummy, "AltSuper", 8) == 0) keys[keycount].mod = Mod1Mask|Mod4Mask;
                     else if(strncmp(dummy, "Control", 7) == 0) keys[keycount].mod = ControlMask;
                     else if(strncmp(dummy, "CtrlAlt", 7) == 0) keys[keycount].mod = Mod1Mask|ControlMask;
                     else if(strncmp(dummy, "ShftAlt", 7) == 0) keys[keycount].mod = Mod1Mask|ShiftMask;
                     else if(strncmp(dummy, "Super", 5) == 0) keys[keycount].mod = Mod4Mask;
                     else if(strncmp(dummy, "CtrlSuper", 9) == 0) keys[keycount].mod = Mod4Mask|ControlMask;
                     else if(strncmp(dummy, "ShftSuper", 9) == 0) keys[keycount].mod = Mod4Mask|ShiftMask;
-                    else if(strncmp(dummy, "ALTSuper", 8) == 0) keys[keycount].mod = Mod1Mask|Mod4Mask;
+                    else if(strncmp(dummy, "Alt", 3) == 0) keys[keycount].mod = Mod1Mask;
                     else if(strncmp(dummy, "NULL", 4) == 0) keys[keycount].mod = 0;
                     else continue;
                 }

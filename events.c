@@ -1,4 +1,4 @@
-// events.c [ 0.8.6 ]
+// events.c [ 0.8.7 ]
 
 void configurerequest(XEvent *e) {
     XConfigureRequestEvent *ev = &e->xconfigurerequest;

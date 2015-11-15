@@ -5,6 +5,7 @@ EXEC=snapwm
 
 PREFIX?= /usr/local
 BINDIR?= $(PREFIX)/bin
+MANPREFIX= $(PREFIX)/share/man/man1
 
 CC=gcc
 
@@ -15,6 +16,7 @@ snapwm: snapwm.o
 
 install: all
 	install -Dm 755 snapwm $(DESTDIR)$(BINDIR)/snapwm
+	install -Dm 644 snapwm.1 $(DESTDIR)$(MANPREFIX)/snapwm.1
 
 clean:
 	rm -fv snapwm *.o

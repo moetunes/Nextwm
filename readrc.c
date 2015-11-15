@@ -1,4 +1,4 @@
-// readrc.c [ 0.8.6 ]
+// readrc.c [ 0.8.7 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
@@ -30,7 +30,10 @@ void read_rcfile() {
     } else {
         while(fgets(buffer,sizeof buffer,rcfile) != NULL) {
             /* Check for comments */
-            if(buffer[0] == '#' || buffer[0] == ' ' || buffer[0] == '\n') continue;
+            if(buffer[0] == '#' || buffer[0] == ' ' || buffer[0] == '\n') {
+                memset(buffer, '\0', 256);
+                continue;
+            }
             if(buffer[strlen(buffer)-1] == '\n')
                 buffer[strlen(buffer)-1] = 0;
             /* Now look for info */
@@ -136,7 +139,7 @@ void read_rcfile() {
                         j = strtol(dummy, NULL, 10);
                         if(j > -1 && j < 5)
                             desktops[i].mode = j;
-                    }
+                    } else desktops[i].mode = desktops[0].mode;
                 }
             } else if(strstr(buffer, "NMASTER" ) != NULL) {
                 k = 8;

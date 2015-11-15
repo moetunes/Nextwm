@@ -1,0 +1,525 @@
+.TH SNAPWM 1 snapwm
+.SH NAME
+snapwm \- a dynamic tiling window manager with a small footprint and 
+a focus on easy configuration and choice.
+.SH SYNOPSIS
+.B snapwm
+.SH DESCRIPTION
+.I snapwm
+is a dynamic tiling window manager that aims to be light on resources, 
+easy to configure and offer choice. The main emphasis is on keyboard 
+control with some mouse support provided.
+There are four tiling modes (Vertical, Horizontal, Grid, Fullscreen) and 
+a stacking mode. Three simple text files that are updatable with a 
+keyboard shortcut make configuration simple. There is a bar with a desktop 
+switcher and space for user supplied text. Multiple monitors are 
+supported through Xrandr and Xinerama with one desktop shown per monitor.
+.P
+.SH TILING
+.I snapwm
+is a dynamic tiling window manager. When a new window is opened the existing
+windows are moved according to a preset pattern (called a mode) so the new
+window fills a preset space, no windows are covered and all the screen is 
+used. New windows can be set to open in the master area, or at the top or 
+bottom of the stack.
+ The master area is a percentage of the screen width or height, is 
+set in rc.conf and is adjustable with keyboard shortcuts.
+In vertical mode the master area is the left side of the screen, 
+in horizontal mode the master area is the top half and in grid mode 
+the master area is from the top left corner.
+ The stack fills the space not used by the master area. The first 
+window in the stack can be resized with keyboard shortcuts.
+ In vertical and horizontal mode windows can be added to/removed from 
+the master area with a keyboard shortcut and each desktop can be set 
+with a default number of windows to have in the master area. Gap size 
+around windows are set in rc.conf.
+ If there is only one window opened or the mode is fullscreen the 
+window will fill the screen and have no borders.
+.SH STACKING
+Stacking mode can have windows opening in the center of the screen or 
+where the window requests, which is normally the top left corner.
+ Windows can be moved or resized with keyboard shortcuts or the mouse 
+plus the RESIZEMOVEKEY set in rc.conf. With the RESIZEMOVEKEY held 
+down the left mouse button will move a window and the right mouse button 
+will resize a window. Window size and position is remembered.
+.SH DESKTOPS
+.I snapwm
+has the number of desktops used at startup set in rc.conf. The settings 
+for each desktop are unique to it, have the default set in rc.conf and 
+some can be changed with keyboard shortcuts. Windows have a border but 
+no title bar or buttons. The width and colour for focused 
+and unfocused window borders is set in rc.conf. With keyboard shortcuts 
+windows can be selected, moved, resized, sent to other desktops, 
+followed to other desktops, closed. With multiple monitors
+.I snapwm
+will place each desktop in order on the next monitor, starting again 
+from the first monitor when the number of monitors is reached. An example 
+using four desktops and two monitors would be :
+.RS
+Desktops 1 and 3 on the first monitor, the last focused one visible.
+
+Desktops 2 and 4 on the second monitor, the last focused one visible.
+.RE
+.SH THE BAR
+.I snapwm
+has a built in bar that can be placed at the top or the bottom of the 
+screen. It contains a desktop switcher, the window placement mode, the 
+name of the focused window and has space to show external text. Colours 
+are set in rc.conf and are updateable in the running window manager.
+ There is mouse support for the bar. Using the left mouse button on the 
+current desktop selects the next window, on an unfocused desktop selects 
+that desktop, on the bar selects the last focused desktop. Using the 
+right mouse button on an unfocused desktop moves the focused window 
+on the current desktop to that desktop and selects that desktop.
+ The text the user can display in the bar is set with xsetroot -name.
+ An example would be:
+  while true; do xsetroot -name "$(date)"; sleep 1; done
+
+ The colour of the font can be changed by inserting into the text an 
+ampersand (&) and the number of the desired colour from STATUSTHEME in 
+rc.conf. Colours are from 0 - 9.
+ The background colour of the bar can be changed by inserting into the 
+text an ampersand, a capital B and the number of the desired colour 
+from STATUSTHEME in rc.conf.
+ An example would be:
+  while true; do xsetroot -name "&B2&5$(date)&B0  "; sleep 1; done
+
+.SH CONFIGURATION
+.I snapwm
+is configured by editing and saving one or more text files in 
+~/.config/snapwm/ and using a keyboard shortcut.
+.RS
+Default Keyboard shortcut : 
+.I Alt + U
+.RE
+
+.I rc.conf
+sets the values for desktops, the bar, font and colours.
+
+.I key.conf
+sets the keyboard shortcuts to run window manager functions and user 
+defined commands.
+
+.I apps.conf
+sets a named application to open on a set desktop, have set geometry, 
+and/or never start tiled.
+
+Samples of each of the configuration files are provided to make initial 
+configuration easier.
+
+All lines in all conf files take the form of : 
+.RS
+<Option><Space><semi colon seperated list>
+.RE
+ If there is more than one item in the list the line must end in a 
+semi colon.
+ If a line starts with a hash(#) or whitespace it is ignored.
+.P
+.I RC.CONF
+.RS
+.I DESKTOPS 
+sets the number of desktops, limited to 12 and should be the first setting.
+
+.I DEFAULT_DESK
+sets the desktop that the window manager shows at startup.
+
+.I MASTERSIZE
+sets the percentage of the screen allocated to the main window.
+
+.I ATTACHASIDE
+sets a new window to be added to the stack(0) or the master area(1).
+
+.I TOPSTACK
+If ATTACHASIDE = 0 sets the new window to open at the top of the stack(0)
+ or the bottom(1).
+
+.I CENTER_STACK
+when in stacking mode open new windows in the center of the screen(0)
+ or where they want(1).
+
+.I BORDERWIDTH
+sets the width of all window borders.
+
+.I WINDOWTHEME
+colours for the window borders in hexidecimal format.
+ The order is :
+.RS
+focused window
+
+unfocused window
+.RE
+
+.I DEFAULTMODE
+sets the default tiling mode for all desktops if only one value 
+given or each desktop if multiple values given.
+ Modes are:
+.RS
+0 = Vertical
+
+1 = Fullscreen
+
+2 = Horizontal
+
+3 = Grid
+
+4 = Stacking
+.RE
+
+.I RESIZEMOVEKEY
+sets the key used with the mouse in stacking mode to move or resize windows.
+ The default is the ALT key and the only other choice is the SUPER key so 
+only uncomment if the SUPER key is required.
+
+.I NMASTER
+sets the number of extra windows in the master area for each desktop when 
+in Vertical or Horizontal tiling modes. Defaults to zero when a value isn't 
+given for a desktop.
+
+.I UG_OUT
+sets the width of the gap from the screen edge to a windows' outer border in 
+pixels. Defaults to zero so comment the line to disable.
+
+.I UG_IN
+sets the width of the gap between windows in pixels. Defaults to zero so 
+comment the line to disable.
+
+.I UG_BAR
+sets the width of the gap around the bar in pixels. Defaults to zero so 
+comment the line to disable.
+
+.I UF_WIN_ALPHA
+sets an opaque value for all unfocused windows to have semi transparent 
+windows when using a compositor. The value is a percent with 100 being 
+opaque and 0 being transparent.
+
+.I AUTO_NUM_OPEN
+sets the number of open windows to trigger a change to a tiling mode from 
+stacking mode. Off by default so only uncomment the line if needed.
+
+.I AUTO_MODE
+sets the tiling mode to change to from stacking mode when AUTO_NUM_OPEN 
+is reached.
+
+.I FOLLOWMOUSE
+sets the mouse focus method to focus a window when the mouse enters it. 
+Should be set to 1 if CLICKTOFOCUS is used.
+
+.I CLICKTOFOCUS
+sets the mouse focus method to focus a window when a mouse button is 
+clicked in it.
+
+.I TOPBAR
+sets the bar to be shown at the top(0) or bottom(1) of the screen.
+
+.I SHOW_BAR
+sets whether the bar is shown on a desktop. Defaults to zero if a 
+value for a desktop is not given.
+ An example for six desktops and not showing the bar on desktop 4 :
+.RS
+SHOW_BAR 0;0;0;1;
+.RE
+
+.I BAR_MONITOR
+sets the monitor the bar will be shown on when using multiple 
+monitors. Not needed if only using one monitor.
+
+.I BAR_SHORT
+sets the width in pixels the bar leaves clear on the right.
+ Zero or comment the line to have the bar the full width of the 
+screen.
+
+.I DESKTOP_NAMES
+sets the name for each desktop in the switcher.
+
+.I SHOWNUMOPEN
+In the switcher in Fullscreen mode or on unfocused desktops represent 
+each window with a small rectangle starting from the bottom left corner.
+
+.I MODENAME
+sets what is shown in the bar to represent each of the five window 
+placement modes when selected.
+
+.I LEFT_WINDOWNAME
+sets the focused windows' name shown in the bar to be left aligned.
+
+.I WINDOWNAMELENGTH
+sets the maximum number of characters for the focused windows' name shown 
+in the bar.
+
+.I SWITCHERTHEME 
+sets the background colours for the switcher in hexidecimal format.
+ The order is :
+.RS
+focused desktop
+
+unfocused desktop
+
+unfocused desktop with opened windows
+
+the bars border
+
+desktop with window that's set the urgent hint
+.RE
+
+.I STATUSTHEME
+sets the bar's background colour and the colour for the fonts in 
+hexidecimal format.
+ The order is :
+.RS
+bar background colour
+
+font colour for focused desktop in switcher
+
+font colour for unfocused desktop in switcher
+
+font colour for unfocused desktop in switcher with open windows
+
+font colour for the focused window name
+
+and five more colours for text in the bar
+.RE
+
+.I WNAMEBG
+sets the background for the focused windows' name shown in the bar. 
+The value is a number between 0 and 4 representing the 5 colours from 
+SWITHERTHEME.
+
+.I BAR_ALPHA
+sets an opaque valaue for the bar to have it semi transparent when 
+using a comositor. 100 is opaque and 0 is transparent.
+
+.I FONTNAME
+sets the font used in the bar. Only bitmap fonts found by the X server 
+are possible to use.
+.RE
+
+.I KEY.CONF
+.RS
+The key.conf file only has two settings available to it. CMD and KEY.
+
+.I CMD
+is used to run a terminal command or script from a keyboard shortcut. 
+It takes the form:
+.RS
+CMD<space><CMD name>;<program name;<program switch 1>;<switch2>;...;NULL;
+.RE
+An example using "xterm -bg white -fg black" would be :
+.RS
+CMD xtermcmd;xterm;-bg;white;-fg;black;NULL;
+.RE
+A CMD should occur before any KEY uses the CMD name.
+
+There are two reserved CMD names, shutdowncmd and rebootcmd, to be used 
+with the terminate function. A call to the quit function will be performed 
+then the user supplied command to shutdown or reboot the system.
+
+.I KEY
+sets a modifying key with another key to run a function. It takes the form:
+.RS
+KEY<space><modifying key>;<key>;<function>;<value passed to function>;
+.RE
+
+Available values for the modifying keys are :
+.RS
+Alt
+
+Control
+
+CtrlAlt
+
+ShftAlt
+
+Super
+
+ShftSuper
+
+CtrlSuper
+
+AltSuper
+
+NULL(for no Mod key)
+.RE
+
+Available functions are :
+.RS
+.I change_desktop [1 - 12]
+change to a different desktop. Has to be given the number of the 
+desktop to change to.
+
+.I client_to_desktop [1 - 12]
+send the focused window to a different desktop. Has to be given the 
+number of the desktop to send the window to.
+
+.I follow_client_to_desktop [1 - 12]
+send the focused window to a different desktop and focus that desktop. 
+Has to be given the number of the desktop to send the window to.
+
+.I rotate_desktop [-1 - 1]
+used to change desktops in order. 1 changes to the next desktop, -1 
+changes to the previous desktop. So best used with two keyboard 
+shortcuts. e.g.
+.RS
+KEY Super;Left;rotate_desktop;-1;
+
+KEY Super;Right;rotate_desktop;1;
+.RE
+
+.I rotate_mode [-1 - 1]
+change through the window placement modes in order.
+
+.I Kill_client
+Politely asks the focused window to close but will kill it if necessary.
+
+.I next_win
+focus the next window.
+
+.I prev_win
+focus the previous window.
+
+.I resize_master [-? - ?]
+increase/decrease the master area in tiling modes or the width of 
+windows in stacking mode. Best used with two keyboard shortcuts. One 
+with a negative value and the other with a positive value. -10/10 are 
+a good starting point.
+
+.I resize_stack [-? - ?]
+increase/decrease the size of the first window in the stack in tiling 
+modes or the height of a window in stacking mode. Best used with two 
+keyboard shortcuts. One with a negative value and the other with a 
+positive value. -10/10 are a good starting point.
+
+.I pop_window
+in tiling modes pop the focused window out from the tiled windows and 
+have it behave as though in stacking mode. Will also pop a popped 
+window back amongst the tiled windows.
+
+.I update_config
+used to update the configuration after one or more of the conf files 
+in ~/.config/snapwm/ have been edited and saved. Everything in the 
+running window manager is updateable.
+
+.I last_desktop
+change to the last focused desktop.
+
+.I more_master [-1 - 1]
+add or remove a window to or from the master area.
+
+.I move_down [?]
+in tiling modes move the focused window down in the stack, keeping it 
+focused. In stacking mode or with a popped window move the focused 
+window down on the screen ? pixels.
+
+.I move_up [-?]
+in tiling modes move the focused window up in the stack, keeping it 
+focused. In stacking mode or with a popped window move the focused 
+window up on the screen ? pixels.
+
+.I move_left [-?]
+in stacking mode or with a popped window move the focused window to the 
+left ? pixels.
+
+.I move_right [?]
+in stacking mode or with a popped window move the focused window to the 
+right ? pixels.
+
+.I swap_master
+swap the focused window in the stack with the master window or if the 
+master window is focused swap it with the one at the top of the stack.
+
+.I switch_mode [0-4]
+switch to a different window placement mode.
+
+.I toggle_bar
+if the bar is visible hide it or if it's hidden show it.
+
+.I quit
+politely ask windows to close and exit the window manager.
+
+.I terminate [1 - 2]
+using the CMD's shutdowncmd and rebootcmd, call the quit function to 
+ask windows to close and then shutdown or reboot. 1 for shutdown and 
+2 for reboot.
+
+.I spawn [CMD name]
+used to run a CMD.
+ An example using the CMD for xterm :
+.RS
+KEY Super;t;spawn;xtermcmd;
+.RE
+.RE
+
+.I APPS.CONF
+.RS
+The apps.conf file only has three settings available to it. DESKTOP, 
+POSITION and POPPED.
+ It makes use of the WM_CLASS or WM_NAME values set for each window.
+Using the terminal command xprop will show these values.
+
+.I DESKTOP
+names an application and sets a desktop to always open it on and whether 
+to focus that desktop or not. It takes the form:
+.RS
+DESKTOP<space><WM_CLASS or WM_NAME>;<desktop number>;<1=don't 0=focus desktop>;
+.RE
+An example setting Thunar to open on desktop 2 and focus that desktop : 
+.RS
+DESKTOP Thunar;2;0;
+.RE
+
+.I POSITION
+sets the geometry for a named application when in stacking mode. It 
+takes the form:
+.RS
+POSITION<space><WM_CLASS or WM_NAME>;<x>;<y>;<width>;<height>;
+.RE
+An example setting Thunar to 100 pixels from the left and top of the 
+screen, 800 pixels wide and 400 pixels high :
+.RS
+POSITION Thunar;100;100;800;400;
+.RE
+
+.I POPPED
+names an application to never be started tiled. It takes the form:
+.RS
+POPPED <WM_CLASS or WM_NAME>
+.RE
+An example setting Thunar to never start tiled :
+.RS
+POPPED Thunar
+.RE
+.RE
+.SH HISTORY
+.I snapwm
+was started from a fork of catwm [github.com/pyknite/catwm] in 2011 as 
+dminiwm. Snapwm was made from dminiwm by adding a desktop switcher and 
+bar with the configuration changed from editing C files and recompiling 
+to editing conf files and using a keyboard shortcut.
+ The development of
+.I snapwm
+was chronicled on the Arch Linux forums at
+.RS
+bbs.archlinux.org/viewtopic.php?id=126463
+.RE
+.SH AVAILABILTY
+.I snapwm
+has a development version and a stable version. The stable version has 
+fewer updates that are tested.
+ The development version is available in source form at
+ github.com/moetunes/Nextwm.
+
+ The stable version is available in source form at
+ github.com/moetunes/snapwm-stable
+.SH BUGS
+An issue can be raised on the relevant github repository or emailed to 
+.RS
+moetunes42 <at> gmail.com
+.RE
+.SH FILES
+ rc.conf
+ key.conf
+ apps.conf
+.SH SEE ALSO
+.B xinit
+(1), 
+.B startx
+(1)
