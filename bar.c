@@ -267,3 +267,20 @@ unsigned int wc_size(char *string) {
         return XTextWidth(font.font, string, num);
     }
 }
+
+void bar_rt_click() {
+    if(barrtclkarg.com[0] == 0) {
+        unsigned int i, j=0;
+        for(i=0;i<cmdcount;++i) {
+            if(strncmp("barrtclickcmd", cmds[i].name, 13) == 0) {
+                while(strncmp(cmds[i].list[j], "NULL", 4) != 0) {
+                    barrtclkarg.com[j] = cmds[i].list[j];
+                    ++j;
+                }
+                barrtclkarg.com[j] = NULL;
+            }
+        }
+    }
+    spawn(barrtclkarg);
+    return;
+}

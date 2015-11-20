@@ -186,9 +186,13 @@ void buttonpress(XEvent *e) {
 
     if(STATUS_BAR == 0) {
         if(sb_area == (ev->subwindow | ev->window)) {
-            Arg a = {.i = previous_desktop};
-            dowarp = 1;
-            change_desktop(a);
+            if(ev->button == Button3) {
+                bar_rt_click();
+            } else {
+                Arg a = {.i = previous_desktop};
+                dowarp = 1;
+                change_desktop(a);
+            }
             return;
         }
         for(i=0;i<DESKTOPS;++i)

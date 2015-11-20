@@ -23,8 +23,9 @@ All configuration is read from three files in ~/.config/snapwm/ and is reloadabl
 ###Modes
 -----
 
-It allows the "normal" method of tiling window managers(with the new window as the master)
-    and with the new window opened at the bottom of the stack(like dwm's attach_aside)
+It allows the "normal" method of tiling window managers with the new
+    window as the master or with the new window opened at the bottom
+    or the top of the stack.
 
  *There's vertical tiling mode:*
 
@@ -78,12 +79,10 @@ It allows the "normal" method of tiling window managers(with the new window as t
 ###Recent Changes
 --------------
 
-8/7/15
+21/11/15
 
-  * Useless gaps around the bar too
-  * A keyboard shortcut to float a window on top of tiled windows
-  * Match a window and float it from apps.conf
-
+  * Added man page.
+  * Right click the bar to run a command.
 
 
 ###Status
@@ -142,6 +141,9 @@ It allows the "normal" method of tiling window managers(with the new window as t
   * Plus some minor bug fixes(bugs? what bugs!)
   * SHOW_BAR in rc.conf now can be set for each desktop
   * Added option for useless gaps for the tiling modes
+  * Useless gaps around the bar too
+  * A keyboard shortcut to float a window on top of tiled windows
+  * Match a window and float it from apps.conf
 
 
 ###Installation

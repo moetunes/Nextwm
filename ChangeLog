@@ -1,11 +1,15 @@
+21/11/15
+  Added reserved CMD in key.conf, barrtclickcmd, for right clicking 
+  the bar to run a command
+
 16/11/15
- Added man page
+  Added man page
 
 13/11/15
- Change modifyer key ALTSuper to AltSuper for
-  consistentcy
- In rc.conf one value for defaultmode will set all
-  desktops to that mode
+  Change modifyer key ALTSuper to AltSuper for
+   consistentcy
+  In rc.conf one value for defaultmode will set all
+   desktops to that mode
 
 19/9/15
   No useless gaps in fullscreen mode

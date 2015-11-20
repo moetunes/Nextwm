@@ -123,6 +123,7 @@ typedef struct {
 
 // Functions
 static void add_window(Window win, int tw, client *cl, int x, int y, int w, int h);
+static void bar_rt_click();
 static void buttonpress(XEvent *e);
 static void buttonrelease(XEvent *e);
 static void change_desktop(const Arg arg);
@@ -223,6 +224,7 @@ static char winname[101];
 static Atom alphaatom, wm_delete_window, protos, *protocols, dockatom, typeatom;
 static XWindowAttributes attr;
 static XButtonEvent starter;
+static Arg barrtclkarg;
 
 // Desktop array
 static desktop desktops[12];
@@ -1050,7 +1052,8 @@ void terminate(const Arg arg) {
             a.com[j] = NULL;
             logger(msg);
             bool_quit = 1;
-            execvp((char*)a.com[0],(char**)a.com);
+            spawn(a);
+            //execvp((char*)a.com[0],(char**)a.com);
         }
     }
 }

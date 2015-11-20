@@ -70,7 +70,8 @@ are set in rc.conf and are updateable in the running window manager.
 current desktop selects the next window, on an unfocused desktop selects 
 that desktop, on the bar selects the last focused desktop. Using the 
 right mouse button on an unfocused desktop moves the focused window 
-on the current desktop to that desktop and selects that desktop.
+on the current desktop to that desktop and selects that desktop, on the 
+bar runs a set command.
  The text the user can display in the bar is set with xsetroot -name.
  An example would be:
   while true; do xsetroot -name "$(date)"; sleep 1; done
@@ -309,6 +310,9 @@ CMD xtermcmd;xterm;-bg;white;-fg;black;NULL;
 .RE
 A CMD should occur before any KEY uses the CMD name.
 
+There is a reserved CMD name to run a command when the bar is right 
+clicked, barrtclickcmd.
+
 There are two reserved CMD names, shutdowncmd and rebootcmd, to be used 
 with the terminate function. A call to the quit function will be performed 
 then the user supplied command to shutdown or reboot the system.
@@ -377,13 +381,13 @@ focus the next window.
 focus the previous window.
 
 .I resize_master [-? - ?]
-increase/decrease the master area in tiling modes or the width of 
+decrease/increase the master area in tiling modes or the width of 
 windows in stacking mode. Best used with two keyboard shortcuts. One 
 with a negative value and the other with a positive value. -10/10 are 
 a good starting point.
 
 .I resize_stack [-? - ?]
-increase/decrease the size of the first window in the stack in tiling 
+decrease/ increase the size of the first window in the stack in tiling 
 modes or the height of a window in stacking mode. Best used with two 
 keyboard shortcuts. One with a negative value and the other with a 
 positive value. -10/10 are a good starting point.
