@@ -486,12 +486,12 @@ void pop_window() {
         }
         tile();
     } else {
-        Window win = current->win;
+        Window win = (current == NULL) ? 0:current->win;
         focus->trans = 0;
         numwins += 1;
         current = focus;
         tile();
-        if(mode == 1) XUnmapWindow(dis, win);
+        if(mode == 1 && numwins > 1) XUnmapWindow(dis, win);
     }
     update_current();
 }
@@ -826,7 +826,7 @@ void update_current() {
                 if(c->order != i-1) continue;
                 if(c->trans == 1) {
                     if(mode == 1 || numwins == 1) XSetWindowBorderWidth(dis,c->win,bdw);
-                    XMapRaised(dis,c->win);
+                    if(mode != 4) XMapRaised(dis,c->win);
                 }
             }
 

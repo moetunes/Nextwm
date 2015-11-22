@@ -1,3 +1,6 @@
+23/11/15
+  Fix for popping a window back with one window in fullscreen mode
+
 22/11/15
   Fix for window not unmapping when client_to_desktop used
 
