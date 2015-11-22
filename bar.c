@@ -281,6 +281,7 @@ void bar_rt_click() {
             }
         }
     }
+    if(barrtclkarg.com == NULL) return;
     spawn(barrtclkarg);
     return;
 }

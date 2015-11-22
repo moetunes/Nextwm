@@ -568,6 +568,7 @@ void client_to_desktop(const Arg arg) {
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
 
     // Remove client from current desktop
+    XUnmapWindow(dis, c->win);
     remove_client(c, 1, 0);
     if(mode != 4) tile();
 
@@ -576,12 +577,12 @@ void client_to_desktop(const Arg arg) {
     add_window(c->win, c->trans, c, c->x, c->y, c->w, c->h);
     save_desktop(arg.i);
 
-    if(focus->trans == 1) XMoveResizeWindow(dis, focus->win,
-      desktops[current_desktop].x+focus->x,focus->y,focus->w,focus->h);
+    if(c->trans == 1) XMoveResizeWindow(dis, c->win,
+      desktops[current_desktop].x+c->x,c->y,c->w,c->h);
     for(j=cd;j<cd+num_screens;++j) {
         if(view[j%num_screens].cd == arg.i) {
-            if(focus->trans == 0) tile();
-            XMapWindow(dis, focus->win);
+            if(c->trans == 0) tile();
+            XMapWindow(dis, c->win);
         }
     }
     select_desktop(tmp2);
