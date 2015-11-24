@@ -78,6 +78,11 @@ struct desktop{
 };
 
 typedef struct {
+    Window win;
+    unsigned int numstuck;
+} Stuckd;
+
+typedef struct {
     int cd;
 } MonitorView;
 
@@ -162,7 +167,7 @@ static void pop_window();
 static void prev_win();
 static void propertynotify(XEvent *e);
 static void quit();
-static void remove_client(client *cl, unsigned int dr, unsigned int tw);
+static void remove_client(client *cl, unsigned int dr);
 static void read_apps_file();
 static void read_keys_file();
 static void read_rcfile();
@@ -181,6 +186,7 @@ static void spawn(const Arg arg);
 static void start();
 static void status_bar();
 static void status_text(char* sb_text);
+static void sticky_win(const Arg arg);
 static void swap_master();
 static void switch_mode(const Arg arg);
 static void terminate(const Arg arg);
@@ -188,6 +194,7 @@ static void tile();
 static void toggle_bar();
 static void unmapbar();
 static void unmapnotify(XEvent *e);    // Thunderbird's write window just unmaps...
+static void unsticky_win();
 static void update_bar();
 static void update_config();
 static void update_current();
@@ -203,7 +210,7 @@ static int get_value();
 static Display *dis;
 static unsigned int attachaside, bdw, bool_quit, clicktofocus, current_desktop, doresize, dowarp, cstack;
 static unsigned int screen, followmouse, mode, msize, previous_desktop, DESKTOPS, STATUS_BAR, numwins, numorder;
-static unsigned int auto_mode, auto_num, shutting_down, default_desk;
+static unsigned int auto_mode, auto_num, shutting_down, default_desk, numstuck;
 static int num_screens, growth, sh, sw, master_size, nmaster, randr_ev;
 static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange, lessbar;
@@ -228,6 +235,7 @@ static Arg barrtclkarg;
 
 // Desktop array
 static desktop desktops[12];
+static Stuckd stuck[12];
 static MonitorView view[5];
 static Barwin sb_bar[12];
 static Theme theme[10];
@@ -321,7 +329,7 @@ void add_window(Window win, int tw, client *cl, int x, int y, int w, int h) {
         XSelectInput(dis, c->win, PropertyChangeMask);
 }
 
-void remove_client(client *cl, unsigned int dr, unsigned int tw) {
+void remove_client(client *cl, unsigned int dr) {
     client *t;
 
     if(cl->prev == NULL && cl->next == NULL) {
@@ -496,6 +504,65 @@ void pop_window() {
     update_current();
 }
 
+void sticky_win(const Arg arg) {
+    if((arg.i-1) == current_desktop || focus == NULL) return;
+    unsigned int tmp = current_desktop, i, j, stickied = 0;
+
+    client *t, *c = focus;
+    select_desktop(arg.i - 1);
+    for(t=head;t;t=t->next)
+        if(t->win == c->win) stickied = 1;
+    if(stickied == 1) {
+        select_desktop(tmp);
+        return;
+    } else {
+        stickied = 0;
+        for(i=0;i<numstuck;++i)
+            if(c->win == stuck[i].win) {
+                stickied = 1;
+                stuck[i].numstuck += 1;
+            }
+        if(stickied == 0) {
+            stuck[numstuck].win = c->win;
+            stuck[numstuck].numstuck = 1;
+            numstuck += 1;
+        }
+        add_window(c->win, c->trans, NULL, c->x, c->y, c->w, c->h);
+        for(j=0;j<num_screens;++j)
+            if(current_desktop == view[j].cd)
+                if(mode != 4) tile();
+        select_desktop(tmp);
+        if(STATUS_BAR == 0) update_bar();
+    }
+}
+
+void unsticky_win() {
+    if(focus == NULL) return;
+    unsigned int i, j, stickied = 0;
+    for(i=0;i<numstuck;++i) {
+        if(stuck[i].win == focus->win) {
+            stuck[i].numstuck -= 1;
+            if(stuck[i].numstuck == 0) {
+                for(j=0;j+i<numstuck-1;++j) {
+                    stuck[j].win = stuck[j+1].win;
+                    stuck[j].numstuck = stuck[j+1].numstuck;
+                }
+                numstuck -= 1;
+            }
+            stickied = 1;
+        }
+    }
+    if(stickied == 0) return;
+    client *c = focus;
+    XUnmapWindow(dis, c->win);
+    remove_client(c, 0);
+    if(focus != NULL) {
+        if(mode != 4) tile();
+        update_current();
+    }
+    if(STATUS_BAR == 0) update_bar();
+}
+
 /* **************************** Desktop Management ************************************* */
 
 void change_desktop(const Arg arg) {
@@ -566,29 +633,39 @@ void client_to_desktop(const Arg arg) {
 
     client *c = focus;
     unsigned int tmp2 = current_desktop, j, cd = desktops[current_desktop].screen;
+    unsigned int stickied = 0;
+
+    select_desktop(arg.i);
+    for(j=0;j<numstuck;++j)
+        if(c->win == stuck[j].win)
+            stickied = 1;
+    select_desktop(tmp2);
 
     // Remove client from current desktop
-    XUnmapWindow(dis, c->win);
-    remove_client(c, 1, 0);
-    if(mode != 4) tile();
+    if(stickied == 1) unsticky_win();
+    else {
+        XUnmapWindow(dis, c->win);
+        remove_client(c, 1);
+        if(mode != 4) tile();
 
-    // Add client to desktop
-    select_desktop(arg.i);
-    add_window(c->win, c->trans, c, c->x, c->y, c->w, c->h);
-    save_desktop(arg.i);
+        // Add client to desktop
+        select_desktop(arg.i);
+        add_window(c->win, c->trans, c, c->x, c->y, c->w, c->h);
+        save_desktop(arg.i);
 
-    if(c->trans == 1) XMoveResizeWindow(dis, c->win,
-      desktops[current_desktop].x+c->x,c->y,c->w,c->h);
-    for(j=cd;j<cd+num_screens;++j) {
-        if(view[j%num_screens].cd == arg.i) {
-            if(c->trans == 0) tile();
-            XMapWindow(dis, c->win);
+        if(c->trans == 1) XMoveResizeWindow(dis, c->win,
+          desktops[current_desktop].x+c->x,c->y,c->w,c->h);
+        for(j=cd;j<cd+num_screens;++j) {
+            if(view[j%num_screens].cd == arg.i) {
+                if(c->trans == 0) tile();
+                XMapWindow(dis, c->win);
+            }
         }
-    }
-    select_desktop(tmp2);
-    update_current();
+        select_desktop(tmp2);
+        update_current();
 
-    if(STATUS_BAR == 0) update_bar();
+        if(STATUS_BAR == 0) update_bar();
+    }
 }
 
 void save_desktop(int i) {
@@ -679,6 +756,9 @@ void tile() {
             case 1: /* Fullscreen */
                 XMoveResizeWindow(dis,current->win,scrx,scry+y,sw+bdw,sh+bdw);
                 XMapWindow(dis, current->win);
+                for(c=head;c;c=c->next)
+                    if(c->trans == 1)
+                        XMoveResizeWindow(dis,c->win,scrx+c->x,scry+c->y,c->w,c->h);
                 break;
             case 2: /* Horizontal */
             	// Master window
@@ -969,10 +1049,10 @@ int check_dock(Window w) {
 
 void kill_client() {
     if(head == NULL) return;
-    unsigned int tr = 0; Window w = focus->win;
+    Window w = focus->win;
     kill_client_now(w);
     if(w) return;
-    remove_client(focus, 0, tr);
+    remove_client(focus, 0);
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -1175,7 +1255,7 @@ void setup() {
     DESKTOPS = 4;
     topbar = followmouse = top_stack = mode = cstack = default_desk = 0;
     LA_WINDOWNAME = wnamebg = dowarp = doresize = nmaster = has_bar = 0;
-    auto_mode = auto_num = shutting_down = 0;
+    auto_mode = auto_num = shutting_down = numstuck = 0;
     msize = 55;
     ufalpha = 75; baralpha = 90;
     bdw = 2;

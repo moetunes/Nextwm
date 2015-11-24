@@ -125,7 +125,7 @@ void maprequest(XEvent *e) {
 }
 
 void destroynotify(XEvent *e) {
-    unsigned int i = 0, tmp = current_desktop, foundit = 0;
+    unsigned int i, j, k, tmp = current_desktop;
     client *c;
     XDestroyWindowEvent *ev = &e->xdestroywindow;
 
@@ -134,18 +134,22 @@ void destroynotify(XEvent *e) {
         select_desktop(i%DESKTOPS);
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
-                remove_client(c, 0, 0);
-                foundit = 1;
+                remove_client(c, 0);
+                if(mode != 4) tile();
+                if(current_desktop == tmp) update_current();
+                for(j=0;j<numstuck;++j)
+                    if(stuck[j].win == c->win) {
+                        stuck[j].numstuck -= 1;
+                        if(stuck[j].numstuck == 0)
+                            for(k=0;k+j<numstuck-1;++k) {
+                                stuck[k].win = stuck[k+1].win;
+                                stuck[k].numstuck = stuck[k+1].numstuck;
+                            }
+                            numstuck -= 1;
+                    }
                 break;
             }
-        if(foundit == 1) break;
     }
-    if(foundit == 1)
-        for(i=0;i<num_screens;++i)
-            if(current_desktop == view[i].cd) {
-                if(mode != 4) tile();
-            }
-    if(foundit == 1 && current_desktop == tmp) update_current();
     select_desktop(tmp);
     if(STATUS_BAR == 0) update_bar();
 }
@@ -360,7 +364,7 @@ void unmapnotify(XEvent *e) { // for thunderbird's write window and maybe others
     if(ev->send_event == 1) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
-                remove_client(c, 1, 0);
+                remove_client(c, 1);
                 if(mode != 4) tile();
                 update_current();
                 if(STATUS_BAR == 0) update_bar();

@@ -50,7 +50,8 @@ some can be changed with keyboard shortcuts. Windows have a border but
 no title bar or buttons. The width and colour for focused 
 and unfocused window borders is set in rc.conf. With keyboard shortcuts 
 windows can be selected, moved, resized, sent to other desktops, 
-followed to other desktops, closed. With multiple monitors
+followed to other desktops, closed or stickied on multiple desktops. 
+With multiple monitors
 .I snapwm
 will place each desktop in order on the next monitor, starting again 
 from the first monitor when the number of monitors is reached. An example 
@@ -425,6 +426,14 @@ left ? pixels.
 .I move_right [?]
 in stacking mode or with a popped window move the focused window to the 
 right ? pixels.
+
+.I sticky_win [1-12]
+have the focused window show on another desktop as well. Must be given 
+the number of the desktop to stick it on.
+
+.I unsticky_win
+if the focused window is stickied unsticky it and remove it from the 
+current desktop. Does not affect other versions of the same window.
 
 .I swap_master
 swap the focused window in the stack with the master window or if the 
