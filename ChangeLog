@@ -1,3 +1,6 @@
+26/11/15
+  Fix for destroynotify mapping window from another desktop
+
 24/11/15
   Added option to sticky the focused window on unfocused desktops
    with a keyboard shortcut

@@ -135,7 +135,9 @@ void destroynotify(XEvent *e) {
         for(c=head;c;c=c->next)
             if(ev->window == c->win) {
                 remove_client(c, 0);
-                if(mode != 4) tile();
+                for(j=0;j<num_screens;++j)
+                    if(current_desktop == view[j].cd)
+                        if(mode != 4) tile();
                 if(current_desktop == tmp) update_current();
                 for(j=0;j<numstuck;++j)
                     if(stuck[j].win == c->win) {
