@@ -45,6 +45,7 @@ void read_keys_file() {
                 if(get_value() == 0) {
                     if(strcmp(dummy, "kill_client") == 0) keys[keycount].myfunction = kill_client;
                     else if(strcmp(dummy, "last_desktop") == 0) keys[keycount].myfunction = last_desktop;
+                    else if(strcmp(dummy, "last_win") == 0) keys[keycount].myfunction = last_win;
                     else if(strcmp(dummy, "change_desktop") == 0) {
                         keys[keycount].myfunction = change_desktop;
                         get_value();

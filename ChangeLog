@@ -1,3 +1,6 @@
+8/12/15
+  Added function last_win() to focus the last focused window
+
 26/11/15
   Fix for destroynotify mapping window from another desktop
 

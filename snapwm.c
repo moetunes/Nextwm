@@ -151,6 +151,7 @@ static void keypress(XEvent *e);
 static void kill_client();
 static void kill_client_now(Window w);
 static void last_desktop();
+static void last_win();
 static void leavenotify(XEvent *e);
 static void logger(const char* e);
 static void mapbar();
@@ -406,6 +407,17 @@ void prev_win() {
         if(d->trans == 0 && focus->trans == 0) XUnmapWindow(dis, d->win);
     }
     update_current();
+}
+
+void last_win() {
+    client *c;
+    for(c=head;c;c=c->next)
+        if(c->order == 1) {
+            if(c->trans == 0) focus = current = c;
+            else focus = c;
+            update_current();
+            return;
+        }
 }
 
 void move_down(const Arg arg) {
