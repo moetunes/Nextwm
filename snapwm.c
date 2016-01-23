@@ -770,7 +770,7 @@ void tile() {
                 XMapWindow(dis, current->win);
                 for(c=head;c;c=c->next)
                     if(c->trans == 1)
-                        XMoveResizeWindow(dis,c->win,scrx+c->x,scry+c->y,c->w,c->h);
+                        XRaiseWindow(dis,c->win);
                 break;
             case 2: /* Horizontal */
             	// Master window

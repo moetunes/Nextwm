@@ -49,17 +49,8 @@ void maprequest(XEvent *e) {
     unsigned int i=0, j=0, tmp = current_desktop, tmp2, move = 0;
     save_desktop(tmp);
     Window trans = None; unsigned int tranny = 0;
-    if (XGetTransientForHint(dis, ev->window, &trans) && trans != None) {
+    if (XGetTransientForHint(dis, ev->window, &trans) && trans != None)
         tranny = 1;
-        for(i=current_desktop;i<current_desktop+DESKTOPS;++i) {
-            select_desktop(i%DESKTOPS);
-            for(c=head;c;c=c->next)
-                if(c->win == trans) {
-                    j = 1; break;
-                }
-            if(j == 1) break;
-        }
-    }
 
     getwindowname(ev->window, 1);
     XClassHint ch = {0};
