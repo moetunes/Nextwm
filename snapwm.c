@@ -769,8 +769,10 @@ void tile() {
                 XMoveResizeWindow(dis,current->win,scrx,scry+y,sw+bdw,sh+bdw);
                 XMapWindow(dis, current->win);
                 for(c=head;c;c=c->next)
-                    if(c->trans == 1)
-                        XRaiseWindow(dis,c->win);
+                    if(c->trans == 1) {
+                        XMoveResizeWindow(dis,c->win,scrx+c->x,scry+c->y,c->w,c->h);
+                        XMapRaised(dis, c->win);
+                    }
                 break;
             case 2: /* Horizontal */
             	// Master window
@@ -918,7 +920,7 @@ void update_current() {
                 if(c->order != i-1) continue;
                 if(c->trans == 1) {
                     if(mode == 1 || numwins == 1) XSetWindowBorderWidth(dis,c->win,bdw);
-                    if(mode != 4) XMapRaised(dis,c->win);
+                    if(mode != 4) XRaiseWindow(dis,c->win);
                 }
             }
 
