@@ -1,3 +1,7 @@
+13/3/16
+  Fix for transient windows hiding on unfocused desktop when
+   selected with the mouse
+
 27/1/16
   Fix for some transient windows being hidden in fullscreen mode
 

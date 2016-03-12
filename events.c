@@ -220,7 +220,7 @@ void buttonpress(XEvent *e) {
             select_desktop(view[i%num_screens].cd);
             for(c=head;c;c=c->next)
                 if(ev->window == c->win) {
-                    if(cd != current_desktop || c != focus) {
+                    if((cd == current_desktop && c != focus) || cd != current_desktop) {
                         foundit = 1;
                         if(c->trans == 0) focus = current = c;
                         else focus = c;
