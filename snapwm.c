@@ -591,6 +591,11 @@ void change_desktop(const Arg arg) {
     // Save current "properties"
     save_desktop(current_desktop);
     previous_desktop = current_desktop;
+    if(head != NULL) {
+        XSetWindowBorder(dis,focus->win,theme[1].wincolor);
+        if(clicktofocus == 0)
+            XGrabButton(dis, AnyButton, AnyModifier, focus->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+    }
 
     if(arg.i != view[next_view].cd) {
         select_desktop(view[next_view].cd);
@@ -607,9 +612,6 @@ void change_desktop(const Arg arg) {
     if(head != NULL) {
         for(c=head;c;c=c->next)
             if(c->trans == 1) {
-                XMoveResizeWindow(dis,c->win,desktops[current_desktop].x+c->x,
-                      desktops[current_desktop].y+c->y,c->w,c->h);
-
                 XMapWindow(dis,c->win);
             } else if(mode != 1) XMapWindow(dis,c->win);
         tile();
@@ -875,23 +877,9 @@ void tile() {
 }
 
 void update_current() {
-    client *c; unsigned int border, tmp = current_desktop, i;
-
-    save_desktop(current_desktop);
-    for(i=0;i<num_screens;++i) {
-        if(view[i].cd != current_desktop) {
-            select_desktop(view[i].cd);
-            if(head != NULL) {
-                XSetInputFocus(dis,root,RevertToParent,CurrentTime);
-                XSetWindowBorder(dis,focus->win,theme[1].wincolor);
-                if(clicktofocus == 0)
-                    XGrabButton(dis, AnyButton, AnyModifier, focus->win, True, ButtonPressMask|ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
-            }
-        }
-    }
-    select_desktop(tmp);
-
     if(head == NULL) return;
+
+    client *c; unsigned int border, i;
 
     border = ((numwins == 1 && mode != 4) || (mode == 1)) ? 0 : bdw;
     for(c=head;c;c=c->next) {

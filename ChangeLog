@@ -1,3 +1,7 @@
+14/3/16
+  Fix for transient windows disappearing when changing desktops
+   with multiple monitors
+
 13/3/16
   Fix for transient windows hiding on unfocused desktop when
    selected with the mouse

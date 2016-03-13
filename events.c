@@ -106,8 +106,7 @@ void maprequest(XEvent *e) {
     if(mode == 1 && numwins > 1 && move == 0) XUnmapWindow(dis, w);
     for(i=0;i<num_screens;++i)
         if(current_desktop == view[i].cd) {
-            if(mode != 1 ) XMapWindow(dis,ev->window);
-            if(mode == 1 && tranny == 1) XMapWindow(dis,ev->window);
+            if(tranny == 1 || mode != 1 ) XMapWindow(dis,ev->window);
             tile();
         }
     if(move == 0) select_desktop(tmp);
