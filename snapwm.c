@@ -613,6 +613,7 @@ void change_desktop(const Arg arg) {
         for(c=head;c;c=c->next)
             if(c->trans == 1) {
                 XMapWindow(dis,c->win);
+                XMoveResizeWindow(dis,c->win,desktops[current_desktop].x+c->x,desktops[current_desktop].y+c->y,c->w,c->h);
             } else if(mode != 1) XMapWindow(dis,c->win);
         tile();
     }

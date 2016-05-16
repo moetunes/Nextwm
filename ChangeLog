@@ -1,3 +1,6 @@
+17/5/16
+  Fix for popped window size on desktop change
+
 14/3/16
   Fix for transient windows disappearing when changing desktops
    with multiple monitors
