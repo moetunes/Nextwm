@@ -1,4 +1,4 @@
-// readrc.c [ 0.8.9 ]
+// readrc.c [ 0.9.0 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
