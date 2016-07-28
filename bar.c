@@ -31,6 +31,9 @@ void setup_status_bar() {
 
 void status_bar() {
     unsigned int i, y;
+    XSetWindowAttributes setattr;
+    setattr.override_redirect = True;
+    unsigned long vmask = CWOverrideRedirect;
 
     y = (topbar == 0) ? 0+ug_bar : desktops[barmon].h+bdw-ug_bar;
     sb_width = ug_bar;
@@ -39,6 +42,7 @@ void status_bar() {
                                             sb_bar[i].width-2,sb_height,2,theme[3].barcolor,theme[0].barcolor);
 
         XSelectInput(dis, sb_bar[i].sb_win, ButtonPressMask|EnterWindowMask|LeaveWindowMask);
+        XChangeWindowAttributes(dis, sb_bar[i].sb_win, vmask, &setattr);
         XMapWindow(dis, sb_bar[i].sb_win);
         sb_width += sb_bar[i].width;
     }
@@ -46,6 +50,7 @@ void status_bar() {
              desktops[barmon].w-lessbar-(sb_desks+2)-2*ug_bar,sb_height,2,theme[3].barcolor,theme[1].barcolor);
 
     XSelectInput(dis, sb_area, ButtonPressMask|ExposureMask|EnterWindowMask|LeaveWindowMask);
+    XChangeWindowAttributes(dis, sb_area, vmask, &setattr);
     XMapWindow(dis, sb_area);
     XGetWindowAttributes(dis, sb_area, &attr);
     total_w = attr.width;
@@ -99,7 +104,8 @@ void getwindowname(Window win, unsigned int stext) {
     char *win_name;
 
     if(XFetchName(dis, win, &win_name) != 0) strncpy(winname, win_name, 100);
-    else winname[0] = '\0';
+    else strncpy(winname, "GETWINDOWNAME FAILED", 21);
+    //else winname[0] = '\0';
     if(win_name) XFree(win_name);
     if(stext == 0) status_text(winname);
 }

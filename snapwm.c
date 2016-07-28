@@ -133,6 +133,7 @@ static void buttonpress(XEvent *e);
 static void buttonrelease(XEvent *e);
 static void change_desktop(const Arg arg);
 static int check_dock(Window w);
+static void check_start();
 static void client_to_desktop(const Arg arg);
 static void configurerequest(XEvent *e);
 static void destroynotify(XEvent *e);
@@ -156,6 +157,7 @@ static void leavenotify(XEvent *e);
 static void logger(const char* e);
 static void mapbar();
 static void maprequest(XEvent *e);
+static void map_window(Window neww);
 static void motionnotify(XEvent *e);
 static void more_master(const Arg arg);
 static void move_down(const Arg arg);
@@ -217,7 +219,7 @@ static unsigned int sb_desks;        // width of the desktop switcher
 static unsigned int sb_height, sb_width, screen, show_bar, has_bar, wnamebg, barmon, barmonchange, lessbar;
 static unsigned int showopen;        // whether the desktop switcher shows number of open windows
 static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, tcount, LA_WINDOWNAME;
-static unsigned int ug_out, ug_in, ug_bar;
+static unsigned int minww, minwh, ug_out, ug_in, ug_bar;
 static int ufalpha, baralpha;
 static unsigned long opacity, baropacity;
 static int xerror(Display *dis, XErrorEvent *ee);
@@ -229,7 +231,7 @@ static client *head, *current, *focus;
 static char font_list[256], buffer[256], dummy[256];
 static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
 static char winname[101];
-static Atom alphaatom, wm_delete_window, protos, *protocols, dockatom, typeatom;
+static Atom alphaatom, wm_delete_window, wm_state, protos, *protocols, dockatom, typeatom;
 static XWindowAttributes attr;
 static XButtonEvent starter;
 static Arg barrtclkarg;
@@ -1146,6 +1148,20 @@ void logger(const char* e) {
     fflush(stderr);
 }
 
+void check_start() {
+    unsigned int i, num;
+    Window w1, *tree = NULL;
+
+    if(XQueryTree(dis, root, &w1, &w1, &tree, &num) == 0) return;
+    for(i=0;i<num;i++) {
+        if(XGetWindowAttributes(dis, tree[i], &attr) == 0) continue;
+        if(attr.map_state != IsViewable && attr.map_state != IsUnmapped) continue;
+        if(attr.class != InputOnly) map_window(tree[i]);
+    }
+
+    if(tree) XFree(tree);
+}
+
 void plugnplay(XEvent *e) {
     client *c; unsigned int tmp = current_desktop;
     XRRUpdateConfiguration(e);
@@ -1190,6 +1206,7 @@ void init_start() {
     alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
     protos = XInternAtom(dis, "WM_PROTOCOLS", False);
+    wm_state = XInternAtom(dis, "WM_STATE", False);
     typeatom = XInternAtom(dis, "_NET_WM_WINDOW_TYPE", False);
     dockatom = XInternAtom(dis, "_NET_WM_WINDOW_TYPE_DOCK", False);
     // To catch maprequest and destroynotify (if other wm running)
@@ -1265,7 +1282,7 @@ void setup() {
     resizemovekey = Mod1Mask;
     windownamelength = 35;
     show_bar = STATUS_BAR = barmon = barmonchange = lessbar = 0;
-    ug_out = ug_in = ug_bar = 0;
+    minww = minwh = ug_out = ug_in = ug_bar = 0;
 
     char *loc;
     loc = setlocale(LC_ALL, "");
@@ -1302,6 +1319,7 @@ void setup() {
         change_desktop(a);
     }
     init_start();
+    check_start();
     update_current();
     setbaralpha();
 

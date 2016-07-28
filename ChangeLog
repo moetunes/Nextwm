@@ -1,3 +1,8 @@
+28/7/16
+  Added options in rc.conf MINW_W and MINW_H to set the
+   minumum window size in stacking mode
+  Added check at snapwm start for existing windows.
+
 1/7/16
   Quit the window manager if no key file found.
 

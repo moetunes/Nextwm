@@ -76,7 +76,7 @@ void read_rcfile() {
                 }
             } else if(strstr(buffer, "BAR_ALPHA" ) != NULL) {
                 k = 10;
-                if(get_value() <1) {
+                if(get_value() == 0) {
                     baralpha = strtol(dummy, NULL, 10);
                     if(baralpha < 1 || baralpha > 100)
                         baralpha = 100;
@@ -123,11 +123,11 @@ void read_rcfile() {
                         clicktofocus = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "AUTO_NUM_OPEN" ) != NULL) {
                 k = 14;
-                if(get_value() <1)
+                if(get_value() == 0)
                     auto_num = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "AUTO_MODE" ) != NULL) {
                 k = 10;
-                if(get_value() <1) {
+                if(get_value() == 0) {
                     k = strtol(dummy, NULL, 10);
                     if(k >= 0 && k < 5)
                         auto_mode = k;
@@ -150,17 +150,25 @@ void read_rcfile() {
                         else desktops[i].nmaster = 0;
                     }
                 }
+            } else if(strstr(buffer, "MINW_H" ) != NULL) {
+                k = 7;
+                if(get_value() == 0)
+                    minww = strtol(dummy, NULL, 10);
+            } else if(strstr(buffer, "MINW_W" ) != NULL) {
+                k = 7;
+                if(get_value() == 0)
+                    minwh = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "UG_OUT" ) != NULL) {
                 k = 7;
-                if(get_value() <1)
+                if(get_value() == 0)
                     ug_out = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "UG_IN" ) != NULL) {
                 k = 6;
-                if(get_value() <1)
+                if(get_value() == 0)
                     ug_in = strtol(dummy, NULL, 10);
             } else if(strstr(buffer, "UG_BAR" ) != NULL) {
                 k = 6;
-                if(get_value() <1)
+                if(get_value() == 0)
                     ug_bar = strtol(dummy, NULL, 10);
             } else if(STATUS_BAR == 0) {
                 if(strstr(buffer, "SWITCHERTHEME" ) != NULL) {
