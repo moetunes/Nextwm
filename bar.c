@@ -104,8 +104,7 @@ void getwindowname(Window win, unsigned int stext) {
     char *win_name;
 
     if(XFetchName(dis, win, &win_name) != 0) strncpy(winname, win_name, 100);
-    else strncpy(winname, "GETWINDOWNAME FAILED", 21);
-    //else winname[0] = '\0';
+    else winname[0] = '\0';
     if(win_name) XFree(win_name);
     if(stext == 0) status_text(winname);
 }
