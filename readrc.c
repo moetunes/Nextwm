@@ -372,6 +372,7 @@ void update_config() {
             XSetWindowBorder(dis,sb_area,theme[3].barcolor);
             XSetWindowBackground(dis, sb_area, theme[1].barcolor);
             XMoveResizeWindow(dis, sb_area, desktops[barmon].x+sb_width, y, desktops[barmon].w-(sb_desks+4)+bdw-lessbar-2*ug_bar,sb_height);
+            XWindowAttributes attr;
             XGetWindowAttributes(dis, sb_area, &attr);
             total_w = attr.width;
             if(area_sb != 0) {

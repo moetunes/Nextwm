@@ -32,6 +32,7 @@ void maprequest(XEvent *e) {
 }
 
 void map_window(Window neww) {
+    XWindowAttributes attr;
     if(XGetWindowAttributes(dis, neww, &attr) == 0) return;
     if(attr.override_redirect == True) return;
     if(check_dock(neww) == 0) {
@@ -263,7 +264,7 @@ void buttonpress(XEvent *e) {
     XGrabPointer(dis, ev->subwindow, True,
         PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
         GrabModeAsync, None, None, CurrentTime);
-    XGetWindowAttributes(dis, ev->subwindow, &attr);
+    XGetWindowAttributes(dis, ev->subwindow, &mattr);
     starter = e->xbutton; doresize = 1;
 }
 
@@ -286,14 +287,15 @@ void motionnotify(XEvent *e) {
     int xdiff = ev->x_root - starter.x_root;
     int ydiff = ev->y_root - starter.y_root;
     XMoveResizeWindow(dis, ev->window,
-        attr.x + (starter.button==1 ? xdiff : 0),
-        attr.y + (starter.button==1 ? ydiff : 0),
-        MAX(1, attr.width + (starter.button==3 ? xdiff : 0)),
-        MAX(1, attr.height + (starter.button==3 ? ydiff : 0)));
+        mattr.x + (starter.button==1 ? xdiff : 0),
+        mattr.y + (starter.button==1 ? ydiff : 0),
+        MAX(1, mattr.width + (starter.button==3 ? xdiff : 0)),
+        MAX(1, mattr.height + (starter.button==3 ? ydiff : 0)));
 }
 
 void buttonrelease(XEvent *e) {
     client *c;
+    XWindowAttributes attr;
     XButtonEvent *ev = &e->xbutton;
 
     XUngrabPointer(dis, CurrentTime);

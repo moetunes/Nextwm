@@ -136,6 +136,7 @@ static int check_dock(Window w);
 static void check_start();
 static void client_to_desktop(const Arg arg);
 static void configurerequest(XEvent *e);
+static void cull_windows(Window *windows, unsigned int cnt);
 static void destroynotify(XEvent *e);
 static void draw_desk(Window win, unsigned int barcolor, unsigned int gc, unsigned int x, char *string, unsigned int len);
 static void draw_text(Window win, unsigned int gc, unsigned int x, char *string, unsigned int len);
@@ -231,8 +232,8 @@ static client *head, *current, *focus;
 static char font_list[256], buffer[256], dummy[256];
 static char RC_FILE[100], KEY_FILE[100], APPS_FILE[100];
 static char winname[101];
-static Atom alphaatom, wm_delete_window, wm_state, protos, *protocols, dockatom, typeatom;
-static XWindowAttributes attr;
+static Atom alphaatom, wm_delete_window, protos, *protocols, dockatom, typeatom;
+static XWindowAttributes mattr; // For motionnotify events
 static XButtonEvent starter;
 static Arg barrtclkarg;
 
@@ -1023,6 +1024,7 @@ void grabkeys() {
 void warp_pointer() {
     // Move cursor to the center of the current window
     if(followmouse != 0) return;
+    XWindowAttributes attr;
     if(dowarp < 1 && current != NULL) {
         XGetWindowAttributes(dis, current->win, &attr);
         XWarpPointer(dis, None, current->win, 0, 0, 0, 0, attr.width/2, attr.height/2);
@@ -1046,7 +1048,7 @@ int check_dock(Window w) {
             for(j=0; j<count; j++)
                 if(type[j] == dockatom) ret = 0;
         }
-        XFree(temp);
+        if(temp) XFree(temp);
     }
     return ret;
 }
@@ -1056,7 +1058,7 @@ void kill_client() {
     Window w = focus->win;
     kill_client_now(w);
     if(w) return;
-    remove_client(focus, 0);
+    if(focus != NULL) remove_client(focus, 0);
     update_current();
     if(STATUS_BAR == 0) update_bar();
 }
@@ -1078,7 +1080,7 @@ void kill_client_now(Window w) {
             }
         }
     } else XKillClient(dis, w);
-    XFree(protocols);
+    if(protocols) XFree(protocols);
 }
 
 void quit() {
@@ -1148,15 +1150,46 @@ void logger(const char* e) {
     fflush(stderr);
 }
 
+void cull_windows(Window *windows, unsigned int cnt) {
+  unsigned int i, j;
+  XWindowAttributes attr;
+
+  for(i=0;i<cnt;++i) {
+      if(XGetWindowAttributes(dis, windows[i], &attr) == 0) {
+          windows[i] = None;
+          continue;
+      }
+      if((attr.map_state != IsViewable && attr.map_state != IsUnmapped) ||
+              attr.override_redirect == True || attr.class == InputOnly){
+          windows[i] = None;
+          continue;
+      }
+
+      XWMHints *wmhints = XGetWMHints(dis, windows[i]);
+      if (wmhints) {
+          if (wmhints->flags & IconWindowHint) {
+              if(windows[i] != wmhints->icon_window) {
+                  for(j=0;j<cnt;++j) {
+                      if(windows[j] == wmhints->icon_window)
+                          windows[j] = None;
+                  }
+              }
+          }
+          XFree(wmhints);
+      }
+  }
+}
+
 void check_start() {
     unsigned int i, num;
     Window w1, *tree = NULL;
 
     if(XQueryTree(dis, root, &w1, &w1, &tree, &num) == 0) return;
-    for(i=0;i<num;i++) {
-        if(XGetWindowAttributes(dis, tree[i], &attr) == 0) continue;
-        if(attr.map_state != IsViewable && attr.map_state != IsUnmapped) continue;
-        if(attr.class != InputOnly) map_window(tree[i]);
+    cull_windows(tree, num);
+    for(i=num;i>0;--i) {
+        if(tree[i-1] != None)
+            XUnmapWindow(dis, tree[i]);
+            map_window(tree[i-1]);
     }
 
     if(tree) XFree(tree);
@@ -1206,7 +1239,6 @@ void init_start() {
     alphaatom = XInternAtom(dis, "_NET_WM_WINDOW_OPACITY", False);
     wm_delete_window = XInternAtom(dis, "WM_DELETE_WINDOW", False);
     protos = XInternAtom(dis, "WM_PROTOCOLS", False);
-    wm_state = XInternAtom(dis, "WM_STATE", False);
     typeatom = XInternAtom(dis, "_NET_WM_WINDOW_TYPE", False);
     dockatom = XInternAtom(dis, "_NET_WM_WINDOW_TYPE_DOCK", False);
     // To catch maprequest and destroynotify (if other wm running)

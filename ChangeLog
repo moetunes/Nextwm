@@ -1,3 +1,6 @@
+1/8/16
+  Dont map icon windows on starts
+
 28/7/16
   Added options in rc.conf MINW_W and MINW_H to set the
    minumum window size in stacking mode

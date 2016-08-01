@@ -52,6 +52,7 @@ void status_bar() {
     XSelectInput(dis, sb_area, ButtonPressMask|ExposureMask|EnterWindowMask|LeaveWindowMask);
     XChangeWindowAttributes(dis, sb_area, vmask, &setattr);
     XMapWindow(dis, sb_area);
+    XWindowAttributes attr;
     XGetWindowAttributes(dis, sb_area, &attr);
     total_w = attr.width;
     area_sb = XCreatePixmap(dis, root, total_w, sb_height, DefaultDepth(dis, screen));
@@ -203,7 +204,7 @@ void update_output(unsigned int messg) {
         text_length += 1;
         output[text_length] = '\0';
     }
-    XFree(win_name);
+    if(win_name) XFree(win_name);
 
     for(n=0;n<text_length;++n) {
         while(output[n] == '&') {
