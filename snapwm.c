@@ -1190,7 +1190,6 @@ void check_start() {
         if(tree[i-1] != None) {
             XUnmapWindow(dis, tree[i]);
             map_window(tree[i-1]);
-            fprintf(stderr, ":: %s\n", winname);
         }
     }
 
