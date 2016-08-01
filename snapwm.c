@@ -1187,9 +1187,11 @@ void check_start() {
     if(XQueryTree(dis, root, &w1, &w1, &tree, &num) == 0) return;
     cull_windows(tree, num);
     for(i=num;i>0;--i) {
-        if(tree[i-1] != None)
+        if(tree[i-1] != None) {
             XUnmapWindow(dis, tree[i]);
             map_window(tree[i-1]);
+            fprintf(stderr, ":: %s\n", winname);
+        }
     }
 
     if(tree) XFree(tree);
