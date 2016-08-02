@@ -280,7 +280,9 @@ void add_window(Window win, int tw, client *cl, int x, int y, int w, int h) {
             logger("\033[0;31mError calloc!", "");
             exit(1);
         }
-        c->x = x;
+        if(desktops[current_desktop].x > 0 && x > desktops[current_desktop].x)
+            c->x = x - desktops[current_desktop].x;
+        else c->x = x;
         if(topbar == 0 && y < sb_height+4+bdw+ug_bar) c->y = sb_height+4+bdw+ug_bar;
         else c->y = y;
         c->w = w;
@@ -618,7 +620,7 @@ void change_desktop(const Arg arg) {
     if(head != NULL) {
         for(c=head;c;c=c->next)
             if(c->trans == 1) {
-                XMoveResizeWindow(dis,c->win,c->x,c->y,c->w,c->h);
+                XMoveResizeWindow(dis,c->win,desktops[current_desktop].x+c->x,c->y,c->w,c->h);
             }
         tile();
     }

@@ -308,8 +308,7 @@ void buttonrelease(XEvent *e) {
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XGetWindowAttributes(dis, c->win, &attr);
-            if(c->trans == 1) c->x = attr.x;
-            else c->x = attr.x - desktops[current_desktop].x;
+            c->x = attr.x - desktops[current_desktop].x;
             c->y = attr.y;
             c->w = attr.width;
             c->h = attr.height; return;
