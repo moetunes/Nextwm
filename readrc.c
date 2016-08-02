@@ -1,4 +1,4 @@
-// readrc.c [ 0.9.0 ]
+// readrc.c [ 0.9.1 ]
 
 unsigned int i, k=0, c=0;
 int j=-1;
@@ -44,7 +44,7 @@ void read_rcfile() {
                         theme[i].wincolor = getcolor(dummy);
                         if(theme[i].wincolor == 1) {
                             theme[i].wincolor = getcolor(defaultwincolor[i]);
-                            logger("Default Window Border Colour");
+                            logger("Default Window Border Colour", "");
                         }
                     }
                 }
@@ -186,7 +186,7 @@ void read_rcfile() {
                             theme[i].textcolor = getcolor(dummy);
                             if(theme[i].textcolor == 1) {
                                 theme[i].textcolor = getcolor(defaulttextcolor[i]);
-                                logger("Default text colour");
+                                logger("Default text colour", "");
                             }
                         }
                     }
@@ -328,7 +328,7 @@ void set_defaults() {
         sb_height = font.height+2;
         font.fh = ((sb_height - font.height)/2) + font.ascent;
     }
-    logger("\033[0;32m Setting default values");
+    logger("\033[0;32m Setting default values", "");
     return;
 }
 
@@ -383,9 +383,7 @@ void update_config() {
         }
     }
     if(mode == 1 && head != NULL) {
-        client *c;
-        XUnmapWindow(dis, current->win);
-        for(c=head;c;c=c->next) XMapWindow(dis, c->win);
+        XMoveWindow(dis,current->win,current->x,2*desktops[DESKTOPS-1].h);
     }
     for(i=0;i<DESKTOPS;++i)
         desktops[i].master_size = (desktops[i].mode == 2) ? (desktops[i].h*msize)/100 : (desktops[i].w*msize)/100;

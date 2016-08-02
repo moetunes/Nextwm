@@ -1,4 +1,4 @@
-// events.c [ 0.9.0 ]
+// events.c [ 0.9.1 ]
 
 void configurerequest(XEvent *e) {
     XConfigureRequestEvent *ev = &e->xconfigurerequest;
@@ -54,8 +54,6 @@ void map_window(Window neww) {
         XMoveResizeWindow(dis, neww, attr.x, attr.y, minww, minwh);
         ++j;
     }
-    Window w;
-    w = (numwins > 0) ? current->win:0;
 
     save_desktop(tmp);
     Window trans = None; unsigned int tranny = 0;
@@ -111,11 +109,13 @@ void map_window(Window neww) {
     if(ch.res_name) XFree(ch.res_name);
     if(j > 0) XGetWindowAttributes(dis, neww, &attr);
 
+    c = current;
     add_window(neww, tranny, NULL, attr.x, attr.y, attr.width, attr.height);
-    if(mode == 1 && numwins > 1 && move == 0) XUnmapWindow(dis, w);
+    if(mode == 1 && numwins > 1 && move == 0)
+        XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
     for(i=0;i<num_screens;++i)
         if(current_desktop == view[i].cd) {
-            if(tranny == 1 || mode != 1 ) XMapWindow(dis,neww);
+            XMapWindow(dis,neww);
             tile();
         }
     if(move == 0) select_desktop(tmp);
@@ -397,8 +397,8 @@ int xerror(Display *dis, XErrorEvent *ee) {
     || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
         return 0;
     if(ee->error_code == BadAccess) {
-        logger("\033[0;31mIs Another Window Manager Running? Exiting!");
+        logger("\033[0;31mIs Another Window Manager Running? Exiting!", "");
         exit(1);
-    } else logger("\033[0;31mBad Window Error!");
+    } else logger("\033[0;31mBad Window Error!", "");
     return xerrorxlib(dis, ee); /* may call exit */
 }

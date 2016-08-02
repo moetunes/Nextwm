@@ -1,3 +1,7 @@
+2/8/16
+  Refine how windows found on startup are handled.(Changed from
+   unmapping windows to moving them off screen)
+
 1/8/16
   Dont map icon windows on starts
 

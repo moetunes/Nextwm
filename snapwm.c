@@ -155,7 +155,7 @@ static void kill_client_now(Window w);
 static void last_desktop();
 static void last_win();
 static void leavenotify(XEvent *e);
-static void logger(const char* e);
+static void logger(const char* e, const char* ee);
 static void mapbar();
 static void maprequest(XEvent *e);
 static void map_window(Window neww);
@@ -277,7 +277,7 @@ void add_window(Window win, int tw, client *cl, int x, int y, int w, int h) {
     if(cl != NULL) c = cl;
     else {
         if(!(c = (client *)calloc(1,sizeof(client)))) {
-            logger("\033[0;31mError calloc!");
+            logger("\033[0;31mError calloc!", "");
             exit(1);
         }
         c->x = x;
@@ -387,7 +387,7 @@ void next_win() {
     save_desktop(current_desktop);
     if(mode == 1) {
         tile();
-        if(c->trans == 0 && focus->trans == 0) XUnmapWindow(dis, c->win);
+        if(c->trans == 0 && focus->trans == 0) XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
     }
     update_current();
 }
@@ -407,7 +407,7 @@ void prev_win() {
     save_desktop(current_desktop);
     if(mode == 1) {
         tile();
-        if(d->trans == 0 && focus->trans == 0) XUnmapWindow(dis, d->win);
+        if(d->trans == 0 && focus->trans == 0) XMoveWindow(dis,d->win,d->x,2*desktops[DESKTOPS-1].h);
     }
     update_current();
 }
@@ -509,12 +509,12 @@ void pop_window() {
         }
         tile();
     } else {
-        Window win = (current == NULL) ? 0:current->win;
+        c = current;
         focus->trans = 0;
         numwins += 1;
         current = focus;
         tile();
-        if(mode == 1 && numwins > 1) XUnmapWindow(dis, win);
+        if(mode == 1 && numwins > 1) XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
     }
     update_current();
 }
@@ -569,7 +569,7 @@ void unsticky_win() {
     }
     if(stickied == 0) return;
     client *c = focus;
-    XUnmapWindow(dis, c->win);
+    XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
     remove_client(c, 0);
     if(focus != NULL) {
         if(mode != 4) tile();
@@ -603,9 +603,12 @@ void change_desktop(const Arg arg) {
     if(arg.i != view[next_view].cd) {
         select_desktop(view[next_view].cd);
         // Unmap all window
-        if(head != NULL)
-            for(c=head;c;c=c->next)
-                XUnmapWindow(dis,c->win);
+        if(head != NULL) {
+            for(c=head;c;c=c->next) {
+                XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
+            }
+            XFlush(dis);
+        }
     }
 
     // Take "properties" from the new desktop
@@ -616,8 +619,7 @@ void change_desktop(const Arg arg) {
         for(c=head;c;c=c->next)
             if(c->trans == 1) {
                 XMoveResizeWindow(dis,c->win,desktops[current_desktop].x+c->x,desktops[current_desktop].y+c->y,c->w,c->h);
-                XMapWindow(dis,c->win);
-            } else if(mode != 1) XMapWindow(dis,c->win);
+            }
         tile();
     }
 
@@ -666,7 +668,7 @@ void client_to_desktop(const Arg arg) {
     // Remove client from current desktop
     if(stickied == 1) unsticky_win();
     else {
-        XUnmapWindow(dis, c->win);
+        XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
         remove_client(c, 1);
         if(mode != 4) tile();
 
@@ -679,8 +681,9 @@ void client_to_desktop(const Arg arg) {
           desktops[current_desktop].x+c->x,c->y,c->w,c->h);
         for(j=cd;j<cd+num_screens;++j) {
             if(view[j%num_screens].cd == arg.i) {
-                if(c->trans == 0) tile();
-                XMapWindow(dis, c->win);
+                if(c->trans == 0) {
+                    tile();
+                }
             }
         }
         select_desktop(tmp2);
@@ -747,7 +750,6 @@ void tile() {
         for(c=head;c;c=c->next)
             if(c->trans == 0) {
                 XMoveResizeWindow(dis,c->win,scrx+ug_out,scry+y+ug_out,sw+bdw-2*ug_out,sh+bdw-2*ug_out);
-                if(mode == 1) XMapWindow(dis, c->win);
             }
     } else {
         switch(mode) {
@@ -777,7 +779,6 @@ void tile() {
                 break;
             case 1: /* Fullscreen */
                 XMoveResizeWindow(dis,current->win,scrx,scry+y,sw+bdw,sh+bdw);
-                XMapWindow(dis, current->win);
                 break;
             case 2: /* Horizontal */
             	// Master window
@@ -925,18 +926,13 @@ void switch_mode(const Arg arg) {
 
     client *c;
     growth = 0;
-    if(mode == 1 && head != NULL) {
-        XUnmapWindow(dis, current->win);
-        for(c=head;c;c=c->next)
-            XMapWindow(dis, c->win);
-    }
 
     mode = arg.i;
     master_size = (mode == 2) ? (sh*msize)/100 : (sw*msize)/100;
     if(mode == 1 && head != NULL)
         for(c=head;c;c=c->next) {
-            if(c->trans == 1) continue;
-            XUnmapWindow(dis, c->win);
+            if(c->trans == 1 || c == current) continue;
+            XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
         }
 
     save_desktop(current_desktop);
@@ -1099,7 +1095,7 @@ void quit() {
     XFreePixmap(dis, area_sb);
     XSync(dis, False);
     XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
-    logger("\033[0;34mYou Quit : Bye!");
+    logger("\033[0;34mYou Quit : Bye!", "");
     if(shutting_down > 0) return;
     else bool_quit = 1;
 }
@@ -1110,7 +1106,7 @@ unsigned long getcolor(const char* color) {
 
     if(XAllocNamedColor(dis,map,color,&c,&c)) return c.pixel;
     else {
-        logger("\033[0;31mError parsing color!");
+        logger("\033[0;31mError parsing color!", "");
         return 1;
     }
     
@@ -1137,7 +1133,7 @@ void terminate(const Arg arg) {
                 ++j;
             }
             a.com[j] = NULL;
-            logger(msg);
+            logger(msg, "");
             bool_quit = 1;
             spawn(a);
             //execvp((char*)a.com[0],(char**)a.com);
@@ -1145,13 +1141,13 @@ void terminate(const Arg arg) {
     }
 }
 
-void logger(const char* e) {
-    fprintf(stderr,"\n\033[0;34m:: snapwm : %s \033[0;m\n", e);
+void logger(const char* e, const char* ee) {
+    fprintf(stderr,"\n\033[0;34m:: snapwm : %s \033[0;m  %s\n", e, ee);
     fflush(stderr);
 }
 
 void cull_windows(Window *windows, unsigned int cnt) {
-  unsigned int i, j;
+  unsigned int i;
   XWindowAttributes attr;
 
   for(i=0;i<cnt;++i) {
@@ -1159,23 +1155,10 @@ void cull_windows(Window *windows, unsigned int cnt) {
           windows[i] = None;
           continue;
       }
-      if((attr.map_state != IsViewable && attr.map_state != IsUnmapped) ||
-              attr.override_redirect == True || attr.class == InputOnly){
+      if(attr.map_state != IsViewable || attr.override_redirect == True
+        || attr.class == InputOnly){
           windows[i] = None;
           continue;
-      }
-
-      XWMHints *wmhints = XGetWMHints(dis, windows[i]);
-      if (wmhints) {
-          if (wmhints->flags & IconWindowHint) {
-              if(windows[i] != wmhints->icon_window) {
-                  for(j=0;j<cnt;++j) {
-                      if(windows[j] == wmhints->icon_window)
-                          windows[j] = None;
-                  }
-              }
-          }
-          XFree(wmhints);
       }
   }
 }
@@ -1188,7 +1171,6 @@ void check_start() {
     cull_windows(tree, num);
     for(i=num;i>0;--i) {
         if(tree[i-1] != None) {
-            XUnmapWindow(dis, tree[i]);
             map_window(tree[i-1]);
         }
     }
@@ -1208,7 +1190,7 @@ void plugnplay(XEvent *e) {
     XFreePixmap(dis, area_sb);
     for(i=0;i<num_screens;++i) {
         select_desktop(view[i].cd);
-        for(c=head;c;c=c->next) XUnmapWindow(dis, c->win);
+        for(c=head;c;c=c->next) XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
     }
     select_desktop(tmp);
     unmapbar();
@@ -1229,7 +1211,6 @@ void plugnplay(XEvent *e) {
     init_start();
     for(i=0;i<num_screens;++i) {
         select_desktop(view[i].cd);
-        for(c=head;c;c=c->next) XMapWindow(dis, c->win);
         tile();
     }
     Arg a = {.i = tmp};
@@ -1256,7 +1237,7 @@ void init_desks() {
 
     XineramaScreenInfo *info = NULL;
     if(!(info = XineramaQueryScreens(dis, &num_screens))) {
-        logger("XINERAMA Fail");
+        logger("XINERAMA Fail", "");
         num_screens = 1;
         have_Xin = 1;
     }
@@ -1320,7 +1301,7 @@ void setup() {
     char *loc;
     loc = setlocale(LC_ALL, "");
     if (!loc || !strcmp(loc, "C") || !strcmp(loc, "POSIX") || !XSupportsLocale())
-        logger("LOCALE FAILED");
+        logger("LOCALE FAILED", "");
     // Read in RC_FILE
     sprintf(RC_FILE, "%s/.config/snapwm/rc.conf", getenv("HOME"));
     sprintf(KEY_FILE, "%s/.config/snapwm/key.conf", getenv("HOME"));
@@ -1356,12 +1337,12 @@ void setup() {
     update_current();
     setbaralpha();
 
-    logger("\033[0;32mWe're up and running!");
+    logger("\033[0;32mWe're up and running!", "");
 }
 
 void sigchld(int unused) {
     if(signal(SIGCHLD, sigchld) == SIG_ERR) {
-        logger("\033[0;31mCan't install SIGCHLD handler");
+        logger("\033[0;31mCan't install SIGCHLD handler", "");
         exit(1);
         }
     while(0 < waitpid(-1, NULL, WNOHANG));
@@ -1392,7 +1373,7 @@ void start() {
 int main() {
     // Open display
     if(!(dis = XOpenDisplay(NULL))) {
-        logger("\033[0;31mCannot open display!");
+        logger("\033[0;31mCannot open display!", "");
         exit(1);
     }
 
