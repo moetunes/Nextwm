@@ -115,8 +115,8 @@ void map_window(Window neww) {
         XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
     for(i=0;i<num_screens;++i)
         if(current_desktop == view[i].cd) {
-            XMapWindow(dis,neww);
             tile();
+            XMapWindow(dis,neww);
         }
     if(move == 0) select_desktop(tmp);
     update_current();
@@ -308,7 +308,8 @@ void buttonrelease(XEvent *e) {
     for(c=head;c;c=c->next)
         if(ev->window == c->win) {
             XGetWindowAttributes(dis, c->win, &attr);
-            c->x = attr.x - desktops[current_desktop].x;
+            if(c->trans == 1) c->x = attr.x;
+            else c->x = attr.x - desktops[current_desktop].x;
             c->y = attr.y;
             c->w = attr.width;
             c->h = attr.height; return;
