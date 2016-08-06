@@ -1,3 +1,6 @@
+6/8/16
+  Fix for windows set to open on unfocused desktops not mapping
+
 2/8/16
   Refine how windows found on startup are handled.(Changed from
    unmapping windows to moving them off screen)

@@ -109,7 +109,7 @@ void map_window(Window neww) {
     if(ch.res_name) XFree(ch.res_name);
     if(j > 0) XGetWindowAttributes(dis, neww, &attr);
 
-    c = current;
+    c = current; j = 0;
     add_window(neww, tranny, NULL, attr.x, attr.y, attr.width, attr.height);
     if(mode == 1 && numwins > 1 && move == 0)
         XMoveWindow(dis,c->win,c->x,2*desktops[DESKTOPS-1].h);
@@ -117,7 +117,12 @@ void map_window(Window neww) {
         if(current_desktop == view[i].cd) {
             tile();
             XMapWindow(dis,neww);
+            ++j;
         }
+    if(j == 0) {
+        XMoveWindow(dis,neww,0,2*desktops[DESKTOPS-1].h);
+        XMapWindow(dis,neww);
+    }
     if(move == 0) select_desktop(tmp);
     update_current();
     if(STATUS_BAR == 0) update_bar();
