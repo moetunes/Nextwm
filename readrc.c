@@ -397,13 +397,11 @@ void update_config() {
         }
     }
     select_desktop(tmp);
-    fprintf(stderr, ":: snapwm :: #2 view cd is %d\n", view[0].cd );
 
     if(STATUS_BAR == 0) update_bar();
     for(i=0;i<num_screens;++i) {
         select_desktop(view[i].cd);
         tile();
-        fprintf(stderr, ":: snapwm :: view[i].cd is %d : tmp is %d\n", view[i].cd, tmp );
     }
     select_desktop(tmp);
     update_current();
