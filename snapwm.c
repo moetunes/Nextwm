@@ -790,7 +790,8 @@ void tile() {
                     if(d->trans == 1) continue;
                     XMoveResizeWindow(dis,d->win,scrx+xpos,scry+ypos,sw/(nm+1)-bdw-(nm*(ug_in/2)),master_size-bdw-ug_in/2);
                     xpos += sw/(nm+1)+(ug_in/2);
-                    if(x == nm) break; ++x;
+                    if(x == nm) break;
+                    ++x;
                 }
 
                 // Stack

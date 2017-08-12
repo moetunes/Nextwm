@@ -146,12 +146,13 @@ void destroynotify(XEvent *e) {
                 for(j=0;j<numstuck;++j)
                     if(stuck[j].win == c->win) {
                         stuck[j].numstuck -= 1;
-                        if(stuck[j].numstuck == 0)
+                        if(stuck[j].numstuck == 0) {
                             for(k=0;k+j<numstuck-1;++k) {
                                 stuck[k].win = stuck[k+1].win;
                                 stuck[k].numstuck = stuck[k+1].numstuck;
                             }
-                            numstuck -= 1;
+                        }
+                        numstuck -= 1;
                     }
                 break;
             }

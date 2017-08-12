@@ -1,3 +1,7 @@
+13/8/17
+  Fix for windows from first desktop being mapped when update_config
+   is run
+
 26/9/16
   Fix for multiple monitors and fullscreen mode open window blinking
    when transient window opened
