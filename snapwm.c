@@ -371,9 +371,9 @@ void remove_client(client *cl, unsigned int dr) {
             }
         }
     } else focus = current = NULL;
-    if(numwins == 0) current = NULL;
+    if(numorder == 0) current = NULL;
     if(dr == 0) free(cl);
-    if((numwins - nmaster) < 3) growth = 0;
+    if((numwins - nmaster) < 2) growth = 0;
     save_desktop(current_desktop);
     return;
 }
@@ -498,7 +498,7 @@ void pop_window() {
         focus->trans = 1;
         XMoveResizeWindow(dis, focus->win, desktops[current_desktop].x+focus->x, focus->y, focus->w, focus->h);
         numwins -= 1;
-        if((numwins - nmaster) < 3) growth = 0;
+        if((numwins - nmaster) < 2) growth = 0;
         if(focus == current) {
             for(i=0;i<numorder;++i) {
                 for(c=head;c;c=c->next)
@@ -679,12 +679,13 @@ void client_to_desktop(const Arg arg) {
         add_window(c->win, c->trans, c, c->x, c->y, c->w, c->h);
         save_desktop(arg.i);
 
-        if(c->trans == 1) XMoveResizeWindow(dis, c->win,
-          desktops[current_desktop].x+c->x,c->y,c->w,c->h);
         for(j=cd;j<cd+num_screens;++j) {
             if(view[j%num_screens].cd == arg.i) {
                 if(c->trans == 0) {
                     tile();
+                } else {
+                    XMoveResizeWindow(dis, c->win,
+                        desktops[current_desktop].x+c->x,c->y,c->w,c->h);
                 }
             }
         }
