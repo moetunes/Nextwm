@@ -79,10 +79,11 @@ It allows the "normal" method of tiling window managers with the new
 ###Recent Changes
 --------------
 
-21/11/15
+2/10/17
 
-  * Added man page.
-  * Right click the bar to run a command.
+  * Windows can be stickied
+  * Can now set a minimum size for windows
+  * On start open windows will be found
 
 
 ###Status
@@ -144,6 +145,8 @@ It allows the "normal" method of tiling window managers with the new
   * Useless gaps around the bar too
   * A keyboard shortcut to float a window on top of tiled windows
   * Match a window and float it from apps.conf
+  * Added man page.
+  * Right click the bar to run a command.
 
 
 ###Installation
