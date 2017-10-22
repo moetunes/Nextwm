@@ -1,3 +1,6 @@
+23/10/17
+  Ignore the first Randr event
+
 2/10/17
   Fix for popped windows not unmapping with client_to_desktop()
 

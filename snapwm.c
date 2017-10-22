@@ -222,7 +222,7 @@ static unsigned int showopen;        // whether the desktop switcher shows numbe
 static unsigned int topbar, top_stack, windownamelength, keycount, cmdcount, dtcount, pcount, tcount, LA_WINDOWNAME;
 static unsigned int minww, minwh, ug_out, ug_in, ug_bar;
 static int ufalpha, baralpha;
-static unsigned long opacity, baropacity;
+static unsigned long opacity, baropacity, plugnplaycount;
 static int xerror(Display *dis, XErrorEvent *ee);
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 unsigned int numlockmask, resizemovekey;        /* dynamic key lock mask */
@@ -615,6 +615,7 @@ void change_desktop(const Arg arg) {
 
     // Take "properties" from the new desktop
     select_desktop(arg.i);
+    XSetInputFocus(dis, root, RevertToPointerRoot, CurrentTime);
 
     // Map all windows
     if(head != NULL) {
@@ -1183,6 +1184,11 @@ void check_start() {
 }
 
 void plugnplay(XEvent *e) {
+    fprintf(stderr, "PLUGNPLAY STARTED -- COUNT == %d\n", plugnplaycount);
+    if(plugnplaycount == 0) {
+        ++plugnplaycount;
+        return;
+    }
     client *c; unsigned int tmp = current_desktop;
     XRRUpdateConfiguration(e);
     if(font.fontset) XFreeFontSet(dis, font.fontset);
@@ -1219,6 +1225,7 @@ void plugnplay(XEvent *e) {
     }
     Arg a = {.i = tmp};
     change_desktop(a);
+    logger("PLUGNPLAY DONE :: ", "");
 }
 
 void init_start() {
@@ -1300,7 +1307,7 @@ void setup() {
     resizemovekey = Mod1Mask;
     windownamelength = 35;
     show_bar = STATUS_BAR = barmon = barmonchange = lessbar = 0;
-    minww = minwh = ug_out = ug_in = ug_bar = 0;
+    minww = minwh = ug_out = ug_in = ug_bar = plugnplaycount = 0;
 
     char *loc;
     loc = setlocale(LC_ALL, "");
@@ -1314,6 +1321,7 @@ void setup() {
     read_rcfile();
 
     // Set up all desktops
+    init_start();
     init_desks();
 
     if(STATUS_BAR == 0) {
@@ -1336,10 +1344,9 @@ void setup() {
         Arg a = {.i = default_desk};
         change_desktop(a);
     }
-    init_start();
     check_start();
-    update_current();
     setbaralpha();
+    update_current();
 
     logger("\033[0;32mWe're up and running!", "");
 }
