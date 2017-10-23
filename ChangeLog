@@ -1,4 +1,6 @@
 23/10/17
+  Fix for changing to empty desktop leaving the last focused window
+   with focus
   Ignore the first Randr event
 
 2/10/17

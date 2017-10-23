@@ -1184,7 +1184,6 @@ void check_start() {
 }
 
 void plugnplay(XEvent *e) {
-    fprintf(stderr, "PLUGNPLAY STARTED -- COUNT == %d\n", plugnplaycount);
     if(plugnplaycount == 0) {
         ++plugnplaycount;
         return;
@@ -1225,7 +1224,6 @@ void plugnplay(XEvent *e) {
     }
     Arg a = {.i = tmp};
     change_desktop(a);
-    logger("PLUGNPLAY DONE :: ", "");
 }
 
 void init_start() {
