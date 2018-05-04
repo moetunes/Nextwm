@@ -7,7 +7,6 @@ Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=
 
 
 ### Summary
--------
 
 
 **snapwm** is a xinerama and xrandr aware, minimal and lightweight dynamic tiling window manager.
@@ -21,7 +20,6 @@ All configuration is read from three files in ~/.config/snapwm/ and is reloadabl
 *apps.conf* is optional and where apps settings are read from.
 
 ### Modes
------
 
 It allows the "normal" method of tiling window managers with the new
     window as the master or with the new window opened at the bottom
@@ -77,7 +75,6 @@ It allows the "normal" method of tiling window managers with the new
 
 
 ### Recent Changes
---------------
 
 2/10/17
 
@@ -87,7 +84,6 @@ It allows the "normal" method of tiling window managers with the new
 
 
 ### Status
-------
 
   * Added bar with desktop switcher and statusbar to dminiwm.
   * Colours and font are read from an rc file and can be updated with a keyboard shortcut.
@@ -150,7 +146,6 @@ It allows the "normal" method of tiling window managers with the new
 
 
 ### Installation
-------------
 
 Need Xlib, Xrandr, then:
 
@@ -166,12 +161,10 @@ Need Xlib, Xrandr, then:
 
 
 ### Bugs
-----
 
 [ * No bugs for the moment ;) (I mean, no importants bugs ;)]
 
 
 ### Todo
-----
 
   * Maybe xft fonts
