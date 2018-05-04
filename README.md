@@ -1,4 +1,4 @@
-##snapwm
+## snapwm
 ### it's minimal and dynamic
 
 I started this from catwm 31/12/10 ( https://bbs.archlinux.org/viewtopic.php?id=100215&p=1 )
@@ -6,7 +6,7 @@ I started this from catwm 31/12/10 ( https://bbs.archlinux.org/viewtopic.php?id=
 Screenshots and ramblings/updates at https://bbs.archlinux.org/viewtopic.php?id=126463
 
 
-###Summary
+### Summary
 -------
 
 
@@ -20,7 +20,7 @@ All configuration is read from three files in ~/.config/snapwm/ and is reloadabl
 
 *apps.conf* is optional and where apps settings are read from.
 
-###Modes
+### Modes
 -----
 
 It allows the "normal" method of tiling window managers with the new
@@ -76,7 +76,7 @@ It allows the "normal" method of tiling window managers with the new
  * The rc files are reloadable 'on the run'.
 
 
-###Recent Changes
+### Recent Changes
 --------------
 
 2/10/17
@@ -86,7 +86,7 @@ It allows the "normal" method of tiling window managers with the new
   * On start open windows will be found
 
 
-###Status
+### Status
 ------
 
   * Added bar with desktop switcher and statusbar to dminiwm.
@@ -149,7 +149,7 @@ It allows the "normal" method of tiling window managers with the new
   * Right click the bar to run a command.
 
 
-###Installation
+### Installation
 ------------
 
 Need Xlib, Xrandr, then:
@@ -165,13 +165,13 @@ Need Xlib, Xrandr, then:
     $ make clean
 
 
-###Bugs
+### Bugs
 ----
 
 [ * No bugs for the moment ;) (I mean, no importants bugs ;)]
 
 
-###Todo
+### Todo
 ----
 
   * Maybe xft fonts
