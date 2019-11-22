@@ -7,8 +7,8 @@ void configurerequest(XEvent *e) {
     int y = 0;
     if(STATUS_BAR == 0 && topbar == 0 && show_bar == 0) y = sb_height+4+ug_out;
 
-    wc.x = ev->x;
-    wc.y = ev->y + y;
+    wc.x = (ev->x > 0) ? ev->x : 0;
+    wc.y = (ev->y > 0) ? ev->y + y : y;
     if(mode == 4) {
         wc.width = (ev->width < sw-2*bdw) ? ev->width : sw-2*bdw;
         wc.height = (ev->height < sh-2*bdw) ? ev->height : sh-2*bdw;
@@ -54,11 +54,16 @@ void map_window(Window neww) {
         XMoveResizeWindow(dis, neww, attr.x, attr.y, minww, minwh);
         ++j;
     }
+    if(attr.width > sw || attr.height > sh) {
+        XMoveResizeWindow(dis, neww, 0, 0, sw, sh);
+        ++j;
+    }
 
     save_desktop(tmp);
     Window trans = None; unsigned int tranny = 0;
-    if (XGetTransientForHint(dis, neww, &trans) && trans != None)
+    if (XGetTransientForHint(dis, neww, &trans) && trans != None) {
         tranny = 1;
+    }
 
     getwindowname(neww, 1);
     XClassHint ch = {0};
