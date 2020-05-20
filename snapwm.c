@@ -244,7 +244,7 @@ static MonitorView view[5];
 static Barwin sb_bar[12];
 static Theme theme[10];
 static Iammanyfonts font;
-static key keys[80];
+static key keys[140];
 static Commands cmds[50];
 static Convenience convenience[40];
 static Positional positional[40];
